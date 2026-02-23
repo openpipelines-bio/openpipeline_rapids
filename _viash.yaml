@@ -1,0 +1,37 @@
+viash_version: 0.9.6
+
+source: src
+target: target
+
+# Note: this causes the docker images to be renamed
+name: openpipeline_rapids
+organization: openpipelines-bio
+summary: |
+  Best-practice workflows for single-cell multi-omics analyses using rapids-singlecell.
+  
+description: |
+  OpenPipelines are extensible single cell analysis pipelines for reproducible and large-scale single cell processing using [Viash](https://viash.io) and [Nextflow](https://www.nextflow.io/).
+
+  This repository contains GPU-enabled components using the [rapids-singlecell](https://rapids-singlecell.readthedocs.io/en/latest/) library.
+license: MIT
+keywords: [single-cell, multimodal, rapids]
+
+links:
+  repository: https://github.com/openpipelines-bio/openpipeline_rapids
+  docker_registry: ghcr.io
+  homepage: https://openpipelines.bio
+  documentation: https://openpipelines.bio/fundamentals
+  issue_tracker: https://github.com/openpipelines-bio/openpipeline_rapids/issues
+
+info:
+  test_resources:
+    - type: s3
+      path: s3://openpipelines-data
+      dest: resources_test
+  nextflow_labels_ci:
+    - path: src/workflows/utils/labels_ci.config
+      description: Adds the correct memory and CPU labels when running on the Viash Hub CI.
+
+config_mods: |
+  .resources += {path: '/src/workflows/utils/labels.config', dest: 'nextflow_labels.config'}
+  .runners[.type == 'nextflow'].config.script := 'includeConfig("nextflow_labels.config")'
