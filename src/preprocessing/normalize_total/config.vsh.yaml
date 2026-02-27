@@ -74,17 +74,18 @@ test_resources:
 
 engines:
 - type: docker
-  image: python:3.12-slim
+  image: ghcr.io/scverse/rapids-singlecell-cu12:latest
+  # image: python:3.12-slim
   setup:
-    - type: apt
-      packages: 
-        - procps
+  #   - type: apt
+  #     packages: 
+  #       - procps
     - type: python
       packages:
-        - anndata~=0.12.7
-        - awkward
+  #       - anndata~=0.12.7
+  #       - awkward
         - mudata~=0.3.2
-        - scanpy~=1.11.4
+  #       - scanpy~=1.11.4
   test_setup:
     - type: apt
       packages:
@@ -97,6 +98,7 @@ engines:
 
 runners:
 - type: executable
+  docker_run_args: --gpus all
 - type: nextflow
   directives:
     label: [midmem, lowcpu, highdisk]
