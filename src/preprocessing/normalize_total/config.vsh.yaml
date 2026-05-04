@@ -73,12 +73,12 @@ test_resources:
   - path: /resources_test/pbmc_1k_protein_v3
 
 engines:
-# Option 1: Using the rapids-singlecell image
 - type: docker
-  image: ghcr.io/scverse/rapids-singlecell-cu12:latest
+  image: rapidsai/base:25.10-cuda12-py3.12
   setup:
     - type: python
       packages:
+        - rapids-singlecell
         - mudata~=0.3.2
   test_setup:
     - type: apt
@@ -89,18 +89,6 @@ engines:
         - viashpy==0.8.0
       github:
         - openpipelines-bio/core#subdirectory=packages/python/openpipeline_testutils
-
-# Option 2: Install RAPIDS/rapids-singlecell using pip
-# - type: docker
-#   image: ghcr.io/scverse/rapids-singlecell-cu12:latest
-#   image: python:3.12-slim
-#   setup:
-#     - type: apt
-#       packages: 
-#         - procps
-#    - type: docker
-#      run: pip install 'rapids-singlecell-cu12[rapids]' --extra-index-url=https://pypi.nvidia.com
-
 
 runners:
 - type: executable
