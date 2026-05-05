@@ -1,0 +1,9 @@
+test_setup:
+  - type: apt
+    packages:
+      - git
+  - type: python
+    packages:
+      - viashpy==0.8.0
+    github:
+      - openpipelines-bio/core#subdirectory=packages/python/openpipeline_testutils
