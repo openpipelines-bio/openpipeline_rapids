@@ -3,5 +3,5 @@ image: rapidsai/base:25.10-cuda12-py3.12
 setup:
   - type: docker
     run:
-      - mamba install -y -c rapidsai -c conda-forge rapids-singlecell=0.15.0
+      - pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com "rapids-singlecell-cu12==0.15.0"
 __merge__: [/src/base/requirements/python_test_setup.yaml, .]
