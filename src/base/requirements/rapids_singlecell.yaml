@@ -1,2 +1,2 @@
 packages:
-  - rapids-singlecell~=0.15.0
+  - rapids-singlecell==0.15.0
