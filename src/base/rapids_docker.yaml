@@ -1,0 +1,6 @@
+type: docker
+image: rapidsai/base:25.10-cuda12-py3.12
+setup:
+  - type: python
+    __merge__: /src/base/requirements/rapids_singlecell.yaml
+__merge__: [/src/base/requirements/python_test_setup.yaml, .]
