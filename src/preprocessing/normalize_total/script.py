@@ -9,8 +9,9 @@ par = {
     "target_sum": 10000,
     "modality": "rna",
     "exclude_highly_expressed": False,
+    "max_fraction": 0.05,
 }
-meta = {"name": "lognorm"}
+meta = {"name": "normalize_total"}
 ## VIASH END
 
 sys.path.append(meta["resources_dir"])
@@ -35,13 +36,15 @@ output_data = rsc.pp.normalize_total(
     dat,
     layer=par["input_layer"],
     target_sum=par["target_sum"],
+    exclude_highly_expressed=par["exclude_highly_expressed"],
+    max_fraction=par["max_fraction"],
     copy=True if par["output_layer"] else False,
 )
 
 logger.info("Transferring data back to CPU.")
 rsc.get.anndata_to_CPU(dat)
-
 if output_data:
+    rsc.get.anndata_to_CPU(output_data)
     result = (
         output_data.X
         if not par["input_layer"]

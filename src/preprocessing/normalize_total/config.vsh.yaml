@@ -1,65 +1,86 @@
 name: normalize_total
-namespace: "transform"
-scope: "public"
+namespace: "preprocessing"
 description: |
   Normalize counts per cell.
 
-  Normalize each cell by total counts over all genes, so that every cell has the same total count after normalization. If choosing target_sum=1e6, this is CPM normalization.
+  Normalize each cell by total counts over all genes, so that every cell has
+  the same total count after normalization. If choosing target_sum=1e6, this
+  is CPM normalization.
 
-  If exclude_highly_expressed=True, very highly expressed genes are excluded from the computation of the normalization factor (size factor) for each cell. This is meaningful as these can strongly influence the resulting normalized values for all other genes [Weinreb17].
+  If exclude_highly_expressed=True, very highly expressed genes are excluded
+  from the computation of the normalization factor (size factor) for each
+  cell. This is meaningful as these can strongly influence the resulting
+  normalized values for all other genes [Weinreb17].
 
-arguments:
-  # input
-  - name: "--input"
-    alternatives: ["-i"]
-    type: file
-    description: Input h5mu file
-    direction: input
-    required: true
-    example: input.h5mu
+authors:
+  - __merge__: /src/authors/luke_zappia.yaml
+    roles: [ author ]
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ contributor ]
 
-  - name: "--modality"
-    description: |
-      Which modality from the input MuData file to process.
-    type: string
-    default: "rna"
-    required: false
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
 
-  - name: "--input_layer"
-    type: string
-    required: false
-    description: "Input layer to use. By default, X is normalized"
-  # output
-  - name: "--output"
-    alternatives: ["-o"]
-    type: file
-    description: Output h5mu file.
-    direction: output
-    required: true
-    default: output.h5mu
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
 
-  - name: "--output_layer"
-    type: string
-    description: Output layer to use. By default, use X.
-    required: false
+      - name: "--input_layer"
+        type: string
+        required: false
+        description: Input layer to use. By default, X is normalized.
 
-  # arguments
-  - name: "--target_sum"
-    type: integer
-    description: If None, after normalization, each observation (cell) has a total count equal to the median of total counts for observations (cells) before normalization.
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
 
-  - name: "--exclude_highly_expressed"
-    type: boolean_true
-    description: Exclude (very) highly expressed genes for the computation of the normalization factor (size factor) for each cell. A gene is considered highly expressed, if it has more than max_fraction of the total counts in at least one cell. The not-excluded genes will sum up to target_sum.
+      - name: "--output_layer"
+        type: string
+        required: false
+        description: Output layer to use. By default, use X.
 
-  - name: "--output_compression"
-    description: |
-      Compression format to use for the output AnnData and/or Mudata objects.
-      By default no compression is applied.
-    type: string
-    choices: ["gzip", "lzf"]
-    required: false
-    example: "gzip"
+  - name: Options
+    arguments:
+      - name: "--target_sum"
+        type: integer
+        description: |
+          If None, after normalization, each observation (cell) has a total
+          count equal to the median of total counts for observations (cells)
+          before normalization.
+
+      - name: "--exclude_highly_expressed"
+        type: boolean_true
+        description: |
+          Exclude (very) highly expressed genes for the computation of the
+          normalization factor (size factor) for each cell. A gene is
+          considered highly expressed if it has more than max_fraction of
+          the total counts in at least one cell. The not-excluded genes
+          will sum up to target_sum.
+
+      - name: "--max_fraction"
+        type: double
+        default: 0.05
+        description: |
+          If exclude_highly_expressed=True, consider cells as highly
+          expressed that have more counts than max_fraction of the original
+          total counts in at least one cell.
 
 resources:
   - type: python_script
@@ -73,26 +94,14 @@ test_resources:
   - path: /resources_test/pbmc_1k_protein_v3
 
 engines:
-- type: docker
-  image: rapidsai/base:25.10-cuda12-py3.12
-  setup:
-    - type: python
-      packages:
-        - rapids-singlecell
-        - mudata~=0.3.2
-  test_setup:
-    - type: apt
-      packages:
-        - git
-    - type: python
-      packages:
-        - viashpy==0.8.0
-      github:
-        - openpipelines-bio/core#subdirectory=packages/python/openpipeline_testutils
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
 
 runners:
-- type: executable
-  docker_run_args: --gpus all
-- type: nextflow
-  directives:
-    label: [midmem, lowcpu, highdisk]
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [midmem, lowcpu, highdisk]
