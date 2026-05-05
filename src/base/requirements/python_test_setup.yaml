@@ -1,7 +1,7 @@
 test_setup:
   - type: docker
     run:
-      - mamba install -y -c conda-forge git
+      - sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y git && sudo rm -rf /var/lib/apt/lists/*
   - type: python
     packages:
       - viashpy==0.8.0
