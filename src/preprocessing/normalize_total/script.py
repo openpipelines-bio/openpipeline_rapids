@@ -26,12 +26,13 @@ assert dat.var_names.is_unique, "The var_names of the input modality must be be 
 
 logger.info(par)
 
-logger.info("Transferring data to GPU.")
-rsc.get.anndata_to_GPU(dat)
-
-logger.info("Performing total normalization.")
 if par["input_layer"] and par["input_layer"] not in dat.layers.keys():
     raise ValueError(f"Input layer {par['input_layer']} not found in {par['modality']}")
+
+logger.info("Transferring data to GPU.")
+rsc.get.anndata_to_GPU(dat, layer=par["input_layer"])
+
+logger.info("Performing total normalization.")
 output_data = rsc.pp.normalize_total(
     dat,
     layer=par["input_layer"],
