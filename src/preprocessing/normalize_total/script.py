@@ -44,6 +44,7 @@ output_data = rsc.pp.normalize_total(
 logger.info("Transferring data back to CPU.")
 rsc.get.anndata_to_CPU(dat)
 if output_data:
+    # separate copy returned by rsc.pp.normalize_total when copy=True
     rsc.get.anndata_to_CPU(output_data)
     result = (
         output_data.X
