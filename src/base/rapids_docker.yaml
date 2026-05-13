@@ -1,7 +1,3 @@
 type: docker
 image: rapidsai/base:26.04-cuda13-py3.12
-setup:
-  - type: docker
-    run:
-      - pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com "rapids-singlecell-cu13==0.15.0"
-__merge__: [/src/base/requirements/python_test_setup.yaml, .]
+__merge__: [/src/base/requirements/rapids_singlecell.yaml, /src/base/requirements/python_test_setup.yaml, .]
