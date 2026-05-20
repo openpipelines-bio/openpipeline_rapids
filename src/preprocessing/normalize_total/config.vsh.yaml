@@ -102,7 +102,7 @@ engines:
 
 runners:
   - type: executable
-    docker_run_args: ["--gpus all", "--user 0:0"]
+    docker_run_args: --gpus all
   - type: nextflow
     directives:
       label: [midmem, lowcpu, highdisk, gpu]

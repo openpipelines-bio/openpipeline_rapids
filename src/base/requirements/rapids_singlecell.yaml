@@ -1,4 +1,4 @@
 setup:
   - type: docker
     run:
-      - pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com "rapids-singlecell-cu13==0.15.0"
+      - pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com "rapids-singlecell[rapids-cu13]==0.15.0"

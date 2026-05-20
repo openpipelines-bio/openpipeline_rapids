@@ -1,0 +1,15 @@
+setup:
+  - type: docker
+    label:
+      - "org.opencontainers.image.licenses=LicenseRef-NVIDIA-DL-Container-License"
+      - "org.opencontainers.image.source=https://github.com/openpipelines-bio/openpipeline_rapids"
+    run:
+      - |
+        cat > /NOTICE <<'EOF'
+        This image contains software provided by NVIDIA Corporation
+        and is governed by the NVIDIA Deep Learning Container License:
+        https://developer.download.nvidia.com/licenses/NVIDIA_Deep_Learning_Container_License.pdf
+
+        The source code for this project is licensed under MIT:
+        https://github.com/openpipelines-bio/openpipeline_rapids
+        EOF
