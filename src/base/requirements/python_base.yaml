@@ -5,3 +5,7 @@ setup:
   - type: apt
     packages:
       - python3-pip
+      - python-is-python3
+  - type: docker
+    run:
+      - pip install --upgrade --no-cache-dir --ignore-installed pip
