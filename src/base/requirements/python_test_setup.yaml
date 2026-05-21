@@ -1,7 +1,7 @@
 test_setup:
-  - type: docker
-    run:
-      - mamba install -y -c conda-forge git
+  - type: apt
+    packages:
+      - git
   - type: python
     packages:
       - viashpy==0.8.0
