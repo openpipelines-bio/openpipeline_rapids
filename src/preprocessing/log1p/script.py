@@ -27,28 +27,24 @@ logger.info(par)
 if par["input_layer"] and par["input_layer"] not in dat.layers.keys():
     raise ValueError(f"Input layer {par['input_layer']} not found in {par['modality']}")
 
+if par["output_layer"]:
+    source = dat.layers[par["input_layer"]] if par["input_layer"] else dat.X
+    dat.layers[par["output_layer"]] = source.copy()
+
+target_layer = par["output_layer"] or par["input_layer"]
+
 logger.info("Transferring data to GPU.")
-rsc.get.anndata_to_GPU(dat, layer=par["input_layer"])
+rsc.get.anndata_to_GPU(dat, layer=target_layer)
 
 logger.info("Performing log1p transformation.")
-output_data = rsc.pp.log1p(
+rsc.pp.log1p(
     dat,
     base=par["base"],
-    layer=par["input_layer"],
-    copy=True if par["output_layer"] else False,
+    layer=target_layer,
 )
 
 logger.info("Transferring data back to CPU.")
 rsc.get.anndata_to_CPU(dat)
-if output_data:
-    # separate copy returned by rsc.pp.log1p when copy=True
-    rsc.get.anndata_to_CPU(output_data)
-    result = (
-        output_data.X
-        if not par["input_layer"]
-        else output_data.layers[par["input_layer"]]
-    )
-    dat.layers[par["output_layer"]] = result
 
 logger.info(
     "Writing to file to %s with compression %s",
