@@ -1,0 +1,216 @@
+name: highly_variable_genes
+namespace: "preprocessing"
+scope: "public"
+description: |
+  Annotate highly variable genes [Satija15] [Zheng17] [Stuart19] [Lause21] [Andrews19].
+
+  Expects logarithmized data, except when flavor is 'seurat_v3', 'seurat_v3_paper',
+  'pearson_residuals' or 'poisson_gene_selection', in which case count data is
+  expected.
+
+  Depending on flavor, this reproduces the R-implementations of Seurat [Satija15],
+  Cell Ranger [Zheng17] and Seurat v3 [Stuart19]. Flavor 'pearson_residuals' uses
+  analytic Pearson residuals [Lause21] and 'poisson_gene_selection' uses an
+  analytical Poisson gene selection based on M3Drop [Andrews19].
+
+  For the dispersion-based methods, the normalized dispersion is obtained by
+  scaling with the mean and standard deviation of the dispersions for genes
+  falling into a given bin for mean expression of genes. This means that for
+  each bin of mean expression, highly variable genes are selected.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--input_layer"
+        type: string
+        required: false
+        description: |
+          Input layer to use for expression values. By default, X is used.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--var_name_filter"
+        type: string
+        default: "highly_variable"
+        description: |
+          In which .var slot to store a boolean array indicating which features
+          are highly variable.
+
+      - name: "--varm_name"
+        type: string
+        default: "hvg"
+        description: |
+          In which .varm slot to store the per-gene HVG metrics
+          (means, dispersions, dispersions_norm, variances, variances_norm,
+          residual_variances, highly_variable_rank, highly_variable_nbatches,
+          highly_variable_intersection — depending on flavor and batch_key).
+
+  - name: Options
+    arguments:
+      - name: "--flavor"
+        type: string
+        default: "seurat"
+        choices:
+          - "seurat"
+          - "cell_ranger"
+          - "seurat_v3"
+          - "seurat_v3_paper"
+          - "pearson_residuals"
+          - "poisson_gene_selection"
+        description: |
+          Choose the flavor for identifying highly variable genes. For the
+          dispersion-based methods in their default workflows, Seurat passes
+          the cutoffs whereas Cell Ranger passes n_top_features.
+
+      - name: "--n_top_features"
+        type: integer
+        required: false
+        description: |
+          Number of highly-variable features to keep. Mandatory if flavor is
+          'seurat_v3', 'seurat_v3_paper', 'pearson_residuals' or
+          'poisson_gene_selection'.
+
+      - name: "--min_mean"
+        type: double
+        default: 0.0125
+        description: |
+          If n_top_features is defined, this and all other cutoffs for the
+          means and the normalized dispersions are ignored. Only used for
+          dispersion-based flavors.
+
+      - name: "--max_mean"
+        type: double
+        default: 3
+        description: |
+          If n_top_features is defined, this and all other cutoffs for the
+          means and the normalized dispersions are ignored. Only used for
+          dispersion-based flavors.
+
+      - name: "--min_disp"
+        type: double
+        default: 0.5
+        description: |
+          If n_top_features is defined, this and all other cutoffs for the
+          means and the normalized dispersions are ignored. Only used for
+          dispersion-based flavors.
+
+      - name: "--max_disp"
+        type: double
+        required: false
+        description: |
+          If n_top_features is defined, this and all other cutoffs for the
+          means and the normalized dispersions are ignored. Only used for
+          dispersion-based flavors. Default is +inf.
+
+      - name: "--span"
+        type: double
+        default: 0.3
+        description: |
+          The fraction of the data (cells) used when estimating the variance
+          in the loess model fit if flavor is 'seurat_v3' or 'seurat_v3_paper'.
+
+      - name: "--n_bins"
+        type: integer
+        default: 20
+        description: |
+          Number of bins for binning the mean gene expression. Normalization is
+          done with respect to each bin. If just a single gene falls into a
+          bin, the normalized dispersion is artificially set to 1.
+
+      - name: "--theta"
+        type: integer
+        default: 100
+        description: |
+          The negative binomial overdispersion parameter for Pearson residuals.
+          Higher values correspond to less overdispersion. Only used if
+          flavor is 'pearson_residuals'.
+
+      - name: "--clip"
+        type: double
+        required: false
+        description: |
+          Determines if and how Pearson residuals are clipped. If unset,
+          residuals are clipped to [-sqrt(n_obs), sqrt(n_obs)]. If a scalar c
+          is given, residuals are clipped to [-c, c]. Only used if flavor is
+          'pearson_residuals'.
+
+      - name: "--chunksize"
+        type: integer
+        default: 1000
+        description: |
+          If flavor is 'poisson_gene_selection', this determines how many
+          genes are processed at once. Choosing a smaller value will reduce
+          the required memory.
+
+      - name: "--n_samples"
+        type: integer
+        default: 10000
+        description: |
+          The number of Binomial samples used to estimate the posterior
+          probability of enrichment of zeros for each gene. Only used if
+          flavor is 'poisson_gene_selection'.
+
+      - name: "--obs_batch_key"
+        type: string
+        required: false
+        description: |
+          If specified, highly-variable features are selected within each
+          batch separately and merged.
+
+      - name: "--check_values"
+        type: boolean_true
+        description: |
+          Check if counts in the selected layer are integers. A warning is
+          emitted otherwise. Only used if flavor is 'seurat_v3',
+          'seurat_v3_paper', 'pearson_residuals' or 'poisson_gene_selection'.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [midmem, lowcpu, highdisk, gpu]
