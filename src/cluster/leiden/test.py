@@ -23,6 +23,8 @@ def test_run(run_component, random_h5mu_path):
         output,
         "--output_compression",
         "gzip",
+        "--resolution",
+        "1.0",
     ]
     run_component(cmd_pars)
 
@@ -77,6 +79,8 @@ def test_obsm_name(run_component, random_h5mu_path):
             output,
             "--output_compression",
             "gzip",
+            "--resolution",
+            "1.0",
             "--obsm_name",
             "my_leiden",
         ]
@@ -108,6 +112,8 @@ def test_obsp_connectivities(run_component, random_h5mu_path):
             output,
             "--output_compression",
             "gzip",
+            "--resolution",
+            "1.0",
             "--obsp_connectivities",
             "custom_connectivities",
         ]
@@ -133,6 +139,8 @@ def test_seed(run_component, random_h5mu_path):
                 output,
                 "--output_compression",
                 "gzip",
+                "--resolution",
+                "1.0",
                 "--seed",
                 "42",
             ]
