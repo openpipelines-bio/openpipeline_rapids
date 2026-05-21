@@ -2,6 +2,7 @@ import sys
 import pytest
 import mudata as mu
 import pandas as pd
+import scanpy as sc
 
 ## VIASH START
 meta = {
@@ -15,11 +16,25 @@ meta = {
 input = f"{meta['resources_dir']}/xenium/xenium_tiny.qc.neighbors.h5mu"
 
 
-def test_run(run_component, random_h5mu_path):
+@pytest.fixture
+def filtered_input(random_h5mu_path):
+    """rsc.gr.spatial_autocorr's default float32 reduction yields nan/inf
+    on constant or low-variance genes, which the xenium test panel has
+    several of. Drop genes detected in fewer than 3 cells before passing
+    to the component — matches typical pre-spatial-autocorr filtering."""
+    mu_in = mu.read_h5mu(input)
+    rna = mu_in.mod["rna"]
+    sc.pp.filter_genes(rna, min_cells=3)
+    path = random_h5mu_path()
+    mu_in.write(path)
+    return path
+
+
+def test_run(run_component, random_h5mu_path, filtered_input):
     output = random_h5mu_path()
     cmd_pars = [
         "--input",
-        input,
+        filtered_input,
         "--output",
         output,
         "--output_compression",
@@ -47,13 +62,13 @@ def test_run(run_component, random_h5mu_path):
     assert df["I"].min() >= -1.0, "Moran's I should not fall below -1."
 
 
-def test_geary(run_component, random_h5mu_path):
+def test_geary(run_component, random_h5mu_path, filtered_input):
     """Geary's C mode should write a `gearyC` DataFrame to .uns."""
     output = random_h5mu_path()
     run_component(
         [
             "--input",
-            input,
+            filtered_input,
             "--output",
             output,
             "--output_compression",
@@ -73,16 +88,16 @@ def test_geary(run_component, random_h5mu_path):
     assert "C" in df.columns, "Expected statistic column 'C' in gearyC."
 
 
-def test_genes_subset(run_component, random_h5mu_path):
+def test_genes_subset(run_component, random_h5mu_path, filtered_input):
     """Passing --genes should restrict the analysis to that subset."""
-    mu_input = mu.read_h5mu(input)
+    mu_input = mu.read_h5mu(filtered_input)
     genes = list(mu_input.mod["rna"].var_names[:5])
 
     output = random_h5mu_path()
     run_component(
         [
             "--input",
-            input,
+            filtered_input,
             "--output",
             output,
             "--output_compression",
@@ -104,9 +119,9 @@ def test_genes_subset(run_component, random_h5mu_path):
         assert g in df.index, f"Gene {g} missing from output index."
 
 
-def test_obsp_connectivities(run_component, random_h5mu_path):
+def test_obsp_connectivities(run_component, random_h5mu_path, filtered_input):
     """A custom --obsp_connectivities should be picked up as the adjacency."""
-    mu_orig = mu.read_h5mu(input)
+    mu_orig = mu.read_h5mu(filtered_input)
     mu_orig.mod["rna"].obsp["custom_connectivities"] = (
         mu_orig.mod["rna"].obsp["spatial_connectivities"].copy()
     )
@@ -138,7 +153,7 @@ def test_obsp_connectivities(run_component, random_h5mu_path):
     )
 
 
-def test_corr_method_disabled(run_component, random_h5mu_path):
+def test_corr_method_disabled(run_component, random_h5mu_path, filtered_input):
     """Passing an empty --corr_method should leave p-values uncorrected.
 
     The exact column naming for corrected p-values depends on the
@@ -149,7 +164,7 @@ def test_corr_method_disabled(run_component, random_h5mu_path):
     run_component(
         [
             "--input",
-            input,
+            filtered_input,
             "--output",
             output,
             "--output_compression",
