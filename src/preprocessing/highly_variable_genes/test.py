@@ -2,6 +2,7 @@ import sys
 import pytest
 import mudata as mu
 import numpy as np
+import scanpy as sc
 from openpipeline_testutils.asserters import assert_annotation_objects_equal
 
 ## VIASH START
@@ -19,11 +20,26 @@ input = f"{meta['resources_dir']}/pbmc_1k_protein_v3/pbmc_1k_protein_v3_filtered
 @pytest.fixture
 def lognormed_input(random_h5mu_path):
     """rapids-singlecell hvg with the default flavor expects log-normalized
-    data, so build a pre-log-transformed copy of the test mudata."""
+    data. sc.pp.log1p preserves sparsity."""
     mu_in = mu.read_h5mu(input)
     rna = mu_in.mod["rna"]
-    rna.layers["log_normalized"] = np.log1p(rna.X.toarray())
-    rna.X = rna.layers["log_normalized"].copy()
+    sc.pp.log1p(rna)
+    rna.layers["log_normalized"] = rna.X.copy()
+    path = random_h5mu_path()
+    mu_in.write(path)
+    return path
+
+
+@pytest.fixture
+def lognormed_filtered_input(random_h5mu_path):
+    """cell_ranger flavor requires gene-filtered data — running it on the
+    raw filtered_feature_bc_matrix collapses pandas.cut's bin edges to
+    identical near-zero means."""
+    mu_in = mu.read_h5mu(input)
+    rna = mu_in.mod["rna"]
+    sc.pp.filter_genes(rna, min_counts=20)
+    sc.pp.log1p(rna)
+    rna.layers["log_normalized"] = rna.X.copy()
     path = random_h5mu_path()
     mu_in.write(path)
     return path
@@ -99,7 +115,7 @@ def test_n_top_features(run_component, random_h5mu_path, lognormed_input):
     )
 
 
-def test_flavor_cell_ranger(run_component, random_h5mu_path, lognormed_input):
+def test_flavor_cell_ranger(run_component, random_h5mu_path, lognormed_filtered_input):
     """Cell Ranger flavor should give a different HVG set than Seurat."""
     output_seurat = random_h5mu_path()
     output_cr = random_h5mu_path()
@@ -107,7 +123,7 @@ def test_flavor_cell_ranger(run_component, random_h5mu_path, lognormed_input):
     run_component(
         [
             "--input",
-            lognormed_input,
+            lognormed_filtered_input,
             "--output",
             output_seurat,
             "--output_compression",
@@ -121,7 +137,7 @@ def test_flavor_cell_ranger(run_component, random_h5mu_path, lognormed_input):
     run_component(
         [
             "--input",
-            lognormed_input,
+            lognormed_filtered_input,
             "--output",
             output_cr,
             "--output_compression",
@@ -188,8 +204,8 @@ def test_input_layer(run_component, random_h5mu_path):
     whose X is that same matrix."""
     mu_in = mu.read_h5mu(input)
     rna = mu_in.mod["rna"]
-    rna.layers["log_normalized"] = np.log1p(rna.X.toarray())
-    rna.X = rna.layers["log_normalized"].copy()
+    sc.pp.log1p(rna)
+    rna.layers["log_normalized"] = rna.X.copy()
     layer_input = random_h5mu_path()
     mu_in.write(layer_input)
 
