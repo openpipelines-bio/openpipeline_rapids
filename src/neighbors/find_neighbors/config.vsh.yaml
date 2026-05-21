@@ -1,0 +1,126 @@
+name: find_neighbors
+namespace: "neighbors"
+scope: "public"
+description: |
+  Compute a neighborhood graph of observations [McInnes18].
+
+  The neighbor search efficiency of this heavily relies on cuVS, which also
+  provides a method for estimating connectivities of data points - the
+  connectivity of the manifold. If method=='gauss', connectivities are computed
+  with an adaptive Gaussian kernel. If method=='jaccard', PhenoGraph Jaccard
+  index connectivities are computed.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--obsm_input"
+        type: string
+        default: "X_pca"
+        required: false
+        description: Which .obsm slot to use as a starting embedding (use_rep).
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file containing the found neighbors.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--uns_output"
+        type: string
+        default: "neighbors"
+        description: |
+          Mandatory .uns slot to store the neighbors metadata. When set to
+          a non-default value, distances and connectivities are stored in
+          .obsp[<uns_output>_distances] and .obsp[<uns_output>_connectivities]
+          respectively.
+
+  - name: Options
+    arguments:
+      - name: "--num_neighbors"
+        type: integer
+        default: 15
+        description: |
+          The size of the local neighborhood (in terms of number of
+          neighboring data points) used for manifold approximation. Larger
+          values result in more global views of the manifold, while smaller
+          values result in more local data being preserved. In general
+          values should be in the range 2 to 100.
+
+      - name: "--metric"
+        type: string
+        default: "euclidean"
+        description: The distance metric to use.
+        choices: [
+          "l2", "chebyshev", "manhattan", "taxicab", "correlation",
+          "inner_product", "euclidean", "canberra", "lp", "minkowski",
+          "cosine", "jensenshannon", "linf", "cityblock", "l1", "haversine",
+          "sqeuclidean", "hellinger", "jaccard"
+        ]
+
+      - name: "--algorithm"
+        type: string
+        default: "brute"
+        choices: [ "brute", "cagra", "ivfflat", "ivfpq", "nn_descent" ]
+        description: |
+          The KNN query algorithm to use.
+
+      - name: "--method"
+        type: string
+        default: "umap"
+        choices: [ "umap", "gauss", "jaccard" ]
+        description: |
+          Method for computing connectivities. 'umap' uses the UMAP fuzzy
+          simplicial set, 'gauss' uses an adaptive Gaussian kernel, 'jaccard'
+          uses the PhenoGraph Jaccard index.
+
+      - name: "--seed"
+        type: integer
+        default: 0
+        description: A random seed.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [midmem, lowcpu, highdisk, gpu]
