@@ -1,8 +1,5 @@
 setup:
   - type: docker
-    label:
-      - "org.opencontainers.image.licenses=LicenseRef-NVIDIA-DL-Container-License"
-      - "org.opencontainers.image.source=https://github.com/openpipelines-bio/openpipeline_rapids"
     run:
       - |
         cat > /NOTICE <<'EOF'
