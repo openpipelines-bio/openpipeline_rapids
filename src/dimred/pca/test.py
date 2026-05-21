@@ -4,6 +4,7 @@ import re
 import pytest
 import mudata as mu
 import numpy as np
+import scanpy as sc
 from openpipeline_testutils.asserters import assert_annotation_objects_equal
 
 ## VIASH START
@@ -15,14 +16,30 @@ meta = {
 }
 ## VIASH END
 
-input = f"{meta['resources_dir']}/pbmc_1k_protein_v3/pbmc_1k_protein_v3_filtered_feature_bc_matrix.h5mu"
+input = f"{meta['resources_dir']}/pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"
 
 
-def test_run(run_component, random_h5mu_path):
+@pytest.fixture
+def clean_input(random_h5mu_path):
+    """mms test data prepared for rapids-singlecell PCA: zero-expression
+    genes filtered out (rsc PCA refuses them), and default PCA output
+    slots removed so PCA can write into them without --overwrite."""
+    mu_in = mu.read_h5mu(input)
+    rna = mu_in.mod["rna"]
+    sc.pp.filter_genes(rna, min_counts=1)
+    rna.obsm.pop("X_pca", None)
+    rna.varm.pop("pca_loadings", None)
+    rna.uns.pop("pca_variance", None)
+    path = random_h5mu_path()
+    mu_in.write(path)
+    return path
+
+
+def test_run(run_component, random_h5mu_path, clean_input):
     output = random_h5mu_path()
     cmd_pars = [
         "--input",
-        input,
+        clean_input,
         "--output",
         output,
         "--output_compression",
@@ -34,7 +51,7 @@ def test_run(run_component, random_h5mu_path):
 
     assert output.is_file(), "No output was created."
 
-    mu_input = mu.read_h5mu(input)
+    mu_input = mu.read_h5mu(clean_input)
     mu_output = mu.read_h5mu(output)
 
     assert "rna" in mu_output.mod, 'Output should contain data.mod["rna"].'
@@ -65,13 +82,13 @@ def test_run(run_component, random_h5mu_path):
     assert_annotation_objects_equal(mu_input, mu_output)
 
 
-def test_custom_output_slots(run_component, random_h5mu_path):
+def test_custom_output_slots(run_component, random_h5mu_path, clean_input):
     """Custom obsm/varm/uns output keys should be honored."""
     output = random_h5mu_path()
     run_component(
         [
             "--input",
-            input,
+            clean_input,
             "--output",
             output,
             "--output_compression",
@@ -96,9 +113,9 @@ def test_custom_output_slots(run_component, random_h5mu_path):
     assert "pca_variance" not in rna_out.uns
 
 
-def test_input_layer(run_component, random_h5mu_path):
+def test_input_layer(run_component, random_h5mu_path, clean_input):
     """PCA should run on the requested layer when --layer is provided."""
-    mu_orig = mu.read_h5mu(input)
+    mu_orig = mu.read_h5mu(clean_input)
     mu_orig.mod["rna"].layers["counts"] = mu_orig.mod["rna"].X.copy()
     input_with_layer = random_h5mu_path()
     mu_orig.write(input_with_layer)
@@ -124,10 +141,10 @@ def test_input_layer(run_component, random_h5mu_path):
     assert rna_out.varm["pca_loadings"].shape == (rna_out.n_vars, 26)
 
 
-def test_var_input(run_component, random_h5mu_path):
+def test_var_input(run_component, random_h5mu_path, clean_input):
     """When --var_input is provided, only genes flagged True should
     contribute to the loadings (other rows must be zero)."""
-    mu_orig = mu.read_h5mu(input)
+    mu_orig = mu.read_h5mu(clean_input)
     n_vars = mu_orig.mod["rna"].n_vars
     mask = np.zeros(n_vars, dtype=bool)
     mask[: n_vars // 2] = True
@@ -255,14 +272,14 @@ def test_chunk_size_smaller_than_num_components_raises(run_component, random_h5m
     )
 
 
-def test_overwrite_existing_slot(run_component, random_h5mu_path):
+def test_overwrite_existing_slot(run_component, random_h5mu_path, clean_input):
     """Re-running PCA into an existing slot should fail without --overwrite
     and succeed with it."""
     first = random_h5mu_path()
     run_component(
         [
             "--input",
-            input,
+            clean_input,
             "--output",
             first,
             "--output_compression",
