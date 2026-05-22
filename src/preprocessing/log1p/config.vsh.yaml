@@ -35,6 +35,13 @@ argument_groups:
         required: false
         description: Input layer to use. If not set, .X is used.
 
+      - name: "--input_obsm"
+        type: string
+        required: false
+        description: |
+          Entry in .obsm to log-transform. Mutually exclusive with
+          --input_layer.
+
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
     arguments:
@@ -49,7 +56,18 @@ argument_groups:
       - name: "--output_layer"
         type: string
         required: false
-        description: Output layer to use. By default, use X.
+        description: |
+          Output layer to write the transformed matrix to. If not set:
+          when --input_layer is unset, .X is modified in-place; when
+          --input_layer is set, that input layer is modified in-place.
+
+      - name: "--output_obsm"
+        type: string
+        required: false
+        description: |
+          Output entry in .obsm to write the transformed matrix to. Only
+          valid when --input_obsm is set. If not set, the input .obsm entry
+          is modified in-place. Mutually exclusive with --output_layer.
 
   - name: Options
     arguments:

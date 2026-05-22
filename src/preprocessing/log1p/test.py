@@ -160,5 +160,76 @@ def test_output_layer(run_component, random_h5mu_path):
     )
 
 
+def test_input_obsm(run_component, random_h5mu_path):
+    """Log-transforming a named .obsm entry should leave X untouched and
+    write the transformed matrix back into that entry (in-place)."""
+    mu_orig = mu.read_h5mu(input)
+    mu_orig.mod["rna"].obsm["X_test"] = mu_orig.mod["rna"].X.toarray()
+    input_with_obsm = random_h5mu_path()
+    mu_orig.write(input_with_obsm)
+
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            str(input_with_obsm),
+            "--output",
+            output,
+            "--output_compression",
+            "gzip",
+            "--input_obsm",
+            "X_test",
+        ]
+    )
+
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    rna_orig = mu_orig.mod["rna"]
+
+    assert np.allclose(rna_out.X.toarray(), rna_orig.X.toarray()), (
+        "X should be untouched when transforming an .obsm entry"
+    )
+    expected = np.log1p(rna_orig.obsm["X_test"])
+    assert np.allclose(rna_out.obsm["X_test"], expected), (
+        ".obsm entry should equal log1p of the input matrix"
+    )
+
+
+def test_output_obsm(run_component, random_h5mu_path):
+    """Writing the result to a named --output_obsm should leave the input
+    .obsm entry untouched and store the log-transformed matrix in the
+    output entry."""
+    mu_orig = mu.read_h5mu(input)
+    mu_orig.mod["rna"].obsm["X_test"] = mu_orig.mod["rna"].X.toarray()
+    input_with_obsm = random_h5mu_path()
+    mu_orig.write(input_with_obsm)
+
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            str(input_with_obsm),
+            "--output",
+            output,
+            "--output_compression",
+            "gzip",
+            "--input_obsm",
+            "X_test",
+            "--output_obsm",
+            "X_test_log",
+        ]
+    )
+
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    rna_orig = mu_orig.mod["rna"]
+
+    assert np.allclose(rna_out.obsm["X_test"], rna_orig.obsm["X_test"]), (
+        "Input .obsm entry should be untouched when --output_obsm is set"
+    )
+    expected = np.log1p(rna_orig.obsm["X_test"])
+    assert np.allclose(rna_out.obsm["X_test_log"], expected), (
+        "Output .obsm entry should equal log1p of the input matrix"
+    )
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
