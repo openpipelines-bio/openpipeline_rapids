@@ -1,24 +1,10 @@
-name: "normalize_total"
+name: "highly_variable_genes"
 namespace: "preprocessing"
 version: "build_main"
 authors:
-- name: "Luke Zappia"
-  roles:
-  - "author"
-  info:
-    role: "Contributor"
-    links:
-      email: "luke@data-intuitive.com"
-      github: "lazappi"
-      orcid: "0000-0001-7744-8565"
-      linkedin: "lazappi"
-    organizations:
-    - name: "Data Intuitive"
-      href: "https://www.data-intuitive.com"
-      role: "Data Science Engineer"
 - name: "Jakub Majercik"
   roles:
-  - "contributor"
+  - "author"
   info:
     role: "Contributor"
     links:
@@ -58,7 +44,7 @@ argument_groups:
     multiple_sep: ";"
   - type: "string"
     name: "--input_layer"
-    description: "Input layer to use. By default, X is normalized."
+    description: "Input layer to use for expression values. By default, X is used.\n"
     info: null
     required: false
     direction: "input"
@@ -81,9 +67,25 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--output_layer"
-    description: "Output layer to use. By default, use X."
+    name: "--var_name_filter"
+    description: "In which .var slot to store a boolean array indicating which features\n\
+      are highly variable.\n"
     info: null
+    default:
+    - "highly_variable"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--varm_name"
+    description: "In which .varm slot to store the per-gene HVG metrics\n(means, dispersions,\
+      \ dispersions_norm, variances, variances_norm,\nresidual_variances, highly_variable_rank,\
+      \ highly_variable_nbatches,\nhighly_variable_intersection — depending on flavor\
+      \ and batch_key).\n"
+    info: null
+    default:
+    - "hvg"
     required: false
     direction: "input"
     multiple: false
@@ -104,31 +106,164 @@ argument_groups:
     multiple_sep: ";"
 - name: "Options"
   arguments:
+  - type: "string"
+    name: "--flavor"
+    description: "Choose the flavor for identifying highly variable genes. For the\n\
+      dispersion-based methods in their default workflows, Seurat passes\nthe cutoffs\
+      \ whereas Cell Ranger passes n_top_features.\n"
+    info: null
+    default:
+    - "seurat"
+    required: false
+    choices:
+    - "seurat"
+    - "cell_ranger"
+    - "seurat_v3"
+    - "seurat_v3_paper"
+    - "pearson_residuals"
+    - "poisson_gene_selection"
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
   - type: "integer"
-    name: "--target_sum"
-    description: "If None, after normalization, each observation (cell) has a total\n\
-      count equal to the median of total counts for observations (cells)\nbefore normalization.\n"
+    name: "--n_top_features"
+    description: "Number of highly-variable features to keep. Mandatory if flavor\
+      \ is\n'seurat_v3', 'seurat_v3_paper', 'pearson_residuals' or\n'poisson_gene_selection'.\n"
     info: null
     required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
-  - type: "boolean_true"
-    name: "--exclude_highly_expressed"
-    description: "Exclude (very) highly expressed genes for the computation of the\n\
-      normalization factor (size factor) for each cell. A gene is\nconsidered highly\
-      \ expressed if it has more than max_fraction of\nthe total counts in at least\
-      \ one cell. The not-excluded genes\nwill sum up to target_sum.\n"
-    info: null
-    direction: "input"
   - type: "double"
-    name: "--max_fraction"
-    description: "If exclude_highly_expressed=True, consider cells as highly\nexpressed\
-      \ that have more counts than max_fraction of the original\ntotal counts in at\
-      \ least one cell.\n"
+    name: "--min_mean"
+    description: "If n_top_features is defined, this and all other cutoffs for the\n\
+      means and the normalized dispersions are ignored. Only used for\ndispersion-based\
+      \ flavors.\n"
     info: null
     default:
-    - 0.05
+    - 0.0125
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--max_mean"
+    description: "If n_top_features is defined, this and all other cutoffs for the\n\
+      means and the normalized dispersions are ignored. Only used for\ndispersion-based\
+      \ flavors.\n"
+    info: null
+    default:
+    - 3.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--min_disp"
+    description: "If n_top_features is defined, this and all other cutoffs for the\n\
+      means and the normalized dispersions are ignored. Only used for\ndispersion-based\
+      \ flavors.\n"
+    info: null
+    default:
+    - 0.5
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--max_disp"
+    description: "If n_top_features is defined, this and all other cutoffs for the\n\
+      means and the normalized dispersions are ignored. Only used for\ndispersion-based\
+      \ flavors. Default is +inf.\n"
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--span"
+    description: "The fraction of the data (cells) used when estimating the variance\n\
+      in the loess model fit if flavor is 'seurat_v3' or 'seurat_v3_paper'.\n"
+    info: null
+    default:
+    - 0.3
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--n_bins"
+    description: "Number of bins for binning the mean gene expression. Normalization\
+      \ is\ndone with respect to each bin. If just a single gene falls into a\nbin,\
+      \ the normalized dispersion is artificially set to 1.\n"
+    info: null
+    default:
+    - 20
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--theta"
+    description: "The negative binomial overdispersion parameter for Pearson residuals.\n\
+      Higher values correspond to less overdispersion. Only used if\nflavor is 'pearson_residuals'.\n"
+    info: null
+    default:
+    - 100
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--clip"
+    description: "Determines if and how Pearson residuals are clipped. If unset,\n\
+      residuals are clipped to [-sqrt(n_obs), sqrt(n_obs)]. If a scalar c\nis given,\
+      \ residuals are clipped to [-c, c]. Only used if flavor is\n'pearson_residuals'.\n"
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--chunksize"
+    description: "If flavor is 'poisson_gene_selection', this determines how many\n\
+      genes are processed at once. Choosing a smaller value will reduce\nthe required\
+      \ memory.\n"
+    info: null
+    default:
+    - 1000
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--n_samples"
+    description: "The number of Binomial samples used to estimate the posterior\n\
+      probability of enrichment of zeros for each gene. Only used if\nflavor is 'poisson_gene_selection'.\n"
+    info: null
+    default:
+    - 10000
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--obs_batch_key"
+    description: "If specified, highly-variable features are selected within each\n\
+      batch separately and merged.\n"
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "boolean"
+    name: "--check_values"
+    description: "Check if counts in the selected layer are integers. A warning is\n\
+      emitted otherwise. Only used if flavor is 'seurat_v3',\n'seurat_v3_paper', 'pearson_residuals'\
+      \ or 'poisson_gene_selection'.\n"
+    info: null
+    default:
+    - true
     required: false
     direction: "input"
     multiple: false
@@ -144,12 +279,17 @@ resources:
 - type: "file"
   path: "nextflow_labels.config"
   dest: "nextflow_labels.config"
-description: "Normalize counts per cell.\n\nNormalize each cell by total counts over\
-  \ all genes, so that every cell has\nthe same total count after normalization. If\
-  \ choosing target_sum=1e6, this\nis CPM normalization.\n\nIf exclude_highly_expressed=True,\
-  \ very highly expressed genes are excluded\nfrom the computation of the normalization\
-  \ factor (size factor) for each\ncell. This is meaningful as these can strongly\
-  \ influence the resulting\nnormalized values for all other genes [Weinreb17].\n"
+description: "Annotate highly variable genes [Satija15] [Zheng17] [Stuart19] [Lause21]\
+  \ [Andrews19].\n\nExpects logarithmized data, except when flavor is 'seurat_v3',\
+  \ 'seurat_v3_paper',\n'pearson_residuals' or 'poisson_gene_selection', in which\
+  \ case count data is\nexpected.\n\nDepending on flavor, this reproduces the R-implementations\
+  \ of Seurat [Satija15],\nCell Ranger [Zheng17] and Seurat v3 [Stuart19]. Flavor\
+  \ 'pearson_residuals' uses\nanalytic Pearson residuals [Lause21] and 'poisson_gene_selection'\
+  \ uses an\nanalytical Poisson gene selection based on M3Drop [Andrews19].\n\nFor\
+  \ the dispersion-based methods, the normalized dispersion is obtained by\nscaling\
+  \ with the mean and standard deviation of the dispersions for genes\nfalling into\
+  \ a given bin for mean expression of genes. This means that for\neach bin of mean\
+  \ expression, highly variable genes are selected.\n"
 test_resources:
 - type: "python_script"
   path: "test.py"
@@ -287,11 +427,11 @@ engines:
   entrypoint: []
   cmd: null
 build_info:
-  config: "src/preprocessing/normalize_total/config.vsh.yaml"
+  config: "src/preprocessing/highly_variable_genes/config.vsh.yaml"
   runner: "executable"
   engine: "docker"
-  output: "target/executable/preprocessing/normalize_total"
-  executable: "target/executable/preprocessing/normalize_total/normalize_total"
+  output: "target/executable/preprocessing/highly_variable_genes"
+  executable: "target/executable/preprocessing/highly_variable_genes/highly_variable_genes"
   viash_version: "0.9.7"
   git_commit: "271d0de62242ec6a2e41da73e5268ad7aa58e3c3"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
