@@ -185,7 +185,8 @@ argument_groups:
           batch separately and merged.
 
       - name: "--check_values"
-        type: boolean_true
+        type: boolean
+        default: true
         description: |
           Check if counts in the selected layer are integers. A warning is
           emitted otherwise. Only used if flavor is 'seurat_v3',

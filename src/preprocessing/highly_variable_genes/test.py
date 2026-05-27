@@ -79,6 +79,15 @@ def test_run(run_component, random_h5mu_path, lognormed_input):
     # Default --varm_name is "hvg"
     assert "hvg" in rna_out.varm, "Output should contain an 'hvg' .varm slot"
     assert rna_out.varm["hvg"].shape[0] == rna_out.n_vars
+    # The per-gene dispersion metrics should land in .varm (openpipeline#1143)
+    assert {"means", "dispersions", "dispersions_norm"}.issubset(
+        rna_out.varm["hvg"].columns
+    ), "Dispersion metrics should be stored in the 'hvg' .varm slot"
+
+    # rapids-singlecell records the flavor in .uns (openpipeline#1141)
+    assert rna_out.uns["hvg"]["flavor"] == "seurat", (
+        "The flavor should be recorded in .uns['hvg']"
+    )
 
     # X should be untouched — hvg only annotates .var / .varm / .uns
     assert np.allclose(rna_out.X.toarray(), rna_in.X.toarray()), (
@@ -88,6 +97,7 @@ def test_run(run_component, random_h5mu_path, lognormed_input):
     # Strip the new annotations and compare the rest of the object
     rna_out.var = rna_out.var.drop(columns=["highly_variable"])
     del rna_out.varm["hvg"]
+    del rna_out.uns["hvg"]
     if "rna:highly_variable" in mu_output.var.columns:
         mu_output.var = mu_output.var.drop(columns=["rna:highly_variable"])
     assert_annotation_objects_equal(mu_input, mu_output)
@@ -197,6 +207,14 @@ def test_flavor_seurat_v3(run_component, random_h5mu_path):
 
     rna_out = mu.read_h5mu(output).mod["rna"]
     assert int(rna_out.var["highly_variable"].sum()) == 50
+    # seurat_v3 stores variance-based metrics; ensure they reach .varm
+    # rather than being dropped (openpipeline#1143)
+    assert {"means", "variances", "variances_norm", "highly_variable_rank"}.issubset(
+        rna_out.varm["hvg"].columns
+    ), "seurat_v3 variance metrics should be stored in the 'hvg' .varm slot"
+    assert rna_out.uns["hvg"]["flavor"] == "seurat_v3", (
+        "The flavor should be recorded in .uns['hvg']"
+    )
 
 
 def test_input_layer(run_component, random_h5mu_path):

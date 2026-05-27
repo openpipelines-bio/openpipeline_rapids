@@ -23,7 +23,7 @@ par = {
     "chunksize": 1000,
     "n_samples": 10000,
     "obs_batch_key": None,
-    "check_values": False,
+    "check_values": True,
 }
 meta = {"name": "highly_variable_genes"}
 ## VIASH END
