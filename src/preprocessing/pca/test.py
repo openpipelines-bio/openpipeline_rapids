@@ -11,8 +11,8 @@ from openpipeline_testutils.asserters import assert_annotation_objects_equal
 meta = {
     "name": "pca",
     "resources_dir": "resources_test/",
-    "config": "src/dimred/pca/config.vsh.yaml",
-    "executable": "target/docker/dimred/pca/pca",
+    "config": "src/preprocessing/pca/config.vsh.yaml",
+    "executable": "target/docker/preprocessing/pca/pca",
 }
 ## VIASH END
 
@@ -21,9 +21,13 @@ input = f"{meta['resources_dir']}/pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu
 
 @pytest.fixture
 def clean_input(random_h5mu_path):
-    """mms test data prepared for rapids-singlecell PCA: zero-expression
-    genes filtered out (rsc PCA refuses them), and default PCA output
-    slots removed so PCA can write into them without --overwrite."""
+    """Prepare the PBMC test data for rapids-singlecell PCA.
+
+    The "_mms" input is the PBMC dataset after the standard openpipeline RNA
+    single-sample -> multi-sample -> dimensionality-reduction pipeline, so it
+    is normalized/log-transformed and already carries PCA slots. Here we filter
+    out zero-expression genes (rsc PCA refuses them) and drop the existing
+    default PCA output slots so PCA can write into them without --overwrite."""
     mu_in = mu.read_h5mu(input)
     rna = mu_in.mod["rna"]
     sc.pp.filter_genes(rna, min_counts=1)

@@ -61,20 +61,20 @@ if par["var_input"]:
         )
     mask_var = par["var_input"]
 
-# Verify output slots are free (or overwrite is allowed) before doing GPU work
+# Fail fast if an output slot already exists and overwrite is not allowed.
+# The slots themselves do not need clearing: the PCA call and the rename
+# below assign into them unconditionally, overwriting any existing value.
 check_exist = {
     "obsm_output": ("obsm", par["obsm_output"]),
     "varm_output": ("varm", par["varm_output"]),
     "uns_output": ("uns", par["uns_output"]),
 }
 for parameter_name, (field, key) in check_exist.items():
-    if key in getattr(dat, field):
-        if not par["overwrite"]:
-            raise ValueError(
-                f"Requested to create field {key} in .{field} for modality "
-                f"{par['modality']}, but field already exists."
-            )
-        del getattr(dat, field)[key]
+    if key in getattr(dat, field) and not par["overwrite"]:
+        raise ValueError(
+            f"Requested to create field {key} in .{field} for modality "
+            f"{par['modality']}, but field already exists."
+        )
 
 logger.info("Transferring data to GPU.")
 rsc.get.anndata_to_GPU(dat, layer=par["layer"])
@@ -94,8 +94,9 @@ logger.info("Transferring data back to CPU.")
 rsc.get.anndata_to_CPU(dat)
 
 # rapids-singlecell stores results under fixed keys ("X_pca", "PCs", "pca").
-# Rename them to the requested output slots, mirroring the openpipeline CPU
-# pca interface.
+# We rename them rather than using the `key_added` argument because that sets
+# a single shared key for all three slots, whereas this component exposes
+# independent obsm/varm/uns slot names (matching the openpipeline CPU pca).
 if par["obsm_output"] != "X_pca":
     dat.obsm[par["obsm_output"]] = dat.obsm.pop("X_pca")
 if par["varm_output"] != "PCs":

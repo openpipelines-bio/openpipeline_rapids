@@ -1,5 +1,5 @@
 name: pca
-namespace: "dimred"
+namespace: "preprocessing"
 scope: "public"
 description: |
   Computes PCA coordinates, loadings and variance decomposition.
@@ -99,7 +99,8 @@ argument_groups:
         description: In which .uns slot to store the resulting variance objects.
 
       - name: "--overwrite"
-        type: boolean_true
+        type: boolean
+        default: false
         description: Allow overwriting .obsm, .varm and .uns slots.
 
 resources:
