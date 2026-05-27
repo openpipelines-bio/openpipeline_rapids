@@ -3549,7 +3549,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/highly_variable_genes",
     "viash_version" : "0.9.7",
-    "git_commit" : "271d0de62242ec6a2e41da73e5268ad7aa58e3c3",
+    "git_commit" : "a911ad3d7ee4e2ffad13b129aa64f534877658c7",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

@@ -1,4 +1,4 @@
-name: "highly_variable_genes"
+name: "pca"
 namespace: "preprocessing"
 version: "build_main"
 authors:
@@ -43,10 +43,61 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--input_layer"
-    description: "Input layer to use for expression values. By default, X is used.\n"
+    name: "--layer"
+    description: "Use specified layer for expression values instead of the .X object\n\
+      from the modality.\n"
     info: null
     required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--var_input"
+    description: "Column name in .var matrix that will be used to select which genes\n\
+      to run the PCA on.\n"
+    info: null
+    example:
+    - "filter_with_hvg"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+- name: "Options"
+  arguments:
+  - type: "integer"
+    name: "--num_components"
+    description: "Number of principal components to compute. Defaults to 50, or\n\
+      1 - minimum dimension size of selected representation.\n"
+    info: null
+    example:
+    - 25
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "boolean_true"
+    name: "--chunked"
+    description: "If True, perform an incremental PCA on segments of a predefined\n\
+      size. Setting this flag automatically implies zero centering.\nMust be specified\
+      \ together with --chunk_size.\n"
+    info: null
+    direction: "input"
+  - type: "integer"
+    name: "--chunk_size"
+    description: "Number of observations to include in each chunk. Required if\nchunked=True\
+      \ was passed.\n"
+    info: null
+    required: false
+    min: 2
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--seed"
+    description: "Used to set the initial states for the optimization.\n"
+    info: null
+    required: false
+    min: 0
     direction: "input"
     multiple: false
     multiple_sep: ";"
@@ -67,25 +118,41 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--var_name_filter"
-    description: "In which .var slot to store a boolean array indicating which features\n\
-      are highly variable.\n"
+    name: "--obsm_output"
+    description: "In which .obsm slot to store the resulting embedding."
     info: null
     default:
-    - "highly_variable"
+    - "X_pca"
     required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--varm_name"
-    description: "In which .varm slot to store the per-gene HVG metrics\n(means, dispersions,\
-      \ dispersions_norm, variances, variances_norm,\nresidual_variances, highly_variable_rank,\
-      \ highly_variable_nbatches,\nhighly_variable_intersection — depending on flavor\
-      \ and batch_key).\n"
+    name: "--varm_output"
+    description: "In which .varm slot to store the resulting loadings matrix."
     info: null
     default:
-    - "hvg"
+    - "pca_loadings"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--uns_output"
+    description: "In which .uns slot to store the resulting variance objects."
+    info: null
+    default:
+    - "pca_variance"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "boolean"
+    name: "--overwrite"
+    description: "Allow overwriting .obsm, .varm and .uns slots."
+    info: null
+    default:
+    - false
     required: false
     direction: "input"
     multiple: false
@@ -104,170 +171,6 @@ argument_groups:
     direction: "input"
     multiple: false
     multiple_sep: ";"
-- name: "Options"
-  arguments:
-  - type: "string"
-    name: "--flavor"
-    description: "Choose the flavor for identifying highly variable genes. For the\n\
-      dispersion-based methods in their default workflows, Seurat passes\nthe cutoffs\
-      \ whereas Cell Ranger passes n_top_features.\n"
-    info: null
-    default:
-    - "seurat"
-    required: false
-    choices:
-    - "seurat"
-    - "cell_ranger"
-    - "seurat_v3"
-    - "seurat_v3_paper"
-    - "pearson_residuals"
-    - "poisson_gene_selection"
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "integer"
-    name: "--n_top_features"
-    description: "Number of highly-variable features to keep. Mandatory if flavor\
-      \ is\n'seurat_v3', 'seurat_v3_paper', 'pearson_residuals' or\n'poisson_gene_selection'.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "double"
-    name: "--min_mean"
-    description: "If n_top_features is defined, this and all other cutoffs for the\n\
-      means and the normalized dispersions are ignored. Only used for\ndispersion-based\
-      \ flavors.\n"
-    info: null
-    default:
-    - 0.0125
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "double"
-    name: "--max_mean"
-    description: "If n_top_features is defined, this and all other cutoffs for the\n\
-      means and the normalized dispersions are ignored. Only used for\ndispersion-based\
-      \ flavors.\n"
-    info: null
-    default:
-    - 3.0
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "double"
-    name: "--min_disp"
-    description: "If n_top_features is defined, this and all other cutoffs for the\n\
-      means and the normalized dispersions are ignored. Only used for\ndispersion-based\
-      \ flavors.\n"
-    info: null
-    default:
-    - 0.5
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "double"
-    name: "--max_disp"
-    description: "If n_top_features is defined, this and all other cutoffs for the\n\
-      means and the normalized dispersions are ignored. Only used for\ndispersion-based\
-      \ flavors. Default is +inf.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "double"
-    name: "--span"
-    description: "The fraction of the data (cells) used when estimating the variance\n\
-      in the loess model fit if flavor is 'seurat_v3' or 'seurat_v3_paper'.\n"
-    info: null
-    default:
-    - 0.3
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "integer"
-    name: "--n_bins"
-    description: "Number of bins for binning the mean gene expression. Normalization\
-      \ is\ndone with respect to each bin. If just a single gene falls into a\nbin,\
-      \ the normalized dispersion is artificially set to 1.\n"
-    info: null
-    default:
-    - 20
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "integer"
-    name: "--theta"
-    description: "The negative binomial overdispersion parameter for Pearson residuals.\n\
-      Higher values correspond to less overdispersion. Only used if\nflavor is 'pearson_residuals'.\n"
-    info: null
-    default:
-    - 100
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "double"
-    name: "--clip"
-    description: "Determines if and how Pearson residuals are clipped. If unset,\n\
-      residuals are clipped to [-sqrt(n_obs), sqrt(n_obs)]. If a scalar c\nis given,\
-      \ residuals are clipped to [-c, c]. Only used if flavor is\n'pearson_residuals'.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "integer"
-    name: "--chunksize"
-    description: "If flavor is 'poisson_gene_selection', this determines how many\n\
-      genes are processed at once. Choosing a smaller value will reduce\nthe required\
-      \ memory.\n"
-    info: null
-    default:
-    - 1000
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "integer"
-    name: "--n_samples"
-    description: "The number of Binomial samples used to estimate the posterior\n\
-      probability of enrichment of zeros for each gene. Only used if\nflavor is 'poisson_gene_selection'.\n"
-    info: null
-    default:
-    - 10000
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "string"
-    name: "--obs_batch_key"
-    description: "If specified, highly-variable features are selected within each\n\
-      batch separately and merged.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "boolean"
-    name: "--check_values"
-    description: "Check if counts in the selected layer are integers. A warning is\n\
-      emitted otherwise. Only used if flavor is 'seurat_v3',\n'seurat_v3_paper', 'pearson_residuals'\
-      \ or 'poisson_gene_selection'.\n"
-    info: null
-    default:
-    - true
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
 resources:
 - type: "python_script"
   path: "script.py"
@@ -279,17 +182,7 @@ resources:
 - type: "file"
   path: "nextflow_labels.config"
   dest: "nextflow_labels.config"
-description: "Annotate highly variable genes [Satija15] [Zheng17] [Stuart19] [Lause21]\
-  \ [Andrews19].\n\nExpects logarithmized data, except when flavor is 'seurat_v3',\
-  \ 'seurat_v3_paper',\n'pearson_residuals' or 'poisson_gene_selection', in which\
-  \ case count data is\nexpected.\n\nDepending on flavor, this reproduces the R-implementations\
-  \ of Seurat [Satija15],\nCell Ranger [Zheng17] and Seurat v3 [Stuart19]. Flavor\
-  \ 'pearson_residuals' uses\nanalytic Pearson residuals [Lause21] and 'poisson_gene_selection'\
-  \ uses an\nanalytical Poisson gene selection based on M3Drop [Andrews19].\n\nFor\
-  \ the dispersion-based methods, the normalized dispersion is obtained by\nscaling\
-  \ with the mean and standard deviation of the dispersions for genes\nfalling into\
-  \ a given bin for mean expression of genes. This means that for\neach bin of mean\
-  \ expression, highly variable genes are selected.\n"
+description: "Computes PCA coordinates, loadings and variance decomposition.\n"
 test_resources:
 - type: "python_script"
   path: "test.py"
@@ -427,11 +320,11 @@ engines:
   entrypoint: []
   cmd: null
 build_info:
-  config: "src/preprocessing/highly_variable_genes/config.vsh.yaml"
+  config: "src/preprocessing/pca/config.vsh.yaml"
   runner: "executable"
   engine: "docker"
-  output: "target/executable/preprocessing/highly_variable_genes"
-  executable: "target/executable/preprocessing/highly_variable_genes/highly_variable_genes"
+  output: "target/executable/preprocessing/pca"
+  executable: "target/executable/preprocessing/pca/pca"
   viash_version: "0.9.7"
   git_commit: "a911ad3d7ee4e2ffad13b129aa64f534877658c7"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
