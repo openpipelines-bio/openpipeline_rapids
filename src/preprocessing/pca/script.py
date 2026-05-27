@@ -96,7 +96,7 @@ rsc.get.anndata_to_CPU(dat)
 # rapids-singlecell stores results under fixed keys ("X_pca", "PCs", "pca").
 # We rename them rather than using the `key_added` argument because that sets
 # a single shared key for all three slots, whereas this component exposes
-# independent obsm/varm/uns slot names (matching the openpipeline CPU pca).
+# independent obsm/varm/uns slot names.
 if par["obsm_output"] != "X_pca":
     dat.obsm[par["obsm_output"]] = dat.obsm.pop("X_pca")
 if par["varm_output"] != "PCs":
