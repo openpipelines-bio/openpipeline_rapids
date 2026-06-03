@@ -197,13 +197,10 @@ def test_n_pcs(run_component, random_h5mu_path):
 
 def test_obsm_input(run_component, random_h5mu_path):
     """Passing a non-default obsm slot should be used as the neighbor input."""
-    mdata = mu.read_h5mu(input)
-    adata = mdata.mod["rna"]
-    sc.pp.normalize_total(adata, target_sum=1e4)
-    sc.pp.log1p(adata)
-    sc.pp.pca(adata, n_comps=20)
+    input_with_pca = _prepare_input_with_pca(random_h5mu_path)
+    mdata = mu.read_h5mu(input_with_pca)
     # Move the PCA into a custom obsm key
-    adata.obsm["X_custom"] = adata.obsm.pop("X_pca")
+    mdata.mod["rna"].obsm["X_custom"] = mdata.mod["rna"].obsm.pop("X_pca")
     input_with_custom = random_h5mu_path()
     mdata.write(input_with_custom)
 
