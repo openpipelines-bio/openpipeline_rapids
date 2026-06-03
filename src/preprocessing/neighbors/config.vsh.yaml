@@ -2,13 +2,13 @@ name: neighbors
 namespace: "preprocessing"
 scope: "public"
 description: |
-  Compute a neighborhood graph of observations [McInnes18].
+  Compute a nearest-neighbor graph of observations on the GPU.
 
-  The neighbor search efficiency of this heavily relies on cuVS, which also
-  provides a method for estimating connectivities of data points - the
-  connectivity of the manifold. If method=='gauss', connectivities are computed
-  with an adaptive Gaussian kernel. If method=='jaccard', PhenoGraph Jaccard
-  index connectivities are computed.
+  Wraps rapids-singlecell's `rsc.pp.neighbors`, whose neighbor search relies on
+  cuVS for fast (approximate) KNN search. The resulting graph is the basis for
+  downstream embedding and clustering (e.g. UMAP, Leiden). Connectivities can be
+  estimated with the UMAP fuzzy simplicial set ('umap'), an adaptive Gaussian
+  kernel ('gauss'), or the PhenoGraph Jaccard index ('jaccard').
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -98,7 +98,19 @@ argument_groups:
         default: "brute"
         choices: [ "brute", "cagra", "ivfflat", "ivfpq", "nn_descent" ]
         description: |
-          The KNN query algorithm to use.
+          The KNN query algorithm to use (provided by cuVS). See
+          https://docs.rapids.ai/api/cuvs/stable/ for details.
+            - brute: Brute-force exact search computing all pairwise distances.
+              Exact but the most expensive; best for smaller datasets.
+            - cagra: GPU graph-based approximate search optimized for high
+              query throughput on large datasets.
+            - ivfflat: Inverted-file index that clusters vectors into lists and
+              only searches the nearest lists. Approximate, faster than brute.
+            - ivfpq: Inverted-file index combined with product quantization of
+              the vectors. Approximate with a low memory footprint; scales to
+              very large datasets.
+            - nn_descent: Graph-based approximate method that iteratively
+              refines a KNN graph from a random initialization.
 
       - name: "--method"
         type: string
