@@ -80,9 +80,9 @@ def test_run(run_component, random_h5mu_path):
     assert_annotation_objects_equal(mu_input, mu_output)
 
 
-def test_uns_output(run_component, random_h5mu_path):
-    """When --uns_output is set to a custom key, neighbor metadata is stored
-    under that key and obsp keys are namespaced with that prefix."""
+def test_custom_output_slots(run_component, random_h5mu_path):
+    """Custom --uns_output / --obsp_distances / --obsp_connectivities slots are
+    stored under exactly the requested keys and the default keys are absent."""
     input_with_pca = _prepare_input_with_pca(random_h5mu_path)
     output = random_h5mu_path()
     run_component(
@@ -95,18 +95,21 @@ def test_uns_output(run_component, random_h5mu_path):
             "gzip",
             "--uns_output",
             "foo_neigh",
+            "--obsp_distances",
+            "foo_dist",
+            "--obsp_connectivities",
+            "foo_conn",
         ]
     )
 
     rna_out = mu.read_h5mu(output).mod["rna"]
 
     assert "foo_neigh" in rna_out.uns, "Output should have .uns['foo_neigh']"
-    assert "foo_neigh_distances" in rna_out.obsp, (
-        "Output should have .obsp['foo_neigh_distances']"
-    )
-    assert "foo_neigh_connectivities" in rna_out.obsp, (
-        "Output should have .obsp['foo_neigh_connectivities']"
-    )
+    assert "foo_dist" in rna_out.obsp, "Output should have .obsp['foo_dist']"
+    assert "foo_conn" in rna_out.obsp, "Output should have .obsp['foo_conn']"
+    # The metadata should point at the custom obsp slots
+    assert rna_out.uns["foo_neigh"]["distances_key"] == "foo_dist"
+    assert rna_out.uns["foo_neigh"]["connectivities_key"] == "foo_conn"
     assert "neighbors" not in rna_out.uns
     assert "distances" not in rna_out.obsp
     assert "connectivities" not in rna_out.obsp

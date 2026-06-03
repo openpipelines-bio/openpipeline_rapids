@@ -9,6 +9,8 @@ par = {
     "modality": "rna",
     "obsm_input": "X_pca",
     "uns_output": "neighbors",
+    "obsp_distances": "distances",
+    "obsp_connectivities": "connectivities",
     "num_neighbors": 15,
     "metric": "euclidean",
     "algorithm": "brute",
@@ -40,10 +42,6 @@ if par["obsm_input"] not in dat.obsm.keys():
 # the embedding directly from .obsm[use_rep]. No anndata_to_GPU pre-stage is
 # required — the function transfers the obsm representation to GPU internally.
 
-# rsc.pp.neighbors uses None to mean "default key", so we only pass key_added
-# when the user requested a non-default uns slot.
-key_added = par["uns_output"] if par["uns_output"] != "neighbors" else None
-
 logger.info("Computing a neighborhood graph.")
 rsc.pp.neighbors(
     dat,
@@ -53,8 +51,17 @@ rsc.pp.neighbors(
     algorithm=par["algorithm"],
     metric=par["metric"],
     method=par["method"],
-    key_added=key_added,
 )
+
+# rsc.pp.neighbors writes to the default slots (.uns["neighbors"],
+# .obsp["distances"], .obsp["connectivities"]). Move them to the requested
+# slots so the output matches the configured argument names.
+neighbors_uns = dat.uns.pop("neighbors")
+neighbors_uns["distances_key"] = par["obsp_distances"]
+neighbors_uns["connectivities_key"] = par["obsp_connectivities"]
+dat.uns[par["uns_output"]] = neighbors_uns
+dat.obsp[par["obsp_distances"]] = dat.obsp.pop("distances")
+dat.obsp[par["obsp_connectivities"]] = dat.obsp.pop("connectivities")
 
 logger.info(
     "Writing to file to %s with compression %s",
