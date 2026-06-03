@@ -12,6 +12,7 @@ par = {
     "obsp_distances": "distances",
     "obsp_connectivities": "connectivities",
     "num_neighbors": 15,
+    "n_pcs": None,
     "metric": "euclidean",
     "algorithm": "brute",
     "method": "umap",
@@ -46,6 +47,7 @@ logger.info("Computing a neighborhood graph.")
 rsc.pp.neighbors(
     dat,
     n_neighbors=par["num_neighbors"],
+    n_pcs=par["n_pcs"],
     use_rep=par["obsm_input"],
     random_state=par["seed"],
     algorithm=par["algorithm"],

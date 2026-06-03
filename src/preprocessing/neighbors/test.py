@@ -155,6 +155,46 @@ def test_num_neighbors(run_component, random_h5mu_path):
     assert rna_small.uns["neighbors"]["params"]["n_neighbors"] == 5
 
 
+def test_n_pcs(run_component, random_h5mu_path):
+    """Restricting --n_pcs to a subset of dimensions should change the graph
+    compared to using all available dimensions."""
+    input_with_pca = _prepare_input_with_pca(random_h5mu_path)
+    output_full = random_h5mu_path()
+    output_subset = random_h5mu_path()
+
+    run_component(
+        [
+            "--input",
+            str(input_with_pca),
+            "--output",
+            output_full,
+            "--output_compression",
+            "gzip",
+        ]
+    )
+    run_component(
+        [
+            "--input",
+            str(input_with_pca),
+            "--output",
+            output_subset,
+            "--output_compression",
+            "gzip",
+            "--n_pcs",
+            "10",
+        ]
+    )
+
+    rna_full = mu.read_h5mu(output_full).mod["rna"]
+    rna_subset = mu.read_h5mu(output_subset).mod["rna"]
+
+    dist_full = rna_full.obsp["distances"]
+    dist_subset = rna_subset.obsp["distances"]
+    assert (dist_full != dist_subset).nnz > 0, (
+        "Using fewer PCs should produce a different distance matrix"
+    )
+
+
 def test_obsm_input(run_component, random_h5mu_path):
     """Passing a non-default obsm slot should be used as the neighbor input."""
     mdata = mu.read_h5mu(input)

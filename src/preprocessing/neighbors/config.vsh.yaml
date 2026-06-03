@@ -75,6 +75,13 @@ argument_groups:
           values result in more local data being preserved. In general
           values should be in the range 2 to 100.
 
+      - name: "--n_pcs"
+        type: integer
+        required: false
+        description: |
+          Number of dimensions of the `--obsm_input` representation to use.
+          If not set, all available dimensions are used.
+
       - name: "--metric"
         type: string
         default: "euclidean"
