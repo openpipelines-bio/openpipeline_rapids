@@ -7,10 +7,10 @@ from openpipeline_testutils.asserters import assert_annotation_objects_equal
 
 ## VIASH START
 meta = {
-    "name": "find_neighbors",
+    "name": "neighbors",
     "resources_dir": "resources_test/",
-    "config": "src/neighbors/find_neighbors/config.vsh.yaml",
-    "executable": "target/docker/neighbors/find_neighbors/find_neighbors",
+    "config": "src/preprocessing/neighbors/config.vsh.yaml",
+    "executable": "target/docker/preprocessing/neighbors/neighbors",
 }
 ## VIASH END
 

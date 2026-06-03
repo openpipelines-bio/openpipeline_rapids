@@ -16,7 +16,7 @@ par = {
     "seed": 0,
     "output_compression": None,
 }
-meta = {"name": "find_neighbors"}
+meta = {"name": "neighbors"}
 ## VIASH END
 
 sys.path.append(meta["resources_dir"])

@@ -1,5 +1,5 @@
-name: find_neighbors
-namespace: "neighbors"
+name: neighbors
+namespace: "preprocessing"
 scope: "public"
 description: |
   Compute a neighborhood graph of observations [McInnes18].
