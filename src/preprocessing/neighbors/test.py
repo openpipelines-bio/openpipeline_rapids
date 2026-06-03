@@ -224,5 +224,40 @@ def test_obsm_input(run_component, random_h5mu_path):
     assert "connectivities" in rna_out.obsp
 
 
+@pytest.mark.parametrize(
+    "algorithm", ["brute", "cagra", "ivfflat", "ivfpq", "nn_descent"]
+)
+def test_algorithm(run_component, random_h5mu_path, algorithm):
+    """Each supported KNN algorithm should run and produce a valid neighbor
+    graph. The approximate algorithms are not expected to match brute exactly,
+    so we only assert that the output graph has the right structure."""
+    input_with_pca = _prepare_input_with_pca(random_h5mu_path)
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            str(input_with_pca),
+            "--output",
+            output,
+            "--output_compression",
+            "gzip",
+            "--algorithm",
+            algorithm,
+        ]
+    )
+
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    n_obs = rna_out.n_obs
+
+    assert "neighbors" in rna_out.uns, "Output should have .uns['neighbors']"
+    distances = rna_out.obsp["distances"]
+    connectivities = rna_out.obsp["connectivities"]
+    assert distances.shape == (n_obs, n_obs)
+    assert connectivities.shape == (n_obs, n_obs)
+    # KNN graph: at most num_neighbors neighbors per observation
+    nnz_per_row = (distances != 0).sum(axis=1)
+    assert int(np.max(nnz_per_row)) <= 15
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
