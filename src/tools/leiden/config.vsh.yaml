@@ -1,18 +1,17 @@
 name: leiden
-namespace: "cluster"
+namespace: "tools"
 scope: "public"
 description: |
-  Cluster cells using the Leiden algorithm [Traag18] implemented in the
-  rapids-singlecell framework on top of cuGraph. Leiden is an improved
-  version of the Louvain algorithm [Blondel08]. It has been proposed for
-  single-cell analysis by [Levine15].
+  Cluster cells using the Leiden algorithm, the GPU-accelerated
+  rapids-singlecell implementation built on cuGraph. Leiden is an improved
+  version of the Louvain algorithm and was proposed for single-cell analysis
+  by Levine et al. (2015). Requires a precomputed neighbor graph (e.g. from
+  the `find_neighbors` component).
 
-  This requires having ran a neighbors component first (e.g.
-  `neighbors/find_neighbors` or `neighbors/bbknn`).
-
-  [Blondel08]: Blondel et al. (2008), Fast unfolding of communities in large networks, J. Stat. Mech.
-  [Levine15]: Levine et al. (2015), Data-Driven Phenotypic Dissection of AML Reveals Progenitor-like Cells that Correlate with Prognosis, Cell.
-  [Traag18]: Traag et al. (2018), From Louvain to Leiden: guaranteeing well-connected communities, arXiv.
+  References:
+    - Traag et al. (2018), From Louvain to Leiden: guaranteeing well-connected communities, arXiv:1810.08473.
+    - Blondel et al. (2008), Fast unfolding of communities in large networks, J. Stat. Mech.
+    - Levine et al. (2015), Data-Driven Phenotypic Dissection of AML Reveals Progenitor-like Cells that Correlate with Prognosis, Cell.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -87,7 +86,7 @@ argument_groups:
           Scales modularity gain in the Leiden refinement phase, used to
           compute the probability of joining a random Leiden community.
 
-      - name: "--seed"
+      - name: "--random_state"
         type: integer
         required: false
         default: 0

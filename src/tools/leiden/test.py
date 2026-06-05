@@ -6,8 +6,8 @@ import mudata as mu
 meta = {
     "name": "leiden",
     "resources_dir": "resources_test/",
-    "config": "src/cluster/leiden/config.vsh.yaml",
-    "executable": "target/docker/cluster/leiden/leiden",
+    "config": "src/tools/leiden/config.vsh.yaml",
+    "executable": "target/docker/tools/leiden/leiden",
 }
 ## VIASH END
 
@@ -141,7 +141,7 @@ def test_seed(run_component, random_h5mu_path):
                 "gzip",
                 "--resolution",
                 "1.0",
-                "--seed",
+                "--random_state",
                 "42",
             ]
         )
@@ -149,7 +149,7 @@ def test_seed(run_component, random_h5mu_path):
     leiden_a = mu.read_h5mu(output_a).mod["rna"].obsm["leiden"]
     leiden_b = mu.read_h5mu(output_b).mod["rna"].obsm["leiden"]
     assert leiden_a.equals(leiden_b), (
-        "Identical --seed should produce identical cluster assignments."
+        "Identical --random_state should produce identical cluster assignments."
     )
 
 

@@ -13,7 +13,7 @@ par = {
     "resolution": [1.0, 0.25],
     "n_iterations": 100,
     "theta": 1.0,
-    "seed": 0,
+    "random_state": 0,
     "use_weights": True,
     "output_compression": None,
 }
@@ -50,7 +50,7 @@ for resolution in par["resolution"]:
     rsc.tl.leiden(
         dat,
         resolution=resolution,
-        random_state=par["seed"],
+        random_state=par["random_state"],
         theta=par["theta"],
         n_iterations=par["n_iterations"],
         use_weights=par["use_weights"],
