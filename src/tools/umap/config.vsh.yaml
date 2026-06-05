@@ -1,16 +1,12 @@
 name: umap
-namespace: "dimred"
+namespace: "tools"
 scope: "public"
 description: |
   UMAP (Uniform Manifold Approximation and Projection) is a manifold learning
-  technique suitable for visualizing high-dimensional data. Besides tending to
-  be faster than tSNE, it optimizes the embedding such that it best reflects
-  the topology of the data, which we represent throughout Scanpy using a
-  neighborhood graph. tSNE, by contrast, optimizes the distribution of
-  nearest-neighbor distances in the embedding such that these best match the
-  distribution of distances in the high-dimensional space. We use the
-  implementation of umap-learn [McInnes18]. For a few comparisons of UMAP with
-  tSNE, see this preprint.
+  technique for visualizing high-dimensional data. It optimizes the
+  low-dimensional embedding so that it best reflects the topology of the data,
+  as represented by a precomputed neighborhood graph (e.g. from the
+  `find_neighbors` component). See McInnes et al. (2018), arXiv:1802.03426.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -51,7 +47,7 @@ argument_groups:
 
       - name: "--obsm_output"
         type: string
-        description: The pre/postfix under which to store the UMAP results.
+        description: In which .obsm slot to store the resulting UMAP embedding.
         default: "X_umap"
 
   - name: Options

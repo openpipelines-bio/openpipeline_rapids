@@ -7,8 +7,8 @@ import mudata as mu
 meta = {
     "name": "umap",
     "resources_dir": "resources_test/",
-    "config": "src/dimred/umap/config.vsh.yaml",
-    "executable": "target/docker/dimred/umap/umap",
+    "config": "src/tools/umap/config.vsh.yaml",
+    "executable": "target/docker/tools/umap/umap",
 }
 ## VIASH END
 
