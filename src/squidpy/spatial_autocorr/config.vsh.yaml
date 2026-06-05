@@ -1,15 +1,16 @@
 name: spatial_autocorr
-namespace: "feature_annotation"
+namespace: "squidpy"
 scope: "public"
 description: |
   Calculate spatial autocorrelation for genes using Moran's I or Geary's C
-  [Rey09] on a precomputed spatial neighborhood graph. Allows identification
-  of spatially variable features.
+  on a precomputed spatial neighborhood graph. Allows identification of
+  spatially variable features.
 
   Requires a spatial connectivities matrix in .obsp, e.g. produced by
   `squidpy.gr.spatial_neighbors` or an equivalent GPU implementation.
 
-  [Rey09]: Rey & Anselin (2009), PySAL: A Python Library of Spatial Analytical Methods, The Review of Regional Studies.
+  The result is written to .uns as a DataFrame: `moranI` when `--mode` is
+  'moran', or `gearyC` when `--mode` is 'geary'.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -44,7 +45,7 @@ argument_groups:
         description: In which .obsp slot the spatial connectivities can be found.
         default: "spatial_connectivities"
 
-      - name: "--genes"
+      - name: "--input_genes"
         type: string
         multiple: true
         multiple_sep: ","
@@ -53,11 +54,6 @@ argument_groups:
           Subset of genes (from .var_names) to compute autocorrelation for.
           If unset, all genes in .var['highly_variable'] (if present) or all
           genes will be used.
-
-      - name: "--use_raw"
-        type: boolean_true
-        description: |
-          If set, use the .raw attribute of the modality for the analysis.
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]

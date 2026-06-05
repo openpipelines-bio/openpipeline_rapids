@@ -8,8 +8,8 @@ import scanpy as sc
 meta = {
     "name": "spatial_autocorr",
     "resources_dir": "resources_test/",
-    "config": "src/feature_annotation/spatial_autocorr/config.vsh.yaml",
-    "executable": "target/docker/feature_annotation/spatial_autocorr/spatial_autocorr",
+    "config": "src/squidpy/spatial_autocorr/config.vsh.yaml",
+    "executable": "target/docker/squidpy/spatial_autocorr/spatial_autocorr",
 }
 ## VIASH END
 
@@ -89,7 +89,7 @@ def test_geary(run_component, random_h5mu_path, filtered_input):
 
 
 def test_genes_subset(run_component, random_h5mu_path, filtered_input):
-    """Passing --genes should restrict the analysis to that subset."""
+    """Passing --input_genes should restrict the analysis to that subset."""
     mu_input = mu.read_h5mu(filtered_input)
     genes = list(mu_input.mod["rna"].var_names[:5])
 
@@ -106,7 +106,7 @@ def test_genes_subset(run_component, random_h5mu_path, filtered_input):
             "moran",
             "--n_perms",
             "10",
-            "--genes",
+            "--input_genes",
             ",".join(genes),
         ]
     )

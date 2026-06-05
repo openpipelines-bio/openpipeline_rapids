@@ -9,8 +9,7 @@ par = {
     "modality": "rna",
     "layer": None,
     "obsp_connectivities": "spatial_connectivities",
-    "genes": None,
-    "use_raw": False,
+    "input_genes": None,
     "mode": "moran",
     "n_perms": None,
     "transformation": True,
@@ -44,7 +43,7 @@ if par["layer"] and par["layer"] not in dat.layers.keys():
         f"Layer '{par['layer']}' not found in modality '{par['modality']}'."
     )
 
-genes = par["genes"]
+genes = par["input_genes"]
 if genes is not None and len(genes) == 0:
     genes = None
 
@@ -62,7 +61,6 @@ rsc.gr.spatial_autocorr(
     two_tailed=par["two_tailed"],
     corr_method=corr_method,
     layer=par["layer"],
-    use_raw=par["use_raw"],
     use_sparse=par["use_sparse"],
 )
 
