@@ -1,24 +1,10 @@
-name: "normalize_total"
-namespace: "preprocessing"
+name: "leiden"
+namespace: "tools"
 version: "build_main"
 authors:
-- name: "Luke Zappia"
-  roles:
-  - "author"
-  info:
-    role: "Contributor"
-    links:
-      email: "luke@data-intuitive.com"
-      github: "lazappi"
-      orcid: "0000-0001-7744-8565"
-      linkedin: "lazappi"
-    organizations:
-    - name: "Data Intuitive"
-      href: "https://www.data-intuitive.com"
-      role: "Data Science Engineer"
 - name: "Jakub Majercik"
   roles:
-  - "contributor"
+  - "author"
   info:
     role: "Contributor"
     links:
@@ -57,9 +43,11 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--input_layer"
-    description: "Input layer to use. By default, X is normalized."
+    name: "--obsp_connectivities"
+    description: "In which .obsp slot the neighbor connectivities can be found."
     info: null
+    default:
+    - "connectivities"
     required: false
     direction: "input"
     multiple: false
@@ -81,9 +69,12 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--output_layer"
-    description: "Output layer to use. By default, use X."
+    name: "--obsm_name"
+    description: "Name of the .obsm key under which to add the cluster labels.\nThe\
+      \ name of the columns in the matrix will correspond to the\nresolutions.\n"
     info: null
+    default:
+    - "leiden"
     required: false
     direction: "input"
     multiple: false
@@ -104,31 +95,59 @@ argument_groups:
     multiple_sep: ";"
 - name: "Options"
   arguments:
-  - type: "integer"
-    name: "--target_sum"
-    description: "If None, after normalization, each observation (cell) has a total\n\
-      count equal to the median of total counts for observations (cells)\nbefore normalization.\n"
+  - type: "double"
+    name: "--resolution"
+    description: "A parameter value controlling the coarseness of the clustering.\n\
+      Higher values lead to more clusters. Multiple values will result\nin clustering\
+      \ being performed multiple times.\n"
     info: null
+    default:
+    - 1.0
+    required: true
+    direction: "input"
+    multiple: true
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--n_iterations"
+    description: "Maximum number of iterations/levels of the Leiden algorithm. The\n\
+      algorithm will terminate after no more than this many iterations.\n"
+    info: null
+    default:
+    - 100
     required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
-  - type: "boolean_true"
-    name: "--exclude_highly_expressed"
-    description: "Exclude (very) highly expressed genes for the computation of the\n\
-      normalization factor (size factor) for each cell. A gene is\nconsidered highly\
-      \ expressed if it has more than max_fraction of\nthe total counts in at least\
-      \ one cell. The not-excluded genes\nwill sum up to target_sum.\n"
-    info: null
-    direction: "input"
   - type: "double"
-    name: "--max_fraction"
-    description: "If exclude_highly_expressed=True, consider cells as highly\nexpressed\
-      \ that have more counts than max_fraction of the original\ntotal counts in at\
-      \ least one cell.\n"
+    name: "--theta"
+    description: "Scales modularity gain in the Leiden refinement phase, used to\n\
+      compute the probability of joining a random Leiden community.\n"
     info: null
     default:
-    - 0.05
+    - 1.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--random_state"
+    description: "Random seed to initialise the optimization. Use this to increase\n\
+      reproducibility.\n"
+    info: null
+    default:
+    - 0
+    required: false
+    min: 0
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "boolean"
+    name: "--use_weights"
+    description: "If true, edge weights from the graph are used in the computation\n\
+      (placing more emphasis on stronger edges).\n"
+    info: null
+    default:
+    - true
     required: false
     direction: "input"
     multiple: false
@@ -144,12 +163,10 @@ resources:
 - type: "file"
   path: "nextflow_labels.config"
   dest: "nextflow_labels.config"
-description: "Normalize counts per cell.\n\nNormalize each cell by total counts over\
-  \ all genes, so that every cell has\nthe same total count after normalization. If\
-  \ choosing target_sum=1e6, this\nis CPM normalization.\n\nIf exclude_highly_expressed=True,\
-  \ very highly expressed genes are excluded\nfrom the computation of the normalization\
-  \ factor (size factor) for each\ncell. This is meaningful as these can strongly\
-  \ influence the resulting\nnormalized values for all other genes [Weinreb17].\n"
+description: "Cluster cells using the Leiden algorithm, the GPU-accelerated\nrapids-singlecell\
+  \ implementation built on cuGraph. Leiden is an improved\nversion of the Louvain\
+  \ algorithm. Requires a precomputed neighbor graph\n(e.g. from the `find_neighbors`\
+  \ component).\n"
 test_resources:
 - type: "python_script"
   path: "test.py"
@@ -287,11 +304,11 @@ engines:
   entrypoint: []
   cmd: null
 build_info:
-  config: "src/preprocessing/normalize_total/config.vsh.yaml"
+  config: "src/tools/leiden/config.vsh.yaml"
   runner: "nextflow"
   engine: "docker"
-  output: "target/nextflow/preprocessing/normalize_total"
-  executable: "target/nextflow/preprocessing/normalize_total/main.nf"
+  output: "target/nextflow/tools/leiden"
+  executable: "target/nextflow/tools/leiden/main.nf"
   viash_version: "0.9.7"
   git_commit: "e7809996f642812d6b3b416576ef9e47fb07f501"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"

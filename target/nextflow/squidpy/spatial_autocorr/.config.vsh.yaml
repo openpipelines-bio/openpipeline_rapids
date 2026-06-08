@@ -1,24 +1,10 @@
-name: "normalize_total"
-namespace: "preprocessing"
+name: "spatial_autocorr"
+namespace: "squidpy"
 version: "build_main"
 authors:
-- name: "Luke Zappia"
-  roles:
-  - "author"
-  info:
-    role: "Contributor"
-    links:
-      email: "luke@data-intuitive.com"
-      github: "lazappi"
-      orcid: "0000-0001-7744-8565"
-      linkedin: "lazappi"
-    organizations:
-    - name: "Data Intuitive"
-      href: "https://www.data-intuitive.com"
-      role: "Data Science Engineer"
 - name: "Jakub Majercik"
   roles:
-  - "contributor"
+  - "author"
   info:
     role: "Contributor"
     links:
@@ -57,13 +43,34 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--input_layer"
-    description: "Input layer to use. By default, X is normalized."
+    name: "--layer"
+    description: "Layer in the modality to use for the autocorrelation analysis.\n\
+      If unset, .X is used.\n"
     info: null
     required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
+  - type: "string"
+    name: "--obsp_connectivities"
+    description: "In which .obsp slot the spatial connectivities can be found."
+    info: null
+    default:
+    - "spatial_connectivities"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--input_genes"
+    description: "Subset of genes (from .var_names) to compute autocorrelation for.\n\
+      If unset, all genes in .var['highly_variable'] (if present) or all\ngenes will\
+      \ be used.\n"
+    info: null
+    required: false
+    direction: "input"
+    multiple: true
+    multiple_sep: ","
 - name: "Outputs"
   arguments:
   - type: "file"
@@ -78,14 +85,6 @@ argument_groups:
     create_parent: true
     required: true
     direction: "output"
-    multiple: false
-    multiple_sep: ";"
-  - type: "string"
-    name: "--output_layer"
-    description: "Output layer to use. By default, use X."
-    info: null
-    required: false
-    direction: "input"
     multiple: false
     multiple_sep: ";"
   - type: "string"
@@ -104,31 +103,65 @@ argument_groups:
     multiple_sep: ";"
 - name: "Options"
   arguments:
-  - type: "integer"
-    name: "--target_sum"
-    description: "If None, after normalization, each observation (cell) has a total\n\
-      count equal to the median of total counts for observations (cells)\nbefore normalization.\n"
+  - type: "string"
+    name: "--mode"
+    description: "Spatial autocorrelation statistic to compute. 'moran' for Moran's\
+      \ I,\n'geary' for Geary's C.\n"
     info: null
+    default:
+    - "moran"
+    required: false
+    choices:
+    - "moran"
+    - "geary"
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--n_perms"
+    description: "Number of permutations for the permutation-based p-value\ncalculation.\
+      \ If unset, only analytical p-values are computed.\n"
+    info: null
+    required: false
+    min: 1
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "boolean"
+    name: "--transformation"
+    description: "If true, row-normalize the connectivity matrix before computation.\n"
+    info: null
+    default:
+    - true
     required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
   - type: "boolean_true"
-    name: "--exclude_highly_expressed"
-    description: "Exclude (very) highly expressed genes for the computation of the\n\
-      normalization factor (size factor) for each cell. A gene is\nconsidered highly\
-      \ expressed if it has more than max_fraction of\nthe total counts in at least\
-      \ one cell. The not-excluded genes\nwill sum up to target_sum.\n"
+    name: "--two_tailed"
+    description: "If set, compute two-tailed p-values from the permutation test\n\
+      instead of one-tailed.\n"
     info: null
     direction: "input"
-  - type: "double"
-    name: "--max_fraction"
-    description: "If exclude_highly_expressed=True, consider cells as highly\nexpressed\
-      \ that have more counts than max_fraction of the original\ntotal counts in at\
-      \ least one cell.\n"
+  - type: "string"
+    name: "--corr_method"
+    description: "Multiple-testing correction method to apply to p-values. Any method\n\
+      supported by `statsmodels.stats.multitest.multipletests`, e.g.\n'fdr_bh', 'fdr_by',\
+      \ 'bonferroni', 'holm'. Pass an empty string to\ndisable correction.\n"
     info: null
     default:
-    - 0.05
+    - "fdr_bh"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "boolean"
+    name: "--use_sparse"
+    description: "If true, use a sparse representation of the expression matrix on\n\
+      the GPU.\n"
+    info: null
+    default:
+    - true
     required: false
     direction: "input"
     multiple: false
@@ -144,18 +177,18 @@ resources:
 - type: "file"
   path: "nextflow_labels.config"
   dest: "nextflow_labels.config"
-description: "Normalize counts per cell.\n\nNormalize each cell by total counts over\
-  \ all genes, so that every cell has\nthe same total count after normalization. If\
-  \ choosing target_sum=1e6, this\nis CPM normalization.\n\nIf exclude_highly_expressed=True,\
-  \ very highly expressed genes are excluded\nfrom the computation of the normalization\
-  \ factor (size factor) for each\ncell. This is meaningful as these can strongly\
-  \ influence the resulting\nnormalized values for all other genes [Weinreb17].\n"
+description: "Calculate spatial autocorrelation for genes using Moran's I or Geary's\
+  \ C\non a precomputed spatial neighborhood graph. Allows identification of\nspatially\
+  \ variable features.\n\nRequires a spatial connectivities matrix in .obsp, e.g.\
+  \ produced by\n`squidpy.gr.spatial_neighbors` or an equivalent GPU implementation.\n\
+  \nThe result is written to .uns as a DataFrame: `moranI` when `--mode` is\n'moran',\
+  \ or `gearyC` when `--mode` is 'geary'.\n"
 test_resources:
 - type: "python_script"
   path: "test.py"
   is_executable: true
 - type: "file"
-  path: "pbmc_1k_protein_v3"
+  path: "xenium"
 info: null
 status: "enabled"
 scope:
@@ -287,11 +320,11 @@ engines:
   entrypoint: []
   cmd: null
 build_info:
-  config: "src/preprocessing/normalize_total/config.vsh.yaml"
+  config: "src/squidpy/spatial_autocorr/config.vsh.yaml"
   runner: "nextflow"
   engine: "docker"
-  output: "target/nextflow/preprocessing/normalize_total"
-  executable: "target/nextflow/preprocessing/normalize_total/main.nf"
+  output: "target/nextflow/squidpy/spatial_autocorr"
+  executable: "target/nextflow/squidpy/spatial_autocorr/main.nf"
   viash_version: "0.9.7"
   git_commit: "e7809996f642812d6b3b416576ef9e47fb07f501"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"

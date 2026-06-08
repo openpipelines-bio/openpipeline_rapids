@@ -1,0 +1,137 @@
+name: spatial_autocorr
+namespace: "squidpy"
+scope: "public"
+description: |
+  Calculate spatial autocorrelation for genes using Moran's I or Geary's C
+  on a precomputed spatial neighborhood graph. Allows identification of
+  spatially variable features.
+
+  Requires a spatial connectivities matrix in .obsp, e.g. produced by
+  `squidpy.gr.spatial_neighbors` or an equivalent GPU implementation.
+
+  The result is written to .uns as a DataFrame: `moranI` when `--mode` is
+  'moran', or `gearyC` when `--mode` is 'geary'.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--layer"
+        type: string
+        required: false
+        description: |
+          Layer in the modality to use for the autocorrelation analysis.
+          If unset, .X is used.
+
+      - name: "--obsp_connectivities"
+        type: string
+        description: In which .obsp slot the spatial connectivities can be found.
+        default: "spatial_connectivities"
+
+      - name: "--input_genes"
+        type: string
+        multiple: true
+        multiple_sep: ","
+        required: false
+        description: |
+          Subset of genes (from .var_names) to compute autocorrelation for.
+          If unset, all genes in .var['highly_variable'] (if present) or all
+          genes will be used.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+  - name: Options
+    arguments:
+      - name: "--mode"
+        type: string
+        choices: [moran, geary]
+        default: "moran"
+        description: |
+          Spatial autocorrelation statistic to compute. 'moran' for Moran's I,
+          'geary' for Geary's C.
+
+      - name: "--n_perms"
+        type: integer
+        required: false
+        description: |
+          Number of permutations for the permutation-based p-value
+          calculation. If unset, only analytical p-values are computed.
+        min: 1
+
+      - name: "--transformation"
+        type: boolean
+        default: true
+        description: |
+          If true, row-normalize the connectivity matrix before computation.
+
+      - name: "--two_tailed"
+        type: boolean_true
+        description: |
+          If set, compute two-tailed p-values from the permutation test
+          instead of one-tailed.
+
+      - name: "--corr_method"
+        type: string
+        default: "fdr_bh"
+        description: |
+          Multiple-testing correction method to apply to p-values. Any method
+          supported by `statsmodels.stats.multitest.multipletests`, e.g.
+          'fdr_bh', 'fdr_by', 'bonferroni', 'holm'. Pass an empty string to
+          disable correction.
+
+      - name: "--use_sparse"
+        type: boolean
+        default: true
+        description: |
+          If true, use a sparse representation of the expression matrix on
+          the GPU.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/xenium
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [midmem, lowcpu, highdisk, gpu]

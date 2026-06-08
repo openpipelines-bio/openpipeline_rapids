@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing highly_variable_genes"
-LABEL org.opencontainers.image.created="2026-06-08T09:31:56Z"
+LABEL org.opencontainers.image.created="2026-06-08T09:33:08Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="2509dcf39cd3a5c729361754b3cbd443449ad125"
+LABEL org.opencontainers.image.revision="e7809996f642812d6b3b416576ef9e47fb07f501"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER

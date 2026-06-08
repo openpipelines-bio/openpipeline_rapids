@@ -3549,7 +3549,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/highly_variable_genes",
     "viash_version" : "0.9.7",
-    "git_commit" : "2509dcf39cd3a5c729361754b3cbd443449ad125",
+    "git_commit" : "e7809996f642812d6b3b416576ef9e47fb07f501",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3563,6 +3563,11 @@ meta = [
           "type" : "s3",
           "path" : "s3://openpipelines-data/pbmc_1k_protein_v3",
           "dest" : "resources_test/pbmc_1k_protein_v3"
+        },
+        {
+          "type" : "s3",
+          "path" : "s3://openpipelines-bio/openpipeline_spatial/resources_test/xenium",
+          "dest" : "resources_test/xenium"
         }
       ],
       "nextflow_labels_ci" : [

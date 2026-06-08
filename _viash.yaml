@@ -23,6 +23,9 @@ info:
     - type: s3
       path: s3://openpipelines-data/pbmc_1k_protein_v3
       dest: resources_test/pbmc_1k_protein_v3
+    - type: s3
+      path: s3://openpipelines-bio/openpipeline_spatial/resources_test/xenium
+      dest: resources_test/xenium
   nextflow_labels_ci:
     - path: src/workflows/utils/labels_ci.config
       description: Adds the correct memory and CPU labels when running on the Viash Hub CI.
