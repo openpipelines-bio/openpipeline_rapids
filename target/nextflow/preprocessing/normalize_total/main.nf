@@ -3420,7 +3420,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/normalize_total",
     "viash_version" : "0.9.7",
-    "git_commit" : "d09b966c36e878a7ae2663850b0b6589cec000f2",
+    "git_commit" : "2509dcf39cd3a5c729361754b3cbd443449ad125",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
