@@ -1,24 +1,10 @@
-name: "log1p"
+name: "neighbors"
 namespace: "preprocessing"
 version: "build_main"
 authors:
-- name: "Luke Zappia"
-  roles:
-  - "author"
-  info:
-    role: "Contributor"
-    links:
-      email: "luke@data-intuitive.com"
-      github: "lazappi"
-      orcid: "0000-0001-7744-8565"
-      linkedin: "lazappi"
-    organizations:
-    - name: "Data Intuitive"
-      href: "https://www.data-intuitive.com"
-      role: "Data Science Engineer"
 - name: "Jakub Majercik"
   roles:
-  - "contributor"
+  - "author"
   info:
     role: "Contributor"
     links:
@@ -57,17 +43,11 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--input_layer"
-    description: "Input layer to use. If not set, .X is used."
+    name: "--obsm_input"
+    description: "Which .obsm slot to use as a starting embedding (use_rep)."
     info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "string"
-    name: "--input_obsm"
-    description: "Entry in .obsm to log-transform. Mutually exclusive with\n--input_layer.\n"
-    info: null
+    default:
+    - "X_pca"
     required: false
     direction: "input"
     multiple: false
@@ -78,7 +58,7 @@ argument_groups:
     name: "--output"
     alternatives:
     - "-o"
-    description: "Output h5mu file."
+    description: "Output h5mu file containing the found neighbors."
     info: null
     default:
     - "output.h5mu"
@@ -89,21 +69,33 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--output_layer"
-    description: "Output layer to write the transformed matrix to. If not set:\nwhen\
-      \ --input_layer is unset, .X is modified in-place; when\n--input_layer is set,\
-      \ that input layer is modified in-place.\n"
+    name: "--uns_output"
+    description: "In which .uns slot to store the neighbor graph metadata."
     info: null
+    default:
+    - "neighbors"
     required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--output_obsm"
-    description: "Output entry in .obsm to write the transformed matrix to. Only\n\
-      valid when --input_obsm is set. If not set, the input .obsm entry\nis modified\
-      \ in-place. Mutually exclusive with --output_layer.\n"
+    name: "--obsp_distances"
+    description: "In which .obsp slot to store the distance matrix between the resulting\
+      \ neighbors."
     info: null
+    default:
+    - "distances"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--obsp_connectivities"
+    description: "In which .obsp slot to store the connectivities matrix between the\
+      \ resulting neighbors."
+    info: null
+    default:
+    - "connectivities"
     required: false
     direction: "input"
     multiple: false
@@ -124,10 +116,105 @@ argument_groups:
     multiple_sep: ";"
 - name: "Options"
   arguments:
-  - type: "double"
-    name: "--base"
-    description: "Base of the logarithm. If unset, the natural logarithm is used.\n"
+  - type: "integer"
+    name: "--num_neighbors"
+    description: "The size of the local neighborhood (in terms of number of\nneighboring\
+      \ data points) used for manifold approximation. Larger\nvalues result in more\
+      \ global views of the manifold, while smaller\nvalues result in more local data\
+      \ being preserved. In general\nvalues should be in the range 2 to 100.\n"
     info: null
+    default:
+    - 15
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--n_pcs"
+    description: "Number of dimensions of the `--obsm_input` representation to use.\n\
+      If not set, all available dimensions are used.\n"
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--metric"
+    description: "The distance metric to use."
+    info: null
+    default:
+    - "euclidean"
+    required: false
+    choices:
+    - "l2"
+    - "chebyshev"
+    - "manhattan"
+    - "taxicab"
+    - "correlation"
+    - "inner_product"
+    - "euclidean"
+    - "canberra"
+    - "lp"
+    - "minkowski"
+    - "cosine"
+    - "jensenshannon"
+    - "linf"
+    - "cityblock"
+    - "l1"
+    - "haversine"
+    - "sqeuclidean"
+    - "hellinger"
+    - "jaccard"
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--algorithm"
+    description: "The KNN query algorithm to use (provided by cuVS). See\nhttps://docs.rapids.ai/api/cuvs/stable/\
+      \ for details.\n  - brute: Brute-force exact search computing all pairwise distances.\n\
+      \    Exact but the most expensive; best for smaller datasets.\n  - cagra: GPU\
+      \ graph-based approximate search optimized for high\n    query throughput on\
+      \ large datasets.\n  - ivfflat: Inverted-file index that clusters vectors into\
+      \ lists and\n    only searches the nearest lists. Approximate, faster than brute.\n\
+      \  - ivfpq: Inverted-file index combined with product quantization of\n    the\
+      \ vectors. Approximate with a low memory footprint; scales to\n    very large\
+      \ datasets.\n  - nn_descent: Graph-based approximate method that iteratively\n\
+      \    refines a KNN graph from a random initialization.\n"
+    info: null
+    default:
+    - "brute"
+    required: false
+    choices:
+    - "brute"
+    - "cagra"
+    - "ivfflat"
+    - "ivfpq"
+    - "nn_descent"
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--method"
+    description: "Method for computing connectivities. 'umap' uses the UMAP fuzzy\n\
+      simplicial set, 'gauss' uses an adaptive Gaussian kernel, 'jaccard'\nuses the\
+      \ PhenoGraph Jaccard index.\n"
+    info: null
+    default:
+    - "umap"
+    required: false
+    choices:
+    - "umap"
+    - "gauss"
+    - "jaccard"
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--seed"
+    description: "A random seed."
+    info: null
+    default:
+    - 0
     required: false
     direction: "input"
     multiple: false
@@ -143,8 +230,12 @@ resources:
 - type: "file"
   path: "nextflow_labels.config"
   dest: "nextflow_labels.config"
-description: "Logarithmize the data matrix.\n\nComputes X = log(X + 1), where log\
-  \ denotes the natural logarithm unless\na different base is given.\n"
+description: "Compute a nearest-neighbor graph of observations on the GPU.\n\nWraps\
+  \ rapids-singlecell's `rsc.pp.neighbors`, whose neighbor search relies on\ncuVS\
+  \ for fast (approximate) KNN search. The resulting graph is the basis for\ndownstream\
+  \ embedding and clustering (e.g. UMAP, Leiden). Connectivities can be\nestimated\
+  \ with the UMAP fuzzy simplicial set ('umap'), an adaptive Gaussian\nkernel ('gauss'),\
+  \ or the PhenoGraph Jaccard index ('jaccard').\n"
 test_resources:
 - type: "python_script"
   path: "test.py"
@@ -282,11 +373,11 @@ engines:
   entrypoint: []
   cmd: null
 build_info:
-  config: "src/preprocessing/log1p/config.vsh.yaml"
+  config: "src/preprocessing/neighbors/config.vsh.yaml"
   runner: "nextflow"
   engine: "docker"
-  output: "target/nextflow/preprocessing/log1p"
-  executable: "target/nextflow/preprocessing/log1p/main.nf"
+  output: "target/nextflow/preprocessing/neighbors"
+  executable: "target/nextflow/preprocessing/neighbors/main.nf"
   viash_version: "0.9.7"
   git_commit: "d09b966c36e878a7ae2663850b0b6589cec000f2"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
