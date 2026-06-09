@@ -1,6 +1,5 @@
 import sys
 import rapids_singlecell as rsc
-import mudata as mu
 
 ## VIASH START
 par = {
@@ -23,12 +22,12 @@ meta = {"name": "umap"}
 
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
-from compress_h5mu import write_h5ad_to_h5mu_with_compression
+from anndata_io import read_modality, write_modality
+from gpu import on_gpu
 
 logger = setup_logger()
 
-logger.info("Reading modality %s from %s", par["modality"], par["input"])
-dat = mu.read_h5ad(par["input"], mod=par["modality"])
+dat = read_modality(par, logger)
 
 logger.info(par)
 
@@ -37,32 +36,20 @@ if par["uns_neighbors"] not in dat.uns:
         f"'{par['uns_neighbors']}' was not found in .mod['{par['modality']}'].uns."
     )
 
-logger.info("Transferring data to GPU.")
-rsc.get.anndata_to_GPU(dat)
+with on_gpu(dat, logger):
+    logger.info("Computing UMAP for modality '%s'.", par["modality"])
+    rsc.tl.umap(
+        dat,
+        min_dist=par["min_dist"],
+        spread=par["spread"],
+        n_components=par["num_components"],
+        maxiter=par["max_iter"],
+        alpha=par["alpha"],
+        negative_sample_rate=par["negative_sample_rate"],
+        init_pos=par["init_pos"],
+        random_state=par["random_state"],
+        key_added=par["obsm_output"],
+        neighbors_key=par["uns_neighbors"],
+    )
 
-logger.info("Computing UMAP for modality '%s'.", par["modality"])
-rsc.tl.umap(
-    dat,
-    min_dist=par["min_dist"],
-    spread=par["spread"],
-    n_components=par["num_components"],
-    maxiter=par["max_iter"],
-    alpha=par["alpha"],
-    negative_sample_rate=par["negative_sample_rate"],
-    init_pos=par["init_pos"],
-    random_state=par["random_state"],
-    key_added=par["obsm_output"],
-    neighbors_key=par["uns_neighbors"],
-)
-
-logger.info("Transferring data back to CPU.")
-rsc.get.anndata_to_CPU(dat)
-
-logger.info(
-    "Writing to file to %s with compression %s",
-    par["output"],
-    par["output_compression"],
-)
-write_h5ad_to_h5mu_with_compression(
-    par["output"], par["input"], par["modality"], dat, par["output_compression"]
-)
+write_modality(par, dat, logger)

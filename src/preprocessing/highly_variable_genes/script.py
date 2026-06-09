@@ -1,6 +1,5 @@
 import sys
 import rapids_singlecell as rsc
-import mudata as mu
 
 ## VIASH START
 par = {
@@ -30,13 +29,12 @@ meta = {"name": "highly_variable_genes"}
 
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
-from compress_h5mu import write_h5ad_to_h5mu_with_compression
+from anndata_io import read_modality, write_modality
+from gpu import on_gpu
 
 logger = setup_logger()
 
-logger.info("Reading modality %s from %s", par["modality"], par["input"])
-dat = mu.read_h5ad(par["input"], mod=par["modality"])
-assert dat.var_names.is_unique, "The var_names of the input modality must be be unique."
+dat = read_modality(par, logger)
 
 logger.info(par)
 
@@ -59,9 +57,6 @@ if par["flavor"] in flavors_requiring_n_top and not par["n_top_features"]:
 # rapids_singlecell.pp.highly_variable_genes writes to adata.var / adata.uns
 # rather than transforming a matrix, so we do not pre-stage an output layer;
 # we just point it at the requested input matrix via `layer`.
-
-logger.info("Transferring data to GPU.")
-rsc.get.anndata_to_GPU(dat, layer=par["input_layer"])
 
 # Build kwargs, only forwarding optional values that are set so we keep the
 # upstream defaults for everything else.
@@ -87,11 +82,9 @@ if par["clip"] is not None:
 if par["obs_batch_key"] is not None:
     hvg_kwargs["batch_key"] = par["obs_batch_key"]
 
-logger.info("Computing highly variable genes.")
-rsc.pp.highly_variable_genes(dat, **hvg_kwargs)
-
-logger.info("Transferring data back to CPU.")
-rsc.get.anndata_to_CPU(dat)
+with on_gpu(dat, logger, layer=par["input_layer"]):
+    logger.info("Computing highly variable genes.")
+    rsc.pp.highly_variable_genes(dat, **hvg_kwargs)
 
 # rapids-singlecell writes a fixed set of columns to .var. Rename/move them so
 # the output matches the configured --var_name_filter and --varm_name layout.
@@ -124,11 +117,4 @@ if par["varm_name"]:
         dat.varm[par["varm_name"]] = dat.var[metric_columns].copy()
         dat.var = dat.var.drop(columns=metric_columns)
 
-logger.info(
-    "Writing to file to %s with compression %s",
-    par["output"],
-    par["output_compression"],
-)
-write_h5ad_to_h5mu_with_compression(
-    par["output"], par["input"], par["modality"], dat, par["output_compression"]
-)
+write_modality(par, dat, logger)

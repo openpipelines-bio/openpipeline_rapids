@@ -1,6 +1,5 @@
 import sys
 import rapids_singlecell as rsc
-import mudata as mu
 import pandas as pd
 
 ## VIASH START
@@ -22,12 +21,11 @@ meta = {"name": "leiden"}
 
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
-from compress_h5mu import write_h5ad_to_h5mu_with_compression
+from anndata_io import read_modality, write_modality
 
 logger = setup_logger()
 
-logger.info("Reading modality %s from %s", par["modality"], par["input"])
-dat = mu.read_h5ad(par["input"], mod=par["modality"])
+dat = read_modality(par, logger)
 
 logger.info(par)
 
@@ -68,11 +66,4 @@ if par["obsm_name"] in dat.uns:
 
 dat.obsm[par["obsm_name"]] = pd.DataFrame(results, index=dat.obs_names)
 
-logger.info(
-    "Writing to file to %s with compression %s",
-    par["output"],
-    par["output_compression"],
-)
-write_h5ad_to_h5mu_with_compression(
-    par["output"], par["input"], par["modality"], dat, par["output_compression"]
-)
+write_modality(par, dat, logger)

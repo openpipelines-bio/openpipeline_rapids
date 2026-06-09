@@ -1,6 +1,5 @@
 import sys
 import rapids_singlecell as rsc
-import mudata as mu
 
 ## VIASH START
 par = {
@@ -23,13 +22,12 @@ meta = {"name": "pca"}
 
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
-from compress_h5mu import write_h5ad_to_h5mu_with_compression
+from anndata_io import read_modality, write_modality
+from gpu import on_gpu
 
 logger = setup_logger()
 
-logger.info("Reading modality %s from %s", par["modality"], par["input"])
-dat = mu.read_h5ad(par["input"], mod=par["modality"])
-assert dat.var_names.is_unique, "The var_names of the input modality must be be unique."
+dat = read_modality(par, logger)
 
 logger.info(par)
 
@@ -76,22 +74,17 @@ for parameter_name, (field, key) in check_exist.items():
             f"{par['modality']}, but field already exists."
         )
 
-logger.info("Transferring data to GPU.")
-rsc.get.anndata_to_GPU(dat, layer=par["layer"])
-
-logger.info("Computing PCA.")
-rsc.pp.pca(
-    dat,
-    n_comps=par["num_components"],
-    layer=par["layer"],
-    mask_var=mask_var,
-    chunked=par["chunked"],
-    chunk_size=par["chunk_size"],
-    random_state=par["seed"],
-)
-
-logger.info("Transferring data back to CPU.")
-rsc.get.anndata_to_CPU(dat)
+with on_gpu(dat, logger, layer=par["layer"]):
+    logger.info("Computing PCA.")
+    rsc.pp.pca(
+        dat,
+        n_comps=par["num_components"],
+        layer=par["layer"],
+        mask_var=mask_var,
+        chunked=par["chunked"],
+        chunk_size=par["chunk_size"],
+        random_state=par["seed"],
+    )
 
 # rapids-singlecell stores results under fixed keys ("X_pca", "PCs", "pca").
 # We rename them rather than using the `key_added` argument because that sets
@@ -107,11 +100,4 @@ dat.uns[par["uns_output"]] = {
     "variance_ratio": pca_uns["variance_ratio"],
 }
 
-logger.info(
-    "Writing to file to %s with compression %s",
-    par["output"],
-    par["output_compression"],
-)
-write_h5ad_to_h5mu_with_compression(
-    par["output"], par["input"], par["modality"], dat, par["output_compression"]
-)
+write_modality(par, dat, logger)

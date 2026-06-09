@@ -1,6 +1,5 @@
 import sys
 import rapids_singlecell as rsc
-import mudata as mu
 
 ## VIASH START
 par = {
@@ -23,12 +22,11 @@ meta = {"name": "spatial_autocorr"}
 
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
-from compress_h5mu import write_h5ad_to_h5mu_with_compression
+from anndata_io import read_modality, write_modality
 
 logger = setup_logger()
 
-logger.info("Reading modality %s from %s", par["modality"], par["input"])
-dat = mu.read_h5ad(par["input"], mod=par["modality"])
+dat = read_modality(par, logger)
 
 logger.info(par)
 
@@ -74,11 +72,4 @@ if result_key in dat.uns:
 else:
     logger.warning("Expected key '%s' not found in .uns after computation.", result_key)
 
-logger.info(
-    "Writing to file to %s with compression %s",
-    par["output"],
-    par["output_compression"],
-)
-write_h5ad_to_h5mu_with_compression(
-    par["output"], par["input"], par["modality"], dat, par["output_compression"]
-)
+write_modality(par, dat, logger)
