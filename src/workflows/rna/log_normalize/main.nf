@@ -4,27 +4,40 @@ workflow run_wf {
 
   main:
   output_ch = input_ch
-    // Normalize raw counts straight into the final output layer, leaving the
-    // source matrix (.X or --layer) untouched.
     | normalize_total.run(
       fromState: [
         "input": "input",
         "modality": "modality",
         "input_layer": "layer",
-        "target_sum": "target_sum",
-        "output_layer": "output_layer"
+        "target_sum": "target_sum"
+      ],
+      args: [
+        "output_layer": "normalized"
       ],
       toState: [
         "input": "output"
       ]
     )
-    // Log-transform the normalized counts in place in the output layer.
     | log1p.run(
       fromState: [
         "input": "input",
         "modality": "modality",
-        "input_layer": "output_layer",
-        "output_compression": "output_compression"
+        "output_layer": "output_layer"
+      ],
+      args: [
+        "input_layer": "normalized"
+      ],
+      toState: [
+        "input": "output"
+      ]
+    )
+    | delete_layer.run(
+      fromState: [
+        "input": "input",
+        "modality": "modality"
+      ],
+      args: [
+        "layer": "normalized"
       ],
       toState: [
         "output": "output"
