@@ -1,0 +1,79 @@
+name: log_normalize
+namespace: "workflows/rna"
+scope: "public"
+description: |
+  Performs normalization and subsequent log-transformation of raw count data.
+
+  Runs `normalize_total` followed by `log1p`, writing the log-normalized
+  counts to the requested output layer. The source matrix (.X or --layer)
+  is left untouched.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        type: file
+        direction: input
+        required: true
+        description: Input h5mu file.
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--layer"
+        type: string
+        required: false
+        description: "Input layer containing raw counts. If not set, .X is used."
+
+  - name: Options
+    arguments:
+      - name: "--target_sum"
+        type: integer
+        min: 1
+        required: false
+        description: |
+          Normalize total counts to the specified amount. If not set, after
+          normalization each observation (cell) will have a total count equal
+          to the median of total counts for observations (cells) before
+          normalization.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        type: file
+        direction: output
+        required: true
+        description: Destination path to the output.
+        example: output.h5mu
+
+      - name: "--output_layer"
+        type: string
+        required: true
+        description: Layer to write the log-normalized counts to.
+
+dependencies:
+  - name: preprocessing/normalize_total
+  - name: preprocessing/log1p
+
+resources:
+  - type: nextflow_script
+    path: main.nf
+    entrypoint: run_wf
+
+test_resources:
+  - type: nextflow_script
+    path: test.nf
+    entrypoint: test_wf
+  - path: /resources_test/pbmc_1k_protein_v3
+
+runners:
+  - type: nextflow
