@@ -65,7 +65,7 @@ argument_groups:
           Number of observations to include in each chunk. Required if
           chunked=True was passed.
 
-      - name: "--seed"
+      - name: "--random_state"
         type: integer
         min: 0
         required: false
