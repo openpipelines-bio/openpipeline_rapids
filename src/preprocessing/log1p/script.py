@@ -63,8 +63,10 @@ if par["input_obsm"] and not par["output_obsm"]:
         par["input_obsm"],
     )
 
-# anndata_to_GPU has no obsm-specific argument; convert_all moves .obsm too.
-gpu_kwargs = {"convert_all": True} if target_obsm else {"layer": target_layer}
+# anndata_to_GPU never moves .obsm, so on_gpu transfers the obsm slot itself.
+gpu_kwargs = (
+    {"slots": {"obsm": target_obsm}} if target_obsm else {"layer": target_layer}
+)
 with on_gpu(dat, logger, **gpu_kwargs):
     logger.info("Performing log1p transformation.")
     rsc.pp.log1p(
