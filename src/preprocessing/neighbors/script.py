@@ -16,7 +16,7 @@ par = {
     "metric": "euclidean",
     "algorithm": "brute",
     "method": "umap",
-    "seed": 0,
+    "random_state": 0,
     "output_compression": None,
 }
 meta = {"name": "neighbors"}
@@ -49,7 +49,7 @@ rsc.pp.neighbors(
     n_neighbors=par["num_neighbors"],
     n_pcs=par["n_pcs"],
     use_rep=par["obsm_input"],
-    random_state=par["seed"],
+    random_state=par["random_state"],
     algorithm=par["algorithm"],
     metric=par["metric"],
     method=par["method"],
