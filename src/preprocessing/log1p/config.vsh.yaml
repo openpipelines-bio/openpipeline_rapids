@@ -82,6 +82,8 @@ resources:
     path: script.py
   - path: /src/utils/setup_logger.py
   - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+  - path: /src/utils/gpu.py
 
 test_resources:
   - type: python_script

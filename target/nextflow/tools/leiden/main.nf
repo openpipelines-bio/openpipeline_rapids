@@ -3249,6 +3249,10 @@ meta = [
     },
     {
       "type" : "file",
+      "path" : "/src/utils/anndata_io.py"
+    },
+    {
+      "type" : "file",
       "path" : "/src/workflows/utils/labels.config",
       "dest" : "nextflow_labels.config"
     }
@@ -3437,7 +3441,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/tools/leiden",
     "viash_version" : "0.9.7",
-    "git_commit" : "a994ec140a43e457c095b3fbd7a756d50c8eb29c",
+    "git_commit" : "ef178d3b193604ae6883cde8caaf7323077262b6",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3500,7 +3504,6 @@ tempscript=".viash_script.py"
 cat > "$tempscript" << VIASHMAIN
 import sys
 import rapids_singlecell as rsc
-import mudata as mu
 import pandas as pd
 
 ## VIASH START
@@ -3546,12 +3549,11 @@ dep = {
 
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
-from compress_h5mu import write_h5ad_to_h5mu_with_compression
+from anndata_io import read_modality, write_modality
 
 logger = setup_logger()
 
-logger.info("Reading modality %s from %s", par["modality"], par["input"])
-dat = mu.read_h5ad(par["input"], mod=par["modality"])
+dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
@@ -3592,13 +3594,8 @@ if par["obsm_name"] in dat.uns:
 
 dat.obsm[par["obsm_name"]] = pd.DataFrame(results, index=dat.obs_names)
 
-logger.info(
-    "Writing to file to %s with compression %s",
-    par["output"],
-    par["output_compression"],
-)
-write_h5ad_to_h5mu_with_compression(
-    par["output"], par["input"], par["modality"], dat, par["output_compression"]
+write_modality(
+    dat, par["output"], par["input"], par["modality"], par["output_compression"], logger
 )
 VIASHMAIN
 python -B "$tempscript"
