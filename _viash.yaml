@@ -36,7 +36,5 @@ info:
       description: Adds the correct memory and CPU labels when running on the Viash Hub CI.
 
 config_mods: |
-  .resources += {path: '/nextflow.config', dest: 'main_nextflow.config'}
   .resources += {path: '/src/workflows/utils/labels.config', dest: 'nextflow_labels.config'}
-  .runners[.type == 'nextflow'].config.script := 'includeConfig("main_nextflow.config")
-  includeConfig("nextflow_labels.config")'
+  .runners[.type == 'nextflow'].config.script := 'includeConfig("nextflow_labels.config")'
