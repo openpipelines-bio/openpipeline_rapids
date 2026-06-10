@@ -34,7 +34,7 @@ from gpu import on_gpu
 
 logger = setup_logger()
 
-dat = read_modality(par, logger)
+dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
@@ -117,4 +117,6 @@ if par["varm_name"]:
         dat.varm[par["varm_name"]] = dat.var[metric_columns].copy()
         dat.var = dat.var.drop(columns=metric_columns)
 
-write_modality(par, dat, logger)
+write_modality(
+    dat, par["output"], par["input"], par["modality"], par["output_compression"], logger
+)

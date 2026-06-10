@@ -23,14 +23,16 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
     }
     transfer_adata = bool(kwargs) or not slot_keys
 
-    def move_slots(transfer):
+    def move_slots(transfer_func):
         for attr, keys in slot_keys.items():
             mapping = getattr(adata, attr)
             for key in keys:
-                mapping[key] = transfer(mapping[key])
+                mapping[key] = transfer_func(mapping[key])
+
+    description = _describe_transfer(transfer_adata, kwargs, slot_keys)
 
     if logger is not None:
-        logger.info("Transferring data to GPU.")
+        logger.info("Transferring %s to GPU.", description)
     if transfer_adata:
         rsc.get.anndata_to_GPU(adata, **kwargs)
     move_slots(rsc.get.X_to_GPU)
@@ -38,7 +40,23 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
     yield adata
 
     if logger is not None:
-        logger.info("Transferring data back to CPU.")
+        logger.info("Transferring %s back to CPU.", description)
     if transfer_adata:
         rsc.get.anndata_to_CPU(adata)
     move_slots(rsc.get.X_to_CPU)
+
+
+def _describe_transfer(transfer_adata, kwargs, slot_keys):
+    """Human-readable summary of what ``on_gpu`` moves, for logging."""
+    parts = []
+    if transfer_adata:
+        if kwargs.get("convert_all"):
+            parts.append(".X and all layers")
+        elif "layer" in kwargs:
+            parts.append(f"layer {kwargs['layer']!r}")
+        else:
+            parts.append(".X and .layers")
+    for attr, keys in slot_keys.items():
+        keys_str = ", ".join(repr(key) for key in keys)
+        parts.append(f".{attr}[{keys_str}]")
+    return ", ".join(parts) if parts else "nothing"

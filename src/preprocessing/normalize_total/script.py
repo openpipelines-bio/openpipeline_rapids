@@ -20,7 +20,7 @@ from gpu import on_gpu
 
 logger = setup_logger()
 
-dat = read_modality(par, logger)
+dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
@@ -43,4 +43,6 @@ with on_gpu(dat, logger, layer=target_layer):
         max_fraction=par["max_fraction"],
     )
 
-write_modality(par, dat, logger)
+write_modality(
+    dat, par["output"], par["input"], par["modality"], par["output_compression"], logger
+)

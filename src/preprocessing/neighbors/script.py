@@ -27,7 +27,7 @@ from anndata_io import read_modality, write_modality
 
 logger = setup_logger()
 
-dat = read_modality(par, logger)
+dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
@@ -62,4 +62,6 @@ dat.uns[par["uns_output"]] = neighbors_uns
 dat.obsp[par["obsp_distances"]] = dat.obsp.pop("distances")
 dat.obsp[par["obsp_connectivities"]] = dat.obsp.pop("connectivities")
 
-write_modality(par, dat, logger)
+write_modality(
+    dat, par["output"], par["input"], par["modality"], par["output_compression"], logger
+)

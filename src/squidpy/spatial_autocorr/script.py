@@ -26,7 +26,7 @@ from anndata_io import read_modality, write_modality
 
 logger = setup_logger()
 
-dat = read_modality(par, logger)
+dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
@@ -72,4 +72,6 @@ if result_key in dat.uns:
 else:
     logger.warning("Expected key '%s' not found in .uns after computation.", result_key)
 
-write_modality(par, dat, logger)
+write_modality(
+    dat, par["output"], par["input"], par["modality"], par["output_compression"], logger
+)
