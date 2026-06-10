@@ -310,7 +310,7 @@ build_info:
   output: "target/executable/tools/leiden"
   executable: "target/executable/tools/leiden/leiden"
   viash_version: "0.9.7"
-  git_commit: "e7809996f642812d6b3b416576ef9e47fb07f501"
+  git_commit: "a994ec140a43e457c095b3fbd7a756d50c8eb29c"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
 package_config:
   name: "openpipeline_rapids"
