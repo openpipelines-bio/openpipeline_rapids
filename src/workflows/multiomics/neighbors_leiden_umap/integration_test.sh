@@ -9,7 +9,8 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
 nextflow \
-  run src/workflows/multiomics/neighbors_leiden_umap/test.nf \
+  run . \
+  -main-script src/workflows/multiomics/neighbors_leiden_umap/test.nf \
   -entry test_wf \
   -profile docker,no_publish \
   -c src/workflows/utils/labels_ci.config \
