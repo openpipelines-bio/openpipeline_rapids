@@ -11,7 +11,7 @@ par = {
     "num_components": 25,
     "chunked": False,
     "chunk_size": None,
-    "seed": None,
+    "random_state": None,
     "obsm_output": "X_pca",
     "varm_output": "pca_loadings",
     "uns_output": "pca_variance",
@@ -83,7 +83,7 @@ with on_gpu(dat, logger, layer=par["layer"]):
         mask_var=mask_var,
         chunked=par["chunked"],
         chunk_size=par["chunk_size"],
-        random_state=par["seed"],
+        random_state=par["random_state"],
     )
 
 # rapids-singlecell stores results under fixed keys ("X_pca", "PCs", "pca").
