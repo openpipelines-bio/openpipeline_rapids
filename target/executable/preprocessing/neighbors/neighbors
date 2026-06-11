@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing neighbors"
-LABEL org.opencontainers.image.created="2026-06-10T09:15:24Z"
+LABEL org.opencontainers.image.created="2026-06-11T14:28:03Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="ef178d3b193604ae6883cde8caaf7323077262b6"
+LABEL org.opencontainers.image.revision="29a84df19333affe2a79128aa363c4f32c1d8e6f"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
@@ -698,7 +698,7 @@ function ViashHelp {
   echo "        simplicial set, 'gauss' uses an adaptive Gaussian kernel, 'jaccard'"
   echo "        uses the PhenoGraph Jaccard index."
   echo ""
-  echo "    --seed"
+  echo "    --random_state"
   echo "        type: integer"
   echo "        default: 0"
   echo "        A random seed."
@@ -908,15 +908,15 @@ while [[ $# -gt 0 ]]; do
             VIASH_PAR_METHOD=$(ViashRemoveFlags "$1")
             shift 1
             ;;
-        --seed)
-            [ -n "$VIASH_PAR_SEED" ] && ViashError Bad arguments for option \'--seed\': \'$VIASH_PAR_SEED\' \& \'$2\' - you should provide exactly one argument for this option. && exit 1
-            VIASH_PAR_SEED="$2"
-            [ $# -lt 2 ] && ViashError Not enough arguments passed to --seed. Use "--help" to get more information on the parameters. && exit 1
+        --random_state)
+            [ -n "$VIASH_PAR_RANDOM_STATE" ] && ViashError Bad arguments for option \'--random_state\': \'$VIASH_PAR_RANDOM_STATE\' \& \'$2\' - you should provide exactly one argument for this option. && exit 1
+            VIASH_PAR_RANDOM_STATE="$2"
+            [ $# -lt 2 ] && ViashError Not enough arguments passed to --random_state. Use "--help" to get more information on the parameters. && exit 1
             shift 2
             ;;
-        --seed=*)
-            [ -n "$VIASH_PAR_SEED" ] && ViashError Bad arguments for option \'--seed=*\': \'$VIASH_PAR_SEED\' \& \'$2\' - you should provide exactly one argument for this option. && exit 1
-            VIASH_PAR_SEED=$(ViashRemoveFlags "$1")
+        --random_state=*)
+            [ -n "$VIASH_PAR_RANDOM_STATE" ] && ViashError Bad arguments for option \'--random_state=*\': \'$VIASH_PAR_RANDOM_STATE\' \& \'$2\' - you should provide exactly one argument for this option. && exit 1
+            VIASH_PAR_RANDOM_STATE=$(ViashRemoveFlags "$1")
             shift 1
             ;;
         ---engine)
@@ -1150,8 +1150,8 @@ fi
 if [ -z ${VIASH_PAR_METHOD+x} ]; then
   VIASH_PAR_METHOD="umap"
 fi
-if [ -z ${VIASH_PAR_SEED+x} ]; then
-  VIASH_PAR_SEED="0"
+if [ -z ${VIASH_PAR_RANDOM_STATE+x} ]; then
+  VIASH_PAR_RANDOM_STATE="0"
 fi
 
 # check whether required files exist
@@ -1173,9 +1173,9 @@ if [[ -n "$VIASH_PAR_N_PCS" ]]; then
     exit 1
   fi
 fi
-if [[ -n "$VIASH_PAR_SEED" ]]; then
-  if ! [[ "$VIASH_PAR_SEED" =~ ^[-+]?[0-9]+$ ]]; then
-    ViashError '--seed' has to be an integer. Use "--help" to get more information on the parameters.
+if [[ -n "$VIASH_PAR_RANDOM_STATE" ]]; then
+  if ! [[ "$VIASH_PAR_RANDOM_STATE" =~ ^[-+]?[0-9]+$ ]]; then
+    ViashError '--random_state' has to be an integer. Use "--help" to get more information on the parameters.
     exit 1
   fi
 fi
@@ -1404,7 +1404,7 @@ par = {
   'metric': $( if [ ! -z ${VIASH_PAR_METRIC+x} ]; then echo "r'${VIASH_PAR_METRIC//\'/\'\"\'\"r\'}'"; else echo None; fi ),
   'algorithm': $( if [ ! -z ${VIASH_PAR_ALGORITHM+x} ]; then echo "r'${VIASH_PAR_ALGORITHM//\'/\'\"\'\"r\'}'"; else echo None; fi ),
   'method': $( if [ ! -z ${VIASH_PAR_METHOD+x} ]; then echo "r'${VIASH_PAR_METHOD//\'/\'\"\'\"r\'}'"; else echo None; fi ),
-  'seed': $( if [ ! -z ${VIASH_PAR_SEED+x} ]; then echo "int(r'${VIASH_PAR_SEED//\'/\'\"\'\"r\'}')"; else echo None; fi )
+  'random_state': $( if [ ! -z ${VIASH_PAR_RANDOM_STATE+x} ]; then echo "int(r'${VIASH_PAR_RANDOM_STATE//\'/\'\"\'\"r\'}')"; else echo None; fi )
 }
 meta = {
   'name': $( if [ ! -z ${VIASH_META_NAME+x} ]; then echo "r'${VIASH_META_NAME//\'/\'\"\'\"r\'}'"; else echo None; fi ),
@@ -1457,7 +1457,7 @@ rsc.pp.neighbors(
     n_neighbors=par["num_neighbors"],
     n_pcs=par["n_pcs"],
     use_rep=par["obsm_input"],
-    random_state=par["seed"],
+    random_state=par["random_state"],
     algorithm=par["algorithm"],
     metric=par["metric"],
     method=par["method"],

@@ -121,7 +121,7 @@ argument_groups:
           simplicial set, 'gauss' uses an adaptive Gaussian kernel, 'jaccard'
           uses the PhenoGraph Jaccard index.
 
-      - name: "--seed"
+      - name: "--random_state"
         type: integer
         default: 0
         description: A random seed.

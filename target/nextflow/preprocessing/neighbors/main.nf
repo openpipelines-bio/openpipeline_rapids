@@ -3285,7 +3285,7 @@ meta = [
         },
         {
           "type" : "integer",
-          "name" : "--seed",
+          "name" : "--random_state",
           "description" : "A random seed.",
           "default" : [
             0
@@ -3506,7 +3506,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/neighbors",
     "viash_version" : "0.9.7",
-    "git_commit" : "ef178d3b193604ae6883cde8caaf7323077262b6",
+    "git_commit" : "29a84df19333affe2a79128aa363c4f32c1d8e6f",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3586,7 +3586,7 @@ par = {
   'metric': $( if [ ! -z ${VIASH_PAR_METRIC+x} ]; then echo "r'${VIASH_PAR_METRIC//\\'/\\'\\"\\'\\"r\\'}'"; else echo None; fi ),
   'algorithm': $( if [ ! -z ${VIASH_PAR_ALGORITHM+x} ]; then echo "r'${VIASH_PAR_ALGORITHM//\\'/\\'\\"\\'\\"r\\'}'"; else echo None; fi ),
   'method': $( if [ ! -z ${VIASH_PAR_METHOD+x} ]; then echo "r'${VIASH_PAR_METHOD//\\'/\\'\\"\\'\\"r\\'}'"; else echo None; fi ),
-  'seed': $( if [ ! -z ${VIASH_PAR_SEED+x} ]; then echo "int(r'${VIASH_PAR_SEED//\\'/\\'\\"\\'\\"r\\'}')"; else echo None; fi )
+  'random_state': $( if [ ! -z ${VIASH_PAR_RANDOM_STATE+x} ]; then echo "int(r'${VIASH_PAR_RANDOM_STATE//\\'/\\'\\"\\'\\"r\\'}')"; else echo None; fi )
 }
 meta = {
   'name': $( if [ ! -z ${VIASH_META_NAME+x} ]; then echo "r'${VIASH_META_NAME//\\'/\\'\\"\\'\\"r\\'}'"; else echo None; fi ),
@@ -3639,7 +3639,7 @@ rsc.pp.neighbors(
     n_neighbors=par["num_neighbors"],
     n_pcs=par["n_pcs"],
     use_rep=par["obsm_input"],
-    random_state=par["seed"],
+    random_state=par["random_state"],
     algorithm=par["algorithm"],
     metric=par["metric"],
     method=par["method"],

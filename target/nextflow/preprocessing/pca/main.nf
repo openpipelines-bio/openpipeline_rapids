@@ -3158,7 +3158,7 @@ meta = [
         },
         {
           "type" : "integer",
-          "name" : "--seed",
+          "name" : "--random_state",
           "description" : "Used to set the initial states for the optimization.\n",
           "required" : false,
           "min" : 0,
@@ -3467,7 +3467,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/pca",
     "viash_version" : "0.9.7",
-    "git_commit" : "ef178d3b193604ae6883cde8caaf7323077262b6",
+    "git_commit" : "29a84df19333affe2a79128aa363c4f32c1d8e6f",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3541,7 +3541,7 @@ par = {
   'num_components': $( if [ ! -z ${VIASH_PAR_NUM_COMPONENTS+x} ]; then echo "int(r'${VIASH_PAR_NUM_COMPONENTS//\\'/\\'\\"\\'\\"r\\'}')"; else echo None; fi ),
   'chunked': $( if [ ! -z ${VIASH_PAR_CHUNKED+x} ]; then echo "r'${VIASH_PAR_CHUNKED//\\'/\\'\\"\\'\\"r\\'}'.lower() == 'true'"; else echo None; fi ),
   'chunk_size': $( if [ ! -z ${VIASH_PAR_CHUNK_SIZE+x} ]; then echo "int(r'${VIASH_PAR_CHUNK_SIZE//\\'/\\'\\"\\'\\"r\\'}')"; else echo None; fi ),
-  'seed': $( if [ ! -z ${VIASH_PAR_SEED+x} ]; then echo "int(r'${VIASH_PAR_SEED//\\'/\\'\\"\\'\\"r\\'}')"; else echo None; fi ),
+  'random_state': $( if [ ! -z ${VIASH_PAR_RANDOM_STATE+x} ]; then echo "int(r'${VIASH_PAR_RANDOM_STATE//\\'/\\'\\"\\'\\"r\\'}')"; else echo None; fi ),
   'output': $( if [ ! -z ${VIASH_PAR_OUTPUT+x} ]; then echo "r'${VIASH_PAR_OUTPUT//\\'/\\'\\"\\'\\"r\\'}'"; else echo None; fi ),
   'obsm_output': $( if [ ! -z ${VIASH_PAR_OBSM_OUTPUT+x} ]; then echo "r'${VIASH_PAR_OBSM_OUTPUT//\\'/\\'\\"\\'\\"r\\'}'"; else echo None; fi ),
   'varm_output': $( if [ ! -z ${VIASH_PAR_VARM_OUTPUT+x} ]; then echo "r'${VIASH_PAR_VARM_OUTPUT//\\'/\\'\\"\\'\\"r\\'}'"; else echo None; fi ),
@@ -3638,7 +3638,7 @@ with on_gpu(dat, logger, layer=par["layer"]):
         mask_var=mask_var,
         chunked=par["chunked"],
         chunk_size=par["chunk_size"],
-        random_state=par["seed"],
+        random_state=par["random_state"],
     )
 
 # rapids-singlecell stores results under fixed keys ("X_pca", "PCs", "pca").

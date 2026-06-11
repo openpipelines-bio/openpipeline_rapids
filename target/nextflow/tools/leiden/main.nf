@@ -3441,7 +3441,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/tools/leiden",
     "viash_version" : "0.9.7",
-    "git_commit" : "ef178d3b193604ae6883cde8caaf7323077262b6",
+    "git_commit" : "29a84df19333affe2a79128aa363c4f32c1d8e6f",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
