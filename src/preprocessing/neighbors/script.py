@@ -1,6 +1,5 @@
 import sys
 import rapids_singlecell as rsc
-import mudata as mu
 
 ## VIASH START
 par = {
@@ -16,7 +15,7 @@ par = {
     "metric": "euclidean",
     "algorithm": "brute",
     "method": "umap",
-    "seed": 0,
+    "random_state": 0,
     "output_compression": None,
 }
 meta = {"name": "neighbors"}
@@ -24,13 +23,11 @@ meta = {"name": "neighbors"}
 
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
-from compress_h5mu import write_h5ad_to_h5mu_with_compression
+from anndata_io import read_modality, write_modality
 
 logger = setup_logger()
 
-logger.info("Reading modality %s from %s", par["modality"], par["input"])
-dat = mu.read_h5ad(par["input"], mod=par["modality"])
-assert dat.var_names.is_unique, "The var_names of the input modality must be be unique."
+dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
@@ -49,7 +46,7 @@ rsc.pp.neighbors(
     n_neighbors=par["num_neighbors"],
     n_pcs=par["n_pcs"],
     use_rep=par["obsm_input"],
-    random_state=par["seed"],
+    random_state=par["random_state"],
     algorithm=par["algorithm"],
     metric=par["metric"],
     method=par["method"],
@@ -65,11 +62,6 @@ dat.uns[par["uns_output"]] = neighbors_uns
 dat.obsp[par["obsp_distances"]] = dat.obsp.pop("distances")
 dat.obsp[par["obsp_connectivities"]] = dat.obsp.pop("connectivities")
 
-logger.info(
-    "Writing to file to %s with compression %s",
-    par["output"],
-    par["output_compression"],
-)
-write_h5ad_to_h5mu_with_compression(
-    par["output"], par["input"], par["modality"], dat, par["output_compression"]
+write_modality(
+    dat, par["output"], par["input"], par["modality"], par["output_compression"], logger
 )
