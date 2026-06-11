@@ -1,0 +1,122 @@
+name: leiden
+namespace: "tools"
+scope: "public"
+description: |
+  Cluster cells using the Leiden algorithm, the GPU-accelerated
+  rapids-singlecell implementation built on cuGraph. Leiden is an improved
+  version of the Louvain algorithm. Requires a precomputed neighbor graph
+  (e.g. from the `find_neighbors` component).
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--obsp_connectivities"
+        type: string
+        description: In which .obsp slot the neighbor connectivities can be found.
+        default: "connectivities"
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--obsm_name"
+        type: string
+        description: |
+          Name of the .obsm key under which to add the cluster labels.
+          The name of the columns in the matrix will correspond to the
+          resolutions.
+        default: "leiden"
+
+  - name: Options
+    arguments:
+      - name: "--resolution"
+        type: double
+        description: |
+          A parameter value controlling the coarseness of the clustering.
+          Higher values lead to more clusters. Multiple values will result
+          in clustering being performed multiple times.
+        default: [1]
+        required: true
+        multiple: true
+
+      - name: "--n_iterations"
+        type: integer
+        required: false
+        default: 100
+        description: |
+          Maximum number of iterations/levels of the Leiden algorithm. The
+          algorithm will terminate after no more than this many iterations.
+
+      - name: "--theta"
+        type: double
+        required: false
+        default: 1.0
+        description: |
+          Scales modularity gain in the Leiden refinement phase, used to
+          compute the probability of joining a random Leiden community.
+
+      - name: "--random_state"
+        type: integer
+        required: false
+        default: 0
+        description: |
+          Random seed to initialise the optimization. Use this to increase
+          reproducibility.
+        min: 0
+
+      - name: "--use_weights"
+        type: boolean
+        default: true
+        description: |
+          If true, edge weights from the graph are used in the computation
+          (placing more emphasis on stronger edges).
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [midmem, lowcpu, highdisk, gpu]

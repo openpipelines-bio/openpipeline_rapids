@@ -1,0 +1,152 @@
+name: neighbors
+namespace: "preprocessing"
+scope: "public"
+description: |
+  Compute a nearest-neighbor graph of observations on the GPU.
+
+  Wraps rapids-singlecell's `rsc.pp.neighbors`, whose neighbor search relies on
+  cuVS for fast (approximate) KNN search. The resulting graph is the basis for
+  downstream embedding and clustering (e.g. UMAP, Leiden). Connectivities can be
+  estimated with the UMAP fuzzy simplicial set ('umap'), an adaptive Gaussian
+  kernel ('gauss'), or the PhenoGraph Jaccard index ('jaccard').
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--obsm_input"
+        type: string
+        default: "X_pca"
+        required: false
+        description: Which .obsm slot to use as a starting embedding (use_rep).
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file containing the found neighbors.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--uns_output"
+        type: string
+        default: "neighbors"
+        description: In which .uns slot to store the neighbor graph metadata.
+
+      - name: "--obsp_distances"
+        type: string
+        default: "distances"
+        description: In which .obsp slot to store the distance matrix between the resulting neighbors.
+
+      - name: "--obsp_connectivities"
+        type: string
+        default: "connectivities"
+        description: In which .obsp slot to store the connectivities matrix between the resulting neighbors.
+
+  - name: Options
+    arguments:
+      - name: "--num_neighbors"
+        type: integer
+        default: 15
+        description: |
+          The size of the local neighborhood (in terms of number of
+          neighboring data points) used for manifold approximation. Larger
+          values result in more global views of the manifold, while smaller
+          values result in more local data being preserved. In general
+          values should be in the range 2 to 100.
+
+      - name: "--n_pcs"
+        type: integer
+        required: false
+        description: |
+          Number of dimensions of the `--obsm_input` representation to use.
+          If not set, all available dimensions are used.
+
+      - name: "--metric"
+        type: string
+        default: "euclidean"
+        description: The distance metric to use.
+        choices: [
+          "l2", "chebyshev", "manhattan", "taxicab", "correlation",
+          "inner_product", "euclidean", "canberra", "lp", "minkowski",
+          "cosine", "jensenshannon", "linf", "cityblock", "l1", "haversine",
+          "sqeuclidean", "hellinger", "jaccard"
+        ]
+
+      - name: "--algorithm"
+        type: string
+        default: "brute"
+        choices: [ "brute", "cagra", "ivfflat", "ivfpq", "nn_descent" ]
+        description: |
+          The KNN query algorithm to use (provided by cuVS). See
+          https://docs.rapids.ai/api/cuvs/stable/ for details.
+            - brute: Brute-force exact search computing all pairwise distances.
+              Exact but the most expensive; best for smaller datasets.
+            - cagra: GPU graph-based approximate search optimized for high
+              query throughput on large datasets.
+            - ivfflat: Inverted-file index that clusters vectors into lists and
+              only searches the nearest lists. Approximate, faster than brute.
+            - ivfpq: Inverted-file index combined with product quantization of
+              the vectors. Approximate with a low memory footprint; scales to
+              very large datasets.
+            - nn_descent: Graph-based approximate method that iteratively
+              refines a KNN graph from a random initialization.
+
+      - name: "--method"
+        type: string
+        default: "umap"
+        choices: [ "umap", "gauss", "jaccard" ]
+        description: |
+          Method for computing connectivities. 'umap' uses the UMAP fuzzy
+          simplicial set, 'gauss' uses an adaptive Gaussian kernel, 'jaccard'
+          uses the PhenoGraph Jaccard index.
+
+      - name: "--seed"
+        type: integer
+        default: 0
+        description: A random seed.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [midmem, lowcpu, highdisk, gpu]
