@@ -23,7 +23,6 @@ meta = {"name": "umap"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
 
 logger = setup_logger()
 
@@ -36,21 +35,20 @@ if par["uns_neighbors"] not in dat.uns:
         f"'{par['uns_neighbors']}' was not found in .mod['{par['modality']}'].uns."
     )
 
-with on_gpu(dat, logger):
-    logger.info("Computing UMAP for modality '%s'.", par["modality"])
-    rsc.tl.umap(
-        dat,
-        min_dist=par["min_dist"],
-        spread=par["spread"],
-        n_components=par["num_components"],
-        maxiter=par["max_iter"],
-        alpha=par["alpha"],
-        negative_sample_rate=par["negative_sample_rate"],
-        init_pos=par["init_pos"],
-        random_state=par["random_state"],
-        key_added=par["obsm_output"],
-        neighbors_key=par["uns_neighbors"],
-    )
+logger.info("Computing UMAP for modality '%s'.", par["modality"])
+rsc.tl.umap(
+    dat,
+    min_dist=par["min_dist"],
+    spread=par["spread"],
+    n_components=par["num_components"],
+    maxiter=par["max_iter"],
+    alpha=par["alpha"],
+    negative_sample_rate=par["negative_sample_rate"],
+    init_pos=par["init_pos"],
+    random_state=par["random_state"],
+    key_added=par["obsm_output"],
+    neighbors_key=par["uns_neighbors"],
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger
