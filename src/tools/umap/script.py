@@ -35,10 +35,6 @@ if par["uns_neighbors"] not in dat.uns:
         f"'{par['uns_neighbors']}' was not found in .mod['{par['modality']}'].uns."
     )
 
-# rsc.tl.umap reads the neighbors graph from .obsp (via neighbors_key) and
-# converts it to GPU itself; it does not transform .X or the layers. Moving the
-# whole AnnData to the GPU first is therefore unnecessary and also fails when
-# .X holds raw integer counts, which cupy sparse does not support.
 logger.info("Computing UMAP for modality '%s'.", par["modality"])
 rsc.tl.umap(
     dat,

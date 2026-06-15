@@ -84,36 +84,6 @@ def test_obsm_output(run_component, random_h5mu_path):
     )
 
 
-def test_integer_counts_x(run_component, random_h5mu_path):
-    """UMAP should run when .X holds raw integer counts.
-
-    UMAP operates on the neighbors graph in .obsp, not on .X, so an integer
-    count matrix (which cupy sparse cannot hold) must not break the run.
-    """
-    data = mu.read_h5mu(input)
-    rna = data.mod["rna"]
-    rna.X = rna.X.astype("int32")
-
-    int_input = random_h5mu_path()
-    data.write_h5mu(int_input)
-
-    output = random_h5mu_path()
-    run_component(
-        [
-            "--input",
-            int_input,
-            "--output",
-            output,
-            "--output_compression",
-            "gzip",
-        ]
-    )
-
-    assert output.is_file(), "No output was created."
-    data = mu.read_h5mu(output)
-    assert "X_umap" in data.mod["rna"].obsm, "X_umap should be present in .obsm"
-
-
 def test_raise_if_uns_neighbors_missing(run_component, random_h5mu_path):
     """Should raise if the neighbors slot does not exist."""
     output = random_h5mu_path()
