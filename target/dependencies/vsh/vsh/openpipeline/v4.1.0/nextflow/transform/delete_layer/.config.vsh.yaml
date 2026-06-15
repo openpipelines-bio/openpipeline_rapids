@@ -1,42 +1,29 @@
-name: "log1p"
-namespace: "preprocessing"
-version: "build_main"
+name: "delete_layer"
+namespace: "transform"
+version: "v4.1.0"
 authors:
-- name: "Luke Zappia"
+- name: "Dries Schaumont"
   roles:
-  - "author"
+  - "maintainer"
   info:
-    role: "Contributor"
+    role: "Core Team Member"
     links:
-      email: "luke@data-intuitive.com"
-      github: "lazappi"
-      orcid: "0000-0001-7744-8565"
-      linkedin: "lazappi"
+      email: "dries@data-intuitive.com"
+      github: "DriesSchaumont"
+      orcid: "0000-0002-4389-0440"
+      linkedin: "dries-schaumont"
     organizations:
     - name: "Data Intuitive"
       href: "https://www.data-intuitive.com"
-      role: "Data Science Engineer"
-- name: "Jakub Majercik"
-  roles:
-  - "contributor"
-  info:
-    role: "Contributor"
-    links:
-      email: "jakub@data-intuitive.com"
-      github: "jakubmajercik"
-      linkedin: "jakubmajercik"
-    organizations:
-    - name: "Data Intuitive"
-      href: "https://www.data-intuitive.com"
-      role: "Bioinformatics Engineer"
+      role: "Data Scientist"
 argument_groups:
-- name: "Inputs"
+- name: "Arguments"
   arguments:
   - type: "file"
     name: "--input"
     alternatives:
     - "-i"
-    description: "Input h5mu file."
+    description: "Input h5mu file"
     info: null
     example:
     - "input.h5mu"
@@ -48,7 +35,7 @@ argument_groups:
     multiple_sep: ";"
   - type: "string"
     name: "--modality"
-    description: "Which modality from the input MuData file to process."
+    description: "Which modality from the input MuData file to process.\n"
     info: null
     default:
     - "rna"
@@ -57,23 +44,13 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--input_layer"
-    description: "Input layer to use. If not set, .X is used."
+    name: "--layer"
+    description: "Input layer to remove"
     info: null
-    required: false
+    required: true
     direction: "input"
-    multiple: false
+    multiple: true
     multiple_sep: ";"
-  - type: "string"
-    name: "--input_obsm"
-    description: "Entry in .obsm to log-transform. Mutually exclusive with\n--input_layer.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-- name: "Outputs"
-  arguments:
   - type: "file"
     name: "--output"
     alternatives:
@@ -88,30 +65,15 @@ argument_groups:
     direction: "output"
     multiple: false
     multiple_sep: ";"
-  - type: "string"
-    name: "--output_layer"
-    description: "Output layer to write the transformed matrix to. If not set:\nwhen\
-      \ --input_layer is unset, .X is modified in-place; when\n--input_layer is set,\
-      \ that input layer is modified in-place.\n"
+  - type: "boolean_true"
+    name: "--missing_ok"
+    description: "Do not raise an error if the layer does not exist for all modalities."
     info: null
-    required: false
     direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "string"
-    name: "--output_obsm"
-    description: "Output entry in .obsm to write the transformed matrix to. Only\n\
-      valid when --input_obsm is set. If not set, the input .obsm entry\nis modified\
-      \ in-place. Mutually exclusive with --output_layer.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
   - type: "string"
     name: "--output_compression"
-    description: "Compression format to use for the output AnnData and/or Mudata\n\
-      objects. By default no compression is applied.\n"
+    description: "Compression format to use for the output AnnData and/or Mudata H5\
+      \ files.\nBy default no compression is applied.\n"
     info: null
     example:
     - "gzip"
@@ -122,33 +84,18 @@ argument_groups:
     direction: "input"
     multiple: false
     multiple_sep: ";"
-- name: "Options"
-  arguments:
-  - type: "double"
-    name: "--base"
-    description: "Base of the logarithm. If unset, the natural logarithm is used.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
 resources:
 - type: "python_script"
   path: "script.py"
   is_executable: true
 - type: "file"
-  path: "setup_logger.py"
-- type: "file"
   path: "compress_h5mu.py"
 - type: "file"
-  path: "anndata_io.py"
-- type: "file"
-  path: "gpu.py"
+  path: "setup_logger.py"
 - type: "file"
   path: "nextflow_labels.config"
   dest: "nextflow_labels.config"
-description: "Logarithmize the data matrix.\n\nComputes X = log(X + 1), where log\
-  \ denotes the natural logarithm unless\na different base is given.\n"
+description: "Delete an anndata layer from one or more modalities.\n"
 test_resources:
 - type: "python_script"
   path: "test.py"
@@ -160,29 +107,20 @@ status: "enabled"
 scope:
   image: "public"
   target: "public"
-repositories:
-- type: "vsh"
-  name: "openpipeline"
-  repo: "openpipeline"
-  tag: "v4.1.0"
 license: "MIT"
 links:
-  repository: "https://github.com/openpipelines-bio/openpipeline_rapids"
+  repository: "https://github.com/openpipelines-bio/openpipeline"
   docker_registry: "ghcr.io"
 runners:
 - type: "executable"
   id: "executable"
   docker_setup_strategy: "ifneedbepullelsecachedbuild"
-  docker_run_args:
-  - "--gpus all"
 - type: "nextflow"
   id: "nextflow"
   directives:
     label:
     - "midmem"
-    - "lowcpu"
-    - "highdisk"
-    - "gpu"
+    - "singlecpu"
     tag: "$id"
   auto:
     simplifyInput: true
@@ -246,35 +184,26 @@ runners:
 engines:
 - type: "docker"
   id: "docker"
-  image: "nvidia/cuda:13.1.2-runtime-ubuntu24.04"
+  image: "python:3.12-slim"
+  target_registry: "images.viash-hub.com"
+  target_tag: "v4.1.0"
   namespace_separator: "/"
   setup:
-  - type: "docker"
-    env:
-    - "PIP_BREAK_SYSTEM_PACKAGES=1"
   - type: "apt"
     packages:
-    - "python3-pip"
-    - "python-is-python3"
+    - "procps"
     interactive: false
-  - type: "docker"
-    run:
-    - "pip install --upgrade --no-cache-dir --ignore-installed pip"
-  - type: "docker"
-    run:
-    - "cat > /NOTICE <<'EOF'\nThis image contains software provided by NVIDIA Corporation\n\
-      and is governed by the NVIDIA Deep Learning Container License:\nhttps://developer.download.nvidia.com/licenses/NVIDIA_Deep_Learning_Container_License.pdf\n\
-      \nThe source code for this project is licensed under MIT:\nhttps://github.com/openpipelines-bio/openpipeline_rapids\n\
-      EOF"
-  - type: "docker"
-    run:
-    - "pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com \\\n \
-      \ \"rapids-singlecell-cu13==0.15.0\" \\\n  \"cudf-cu13==26.04.*\" \\\n  \"cuml-cu13==26.04.*\"\
-      \ \\\n  \"cugraph-cu13==26.04.*\" \\\n  \"cuvs-cu13==26.04.*\""
   - type: "python"
     user: false
     packages:
-    - "mudata~=0.3.2"
+    - "anndata~=0.12.16"
+    - "awkward"
+    - "scipy~=1.17.1"
+    - "mudata~=0.3.8"
+    script:
+    - "exec(\"try:\\n  import zarr; from importlib.metadata import version\\nexcept\
+      \ ModuleNotFoundError:\\n  exit(0)\\nelse:  assert int(version(\\\"zarr\\\"\
+      ).partition(\\\".\\\")[0]) > 2\")"
     upgrade: true
   test_setup:
   - type: "apt"
@@ -284,62 +213,64 @@ engines:
   - type: "python"
     user: false
     packages:
-    - "viashpy==0.8.0"
+    - "viashpy==0.10.0"
     github:
     - "openpipelines-bio/core#subdirectory=packages/python/openpipeline_testutils"
     upgrade: true
   entrypoint: []
   cmd: null
+- type: "native"
+  id: "native"
 build_info:
-  config: "src/preprocessing/log1p/config.vsh.yaml"
-  runner: "executable"
-  engine: "docker"
-  output: "target/executable/preprocessing/log1p"
-  executable: "target/executable/preprocessing/log1p/log1p"
+  config: "src/transform/delete_layer/config.vsh.yaml"
+  runner: "nextflow"
+  engine: "docker|native"
+  output: "target/nextflow/transform/delete_layer"
+  executable: "target/nextflow/transform/delete_layer/main.nf"
   viash_version: "0.9.7"
-  git_commit: "eba85cf672c490c23c367eaff22ade0eee1cb952"
-  git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
+  git_commit: "a6499fddaa8553874585c747370f919f4d7b729c"
+  git_remote: "https://github.com/openpipelines-bio/openpipeline"
 package_config:
-  name: "openpipeline_rapids"
-  version: "build_main"
-  summary: "Best-practice workflows for single-cell multi-omics analyses using rapids-singlecell.\n"
+  name: "openpipeline"
+  version: "v4.1.0"
+  summary: "Best-practice workflows for single-cell multi-omics analyses.\n"
   description: "OpenPipelines are extensible single cell analysis pipelines for reproducible\
     \ and large-scale single cell processing using [Viash](https://viash.io) and [Nextflow](https://www.nextflow.io/).\n\
-    \nThis repository contains GPU-enabled components using the [rapids-singlecell](https://rapids-singlecell.readthedocs.io/en/latest/)\
-    \ library.\n"
+    \nIn terms of workflows, the following has been made available, but keep in mind\
+    \ that\nindividual tools and functionality can be executed as standalone components\
+    \ as well.\n\n  * Demultiplexing: conversion of raw sequencing data to FASTQ objects.\n\
+    \  * Ingestion: Read mapping and generating a count matrix.\n  * Single sample\
+    \ processing: cell filtering and doublet detection.\n  * Multisample processing:\
+    \ Count transformation, normalization, QC metric calulations.\n  * Integration:\
+    \ Clustering, integration and batch correction using single and multimodal methods.\n\
+    \  * Downstream analysis workflows\n"
   info:
     test_resources:
     - type: "s3"
-      path: "s3://openpipelines-data/pbmc_1k_protein_v3"
-      dest: "resources_test/pbmc_1k_protein_v3"
-    - type: "s3"
-      path: "s3://openpipelines-bio/openpipeline_spatial/resources_test/xenium"
-      dest: "resources_test/xenium"
+      path: "s3://openpipelines-data"
+      dest: "resources_test"
     nextflow_labels_ci:
     - path: "src/workflows/utils/labels_ci.config"
       description: "Adds the correct memory and CPU labels when running on the Viash\
         \ Hub CI."
-  repositories:
-  - type: "vsh"
-    name: "openpipeline"
-    repo: "openpipeline"
-    tag: "v4.1.0"
   viash_version: "0.9.7"
   source: "src"
   target: "target"
   config_mods:
   - ".resources += {path: '/src/workflows/utils/labels.config', dest: 'nextflow_labels.config'}\n\
     .runners[.type == 'nextflow'].config.script := 'includeConfig(\"nextflow_labels.config\"\
-    )'\n"
+    )'"
+  - ".engines += { type: \"native\" }"
+  - ".engines[.type == 'docker'].target_registry := 'images.viash-hub.com'"
+  - ".engines[.type == 'docker'].target_tag := 'v4.1.0'"
   keywords:
   - "single-cell"
   - "multimodal"
-  - "rapids"
   license: "MIT"
-  organization: "openpipelines-bio"
+  organization: "vsh"
   links:
-    repository: "https://github.com/openpipelines-bio/openpipeline_rapids"
+    repository: "https://github.com/openpipelines-bio/openpipeline"
     docker_registry: "ghcr.io"
     homepage: "https://openpipelines.bio"
     documentation: "https://openpipelines.bio/fundamentals"
-    issue_tracker: "https://github.com/openpipelines-bio/openpipeline_rapids/issues"
+    issue_tracker: "https://github.com/openpipelines-bio/openpipeline/issues"

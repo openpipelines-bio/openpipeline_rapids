@@ -18,6 +18,11 @@ links:
   homepage: https://openpipelines.bio
   documentation: https://openpipelines.bio/fundamentals
   issue_tracker: https://github.com/openpipelines-bio/openpipeline_rapids/issues
+repositories:
+  - name: openpipeline
+    repo: openpipeline
+    type: vsh
+    tag: v4.1.0
 info:
   test_resources:
     - type: s3

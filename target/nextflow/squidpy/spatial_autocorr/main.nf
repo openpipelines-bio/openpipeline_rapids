@@ -3287,6 +3287,14 @@ meta = [
     "image" : "public",
     "target" : "public"
   },
+  "repositories" : [
+    {
+      "type" : "vsh",
+      "name" : "openpipeline",
+      "repo" : "openpipeline",
+      "tag" : "v4.1.0"
+    }
+  ],
   "license" : "MIT",
   "links" : {
     "repository" : "https://github.com/openpipelines-bio/openpipeline_rapids",
@@ -3454,7 +3462,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/squidpy/spatial_autocorr",
     "viash_version" : "0.9.7",
-    "git_commit" : "06bf352d979224b0e5fdd5f2d20d0626ce825192",
+    "git_commit" : "eba85cf672c490c23c367eaff22ade0eee1cb952",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3482,6 +3490,14 @@ meta = [
         }
       ]
     },
+    "repositories" : [
+      {
+        "type" : "vsh",
+        "name" : "openpipeline",
+        "repo" : "openpipeline",
+        "tag" : "v4.1.0"
+      }
+    ],
     "viash_version" : "0.9.7",
     "source" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/src",
     "target" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target",

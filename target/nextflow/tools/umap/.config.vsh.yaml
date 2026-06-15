@@ -216,6 +216,11 @@ status: "enabled"
 scope:
   image: "public"
   target: "public"
+repositories:
+- type: "vsh"
+  name: "openpipeline"
+  repo: "openpipeline"
+  tag: "v4.1.0"
 license: "MIT"
 links:
   repository: "https://github.com/openpipelines-bio/openpipeline_rapids"
@@ -348,7 +353,7 @@ build_info:
   output: "target/nextflow/tools/umap"
   executable: "target/nextflow/tools/umap/main.nf"
   viash_version: "0.9.7"
-  git_commit: "06bf352d979224b0e5fdd5f2d20d0626ce825192"
+  git_commit: "eba85cf672c490c23c367eaff22ade0eee1cb952"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
 package_config:
   name: "openpipeline_rapids"
@@ -370,6 +375,11 @@ package_config:
     - path: "src/workflows/utils/labels_ci.config"
       description: "Adds the correct memory and CPU labels when running on the Viash\
         \ Hub CI."
+  repositories:
+  - type: "vsh"
+    name: "openpipeline"
+    repo: "openpipeline"
+    tag: "v4.1.0"
   viash_version: "0.9.7"
   source: "src"
   target: "target"
