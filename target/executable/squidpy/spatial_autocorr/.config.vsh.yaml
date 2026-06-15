@@ -333,7 +333,7 @@ build_info:
   output: "target/executable/squidpy/spatial_autocorr"
   executable: "target/executable/squidpy/spatial_autocorr/spatial_autocorr"
   viash_version: "0.9.7"
-  git_commit: "eba85cf672c490c23c367eaff22ade0eee1cb952"
+  git_commit: "bcbddcac082046250c38a36dc2983c6313d6e35f"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
 package_config:
   name: "openpipeline_rapids"

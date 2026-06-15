@@ -3514,7 +3514,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/neighbors",
     "viash_version" : "0.9.7",
-    "git_commit" : "eba85cf672c490c23c367eaff22ade0eee1cb952",
+    "git_commit" : "bcbddcac082046250c38a36dc2983c6313d6e35f",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

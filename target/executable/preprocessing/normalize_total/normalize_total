@@ -474,9 +474,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Luke Zappia, Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing normalize_total"
-LABEL org.opencontainers.image.created="2026-06-15T09:29:33Z"
+LABEL org.opencontainers.image.created="2026-06-15T13:09:50Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="eba85cf672c490c23c367eaff22ade0eee1cb952"
+LABEL org.opencontainers.image.revision="bcbddcac082046250c38a36dc2983c6313d6e35f"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
