@@ -324,6 +324,7 @@ def test_overwrite_existing_slot(run_component, random_h5mu_path, clean_input):
             "--num_components",
             "26",
             "--overwrite",
+            "true",
         ]
     )
     rna_out = mu.read_h5mu(second).mod["rna"]
