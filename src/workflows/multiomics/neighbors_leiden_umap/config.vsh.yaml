@@ -1,7 +1,7 @@
 name: neighbors_leiden_umap
 namespace: "workflows/multiomics"
 scope: "public"
-description: "Performs neighborhood search, leiden clustering and run umap on an integrated embedding."
+description: Performs neighborhood search, Leiden clustering and UMAP on an integrated embedding.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -13,7 +13,7 @@ argument_groups:
       - name: "--input"
         required: true
         type: file
-        description: Path to the sample.
+        description: Path to the input H5MU file.
         example: dataset.h5mu
       - name: "--obsm_input"
         type: string
@@ -64,7 +64,7 @@ argument_groups:
         default: [1]
         multiple: true
 
-  - name: Umap options
+  - name: UMAP options
     arguments:
       - name: "--obsm_umap"
         type: string
