@@ -3,8 +3,8 @@ setup:
     run:
       - |
         pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com \
-          "rapids-singlecell-cu12==0.15.2" \
-          "cudf-cu12==26.6.*" \
-          "cuml-cu12==26.6.*" \
-          "cugraph-cu12==26.6.*" \
-          "cuvs-cu12==26.6.*"
+          "rapids-singlecell-cu13==0.15.0" \
+          "cudf-cu13==26.04.*" \
+          "cuml-cu13==26.04.*" \
+          "cugraph-cu13==26.04.*" \
+          "cuvs-cu13==26.04.*"
