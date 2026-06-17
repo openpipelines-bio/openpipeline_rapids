@@ -3462,7 +3462,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/squidpy/spatial_autocorr",
     "viash_version" : "0.9.7",
-    "git_commit" : "bcbddcac082046250c38a36dc2983c6313d6e35f",
+    "git_commit" : "05609fcab3ad9d16a2bc5ff67f09395de8aa3de9",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
