@@ -18,7 +18,6 @@ meta = {
 
 input = f"{meta['resources_dir']}/pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"
 
-
 @pytest.fixture
 def clean_input(random_h5mu_path):
     """Prepare the PBMC test data for rapids-singlecell PCA.
@@ -37,7 +36,6 @@ def clean_input(random_h5mu_path):
     path = random_h5mu_path()
     mu_in.write(path)
     return path
-
 
 def test_run(run_component, random_h5mu_path, clean_input):
     output = random_h5mu_path()
@@ -332,4 +330,10 @@ def test_overwrite_existing_slot(run_component, random_h5mu_path, clean_input):
 
 
 if __name__ == "__main__":
+    print("### DEBUG ###")
+    result = subprocess.run(['ldconfig', '-p'], capture_output=True, text=True)
+    cuda_libs = [line for line in result.stdout.splitlines() if 'libcuda' in line]
+    print(cuda_libs)
+    print("### DEBUG ###")
+
     sys.exit(pytest.main([__file__]))
