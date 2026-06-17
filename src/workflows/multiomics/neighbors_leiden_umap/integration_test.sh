@@ -8,8 +8,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 # ensure that the command below is run from the root of the repository
 cd "$REPO_ROOT"
 
-# pin Nextflow to a version that uses the legacy config syntax parser
-export NXF_VER=25.10.6
+export NXF_SYNTAX_PARSER=v1
 
 nextflow \
   run . \
