@@ -1,0 +1,104 @@
+name: log1p
+namespace: "preprocessing"
+scope: "public"
+description: |
+  Logarithmize the data matrix.
+
+  Computes X = log(X + 1), where log denotes the natural logarithm unless
+  a different base is given.
+
+authors:
+  - __merge__: /src/authors/luke_zappia.yaml
+    roles: [ author ]
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ contributor ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--input_layer"
+        type: string
+        required: false
+        description: Input layer to use. If not set, .X is used.
+
+      - name: "--input_obsm"
+        type: string
+        required: false
+        description: |
+          Entry in .obsm to log-transform. Mutually exclusive with
+          --input_layer.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--output_layer"
+        type: string
+        required: false
+        description: |
+          Output layer to write the transformed matrix to. If not set:
+          when --input_layer is unset, .X is modified in-place; when
+          --input_layer is set, that input layer is modified in-place.
+
+      - name: "--output_obsm"
+        type: string
+        required: false
+        description: |
+          Output entry in .obsm to write the transformed matrix to. Only
+          valid when --input_obsm is set. If not set, the input .obsm entry
+          is modified in-place. Mutually exclusive with --output_layer.
+
+  - name: Options
+    arguments:
+      - name: "--base"
+        type: double
+        required: false
+        description: |
+          Base of the logarithm. If unset, the natural logarithm is used.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+  - path: /src/utils/gpu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [midmem, lowcpu, highdisk, gpu]
