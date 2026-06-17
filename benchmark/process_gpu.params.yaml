@@ -1,0 +1,20 @@
+# Seqera params for the GPU rapids-singlecell bulk benchmark.
+# Workflow: workflows/benchmark/process_gpu
+#
+# Every step carries the `gpu` Nextflow label. The compute environment MUST map
+# that label to a real GPU directive, otherwise the rapids components fail at
+# runtime with no CUDA device visible. Add to the compute environment config:
+#
+#   withLabel: gpu { accelerator = 1 }        # AWS/Google Batch / Kubernetes
+#   withLabel: gpu { containerOptions = '--gpus all' }   # single-node Docker
+#
+# The input must be a spatial .h5mu containing raw counts and a spatial graph
+# in .obsp["spatial_connectivities"] (used by the spatial_autocorr step).
+
+param_list:
+  - id: benchmark
+    input: s3://YOUR-BUCKET/path/to/spatial_input.h5mu
+
+modality: rna
+
+publish_dir: s3://YOUR-BUCKET/path/to/results/process_gpu
