@@ -12,7 +12,7 @@ export NXF_SYNTAX_PARSER=v1
 
 nextflow \
   run . \
-  -main-script src/workflows/rna/log_normalize/test.nf \
+  -main-script src/workflows/multiomics/neighbors_leiden_umap/test.nf \
   -entry test_wf \
   -profile docker,no_publish \
   -c src/workflows/utils/labels_ci.config \
