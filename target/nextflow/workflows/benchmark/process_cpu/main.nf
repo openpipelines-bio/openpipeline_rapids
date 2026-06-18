@@ -3297,7 +3297,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/workflows/benchmark/process_cpu",
     "viash_version" : "0.9.7",
-    "git_commit" : "d6aec88520e98ef3c889ae710827b6354b8fd978",
+    "git_commit" : "ab69e7d1e3beb9f6c6523088911540247254d9da",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3413,7 +3413,8 @@ workflow run_wf {
       ],
       args: [
         "layer": "log_normalized",
-        "obsm_output": "X_pca"
+        "obsm_output": "X_pca",
+        "overwrite": true
       ],
       toState: ["input": "output"]
     )
