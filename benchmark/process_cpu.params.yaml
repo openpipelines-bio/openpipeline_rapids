@@ -4,9 +4,12 @@
 # Runs the same chain as process_gpu using the equivalent CPU components, on a
 # CPU-only compute environment (no `gpu` label mapping required).
 #
-# Use the SAME input as the GPU run so the runtimes are directly comparable. For
-# a fair comparison, equalise the number of CPUs in the compute environment with
-# whatever the GPU host provides, since the CPU components scale with cores.
+# Use the SAME input as the GPU run so the runtimes are directly comparable. Each
+# rapids component now carries the same cpu/mem/disk label as its CPU counterpart
+# (only the `gpu` label differs), and both pipelines include the same
+# labels.config, so a given tier resolves to identical resources on both sides.
+# Just ensure both compute environments can satisfy the highest tiers in play
+# (highcpu = 20 cpus, highmem = 50 GB) and that the disk labels are mapped.
 #
 # The input must be a spatial .h5mu containing raw counts and a spatial graph
 # in .obsp["spatial_connectivities"] (used by the spatial_autocorr step).
