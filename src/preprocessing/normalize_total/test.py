@@ -197,5 +197,35 @@ def test_output_layer(run_component, random_h5mu_path):
     )
 
 
+def test_integer_counts(run_component, random_h5mu_path):
+    """Raw integer count matrices must be cast to float before the GPU
+    transfer; cupy sparse rejects integer dtypes. Regression test for the
+    normalize_total GPU transfer failure on integer .X."""
+    mu_orig = mu.read_h5mu(input)
+    mu_orig.mod["rna"].X = mu_orig.mod["rna"].X.astype("int32")
+    input_int = random_h5mu_path()
+    mu_orig.write(input_int)
+
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            str(input_int),
+            "--output",
+            output,
+            "--output_compression",
+            "gzip",
+            "--target_sum",
+            "10000",
+        ]
+    )
+
+    assert output.is_file(), "No output was created."
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    assert np.all(np.abs(rna_out.X.sum(axis=1) - 10000) < 1), (
+        "Integer counts should be normalized to target_sum."
+    )
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))

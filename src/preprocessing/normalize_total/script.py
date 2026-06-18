@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 import rapids_singlecell as rsc
 
 ## VIASH START
@@ -32,6 +33,16 @@ if par["output_layer"]:
     dat.layers[par["output_layer"]] = source.copy()
 
 target_layer = par["output_layer"] or par["input_layer"]
+
+# cupy sparse only supports bool/float/complex dtypes, so integer count
+# matrices cannot be transferred to the GPU as-is. Cast them to float before
+# the transfer; normalization produces float values anyway, so no information
+# is lost.
+if target_layer:
+    if np.issubdtype(dat.layers[target_layer].dtype, np.integer):
+        dat.layers[target_layer] = dat.layers[target_layer].astype("float32")
+elif np.issubdtype(dat.X.dtype, np.integer):
+    dat.X = dat.X.astype("float32")
 
 with on_gpu(dat, logger, layer=target_layer):
     logger.info("Performing total normalization.")
