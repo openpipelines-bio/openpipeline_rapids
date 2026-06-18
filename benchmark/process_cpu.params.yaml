@@ -17,6 +17,7 @@
 param_list:
   - id: benchmark
     input: s3://YOUR-BUCKET/path/to/spatial_input.h5mu
+    output: process_cpu.h5mu
 
 modality: rna
 
