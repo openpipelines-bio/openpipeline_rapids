@@ -3306,6 +3306,12 @@ meta = [
       "name" : "openpipeline",
       "repo" : "openpipeline",
       "tag" : "v4.1.0"
+    },
+    {
+      "type" : "vsh",
+      "name" : "openpipeline_spatial",
+      "repo" : "openpipeline_spatial",
+      "tag" : "v0.5.0"
     }
   ],
   "license" : "MIT",
@@ -3327,9 +3333,9 @@ meta = [
       "id" : "nextflow",
       "directives" : {
         "label" : [
-          "midmem",
-          "lowcpu",
-          "highdisk",
+          "highcpu",
+          "highmem",
+          "middisk",
           "gpu"
         ],
         "tag" : "$id"
@@ -3475,7 +3481,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/pca",
     "viash_version" : "0.9.7",
-    "git_commit" : "b1d24f5dafbb8be31d5d2947064f7b46b222a021",
+    "git_commit" : "37c780f9f82adca91abb23101611c1c1f306e0c1",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3509,6 +3515,12 @@ meta = [
         "name" : "openpipeline",
         "repo" : "openpipeline",
         "tag" : "v4.1.0"
+      },
+      {
+        "type" : "vsh",
+        "name" : "openpipeline_spatial",
+        "repo" : "openpipeline_spatial",
+        "tag" : "v0.5.0"
       }
     ],
     "viash_version" : "0.9.7",
@@ -3545,6 +3557,8 @@ def innerWorkflowFactory(args) {
 tempscript=".viash_script.py"
 cat > "$tempscript" << VIASHMAIN
 import sys
+import numpy as np
+import scipy.sparse
 import rapids_singlecell as rsc
 
 ## VIASH START
@@ -3628,7 +3642,25 @@ if par["var_input"]:
             f"of genes to run the PCA on, but the column is not available "
             f"for modality {par['modality']}"
         )
-    mask_var = par["var_input"]
+    mask_var = dat.var[par["var_input"]].to_numpy().astype(bool)
+
+# rapids-singlecell's PCA raises on genes with zero expression,
+# scanpy tolerates them (an all-zero column has zero
+# variance and contributes nothing to the decomposition). Drop such genes from
+# the PCA mask so this component behaves like the CPU one on unfiltered data;
+# the resulting embedding is identical to keeping them.
+pca_matrix = dat.layers[par["layer"]] if par["layer"] else dat.X
+if scipy.sparse.issparse(pca_matrix):
+    gene_nnz = pca_matrix.getnnz(axis=0)
+else:
+    gene_nnz = np.count_nonzero(np.asarray(pca_matrix), axis=0)
+nonzero_genes = np.asarray(gene_nnz).ravel() > 0
+if not nonzero_genes.all():
+    logger.info(
+        f"Excluding {int((~nonzero_genes).sum())} gene(s) with zero expression "
+        f"from the PCA."
+    )
+    mask_var = nonzero_genes if mask_var is None else (mask_var & nonzero_genes)
 
 # Fail fast if an output slot already exists and overwrite is not allowed.
 # The slots themselves do not need clearing: the PCA call and the rename
@@ -4059,9 +4091,9 @@ meta["defaults"] = [
     "tag" : "build_benchmark_gpu_vs_cpu_workflows"
   },
   "label" : [
-    "midmem",
-    "lowcpu",
-    "highdisk",
+    "highcpu",
+    "highmem",
+    "middisk",
     "gpu"
   ],
   "tag" : "$id"

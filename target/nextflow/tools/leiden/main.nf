@@ -3280,6 +3280,12 @@ meta = [
       "name" : "openpipeline",
       "repo" : "openpipeline",
       "tag" : "v4.1.0"
+    },
+    {
+      "type" : "vsh",
+      "name" : "openpipeline_spatial",
+      "repo" : "openpipeline_spatial",
+      "tag" : "v0.5.0"
     }
   ],
   "license" : "MIT",
@@ -3301,9 +3307,9 @@ meta = [
       "id" : "nextflow",
       "directives" : {
         "label" : [
+          "highcpu",
           "midmem",
-          "lowcpu",
-          "highdisk",
+          "middisk",
           "gpu"
         ],
         "tag" : "$id"
@@ -3449,7 +3455,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/tools/leiden",
     "viash_version" : "0.9.7",
-    "git_commit" : "b1d24f5dafbb8be31d5d2947064f7b46b222a021",
+    "git_commit" : "37c780f9f82adca91abb23101611c1c1f306e0c1",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3483,6 +3489,12 @@ meta = [
         "name" : "openpipeline",
         "repo" : "openpipeline",
         "tag" : "v4.1.0"
+      },
+      {
+        "type" : "vsh",
+        "name" : "openpipeline_spatial",
+        "repo" : "openpipeline_spatial",
+        "tag" : "v0.5.0"
       }
     ],
     "viash_version" : "0.9.7",
@@ -3998,9 +4010,9 @@ meta["defaults"] = [
     "tag" : "build_benchmark_gpu_vs_cpu_workflows"
   },
   "label" : [
+    "highcpu",
     "midmem",
-    "lowcpu",
-    "highdisk",
+    "middisk",
     "gpu"
   ],
   "tag" : "$id"

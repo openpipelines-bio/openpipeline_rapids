@@ -135,4 +135,4 @@ runners:
     docker_run_args: --gpus all
   - type: nextflow
     directives:
-      label: [midmem, lowcpu, highdisk, gpu]
+      label: [midcpu, midmem, gpu]
