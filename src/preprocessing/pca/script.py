@@ -1,4 +1,6 @@
 import sys
+import numpy as np
+import scipy.sparse
 import rapids_singlecell as rsc
 
 ## VIASH START
@@ -57,7 +59,25 @@ if par["var_input"]:
             f"of genes to run the PCA on, but the column is not available "
             f"for modality {par['modality']}"
         )
-    mask_var = par["var_input"]
+    mask_var = dat.var[par["var_input"]].to_numpy().astype(bool)
+
+# rapids-singlecell's PCA raises on genes with zero expression,
+# scanpy tolerates them (an all-zero column has zero
+# variance and contributes nothing to the decomposition). Drop such genes from
+# the PCA mask so this component behaves like the CPU one on unfiltered data;
+# the resulting embedding is identical to keeping them.
+pca_matrix = dat.layers[par["layer"]] if par["layer"] else dat.X
+if scipy.sparse.issparse(pca_matrix):
+    gene_nnz = pca_matrix.getnnz(axis=0)
+else:
+    gene_nnz = np.count_nonzero(np.asarray(pca_matrix), axis=0)
+nonzero_genes = np.asarray(gene_nnz).ravel() > 0
+if not nonzero_genes.all():
+    logger.info(
+        f"Excluding {int((~nonzero_genes).sum())} gene(s) with zero expression "
+        f"from the PCA."
+    )
+    mask_var = nonzero_genes if mask_var is None else (mask_var & nonzero_genes)
 
 # Fail fast if an output slot already exists and overwrite is not allowed.
 # The slots themselves do not need clearing: the PCA call and the rename
