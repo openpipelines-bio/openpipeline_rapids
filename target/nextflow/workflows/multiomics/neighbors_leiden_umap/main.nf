@@ -3364,7 +3364,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/workflows/multiomics/neighbors_leiden_umap",
     "viash_version" : "0.9.7",
-    "git_commit" : "37c780f9f82adca91abb23101611c1c1f306e0c1",
+    "git_commit" : "d6aec88520e98ef3c889ae710827b6354b8fd978",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
