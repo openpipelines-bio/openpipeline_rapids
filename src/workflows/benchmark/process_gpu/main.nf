@@ -38,7 +38,8 @@ workflow run_wf {
       ],
       args: [
         "layer": "log_normalized",
-        "obsm_output": "X_pca"
+        "obsm_output": "X_pca",
+        "overwrite": true
       ],
       toState: ["input": "output"]
     )
