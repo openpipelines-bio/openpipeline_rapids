@@ -4,7 +4,7 @@ params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
 include { neighbors_leiden_umap } from params.rootDir + "/target/nextflow/workflows/multiomics/neighbors_leiden_umap/main.nf"
 
-params.resources_test = params.rootDir + "/resources_test"
+params.resources_test = params.resources_test ?: params.rootDir + "/resources_test"
 
 workflow test_wf {
 
@@ -13,7 +13,7 @@ workflow test_wf {
   output_ch = Channel.fromList([
       [
         id: "simple_execution_test",
-        input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
+        input: resources_test.resolve("pbmc_1k_protein_v3_mms.h5mu"),
         obsm_input: "X_pca",
         uns_neighbors: "neighbors",
         obsp_neighbor_distances: "distances",
