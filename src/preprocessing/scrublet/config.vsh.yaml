@@ -1,0 +1,127 @@
+name: scrublet
+namespace: "preprocessing"
+scope: "public"
+description: |
+  Predict doublets using Scrublet [Wolock19].
+
+  Computes a doublet score for each cell from a raw count matrix by simulating
+  doublets and comparing each observed transcriptome to the simulated ones.
+  Wraps the rapids-singlecell `rsc.pp.scrublet` function. Results are written to
+  `.obs["doublet_score"]`, `.obs["predicted_doublet"]`, and `.uns["scrublet"]`.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--batch_key"
+        type: string
+        required: false
+        description: |
+          An optional `.obs` column with batch information. If set, Scrublet is
+          run independently for each batch and the doublet scores are stitched
+          back together.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+  - name: Options
+    arguments:
+      - name: "--sim_doublet_ratio"
+        type: double
+        default: 2.0
+        description: |
+          Number of doublets to simulate relative to the number of observed
+          cells.
+
+      - name: "--expected_doublet_rate"
+        type: double
+        default: 0.05
+        description: |
+          The estimated doublet rate for the experiment.
+
+      - name: "--stdev_doublet_rate"
+        type: double
+        default: 0.02
+        description: |
+          Uncertainty in the expected doublet rate.
+
+      - name: "--n_prin_comps"
+        type: integer
+        default: 30
+        description: |
+          Number of principal components used to embed the transcriptomes prior
+          to k-nearest-neighbor graph construction.
+
+      - name: "--n_neighbors"
+        type: integer
+        required: false
+        description: |
+          Number of neighbors used to construct the KNN graph of observed and
+          simulated transcriptomes. If not set, this is automatically set to
+          round(0.5 * sqrt(n_obs)).
+
+      - name: "--threshold"
+        type: double
+        required: false
+        description: |
+          Doublet score threshold for calling a transcriptome a doublet. If not
+          set, this is set automatically by looking for the minimum between the
+          two modes of the doublet_scores_sim_ histogram.
+
+      - name: "--random_state"
+        type: integer
+        default: 0
+        min: 0
+        description: |
+          Initial state for doublet simulation and nearest neighbors.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+  - path: /src/utils/gpu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [highcpu, highmem, middisk, gpu]
