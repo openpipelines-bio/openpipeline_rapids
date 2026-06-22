@@ -1,0 +1,115 @@
+name: harmony_integrate
+namespace: "preprocessing"
+scope: "public"
+description: |
+  Integrate observations over one or more batch/covariate columns on the GPU
+  using Harmony.
+
+  Wraps rapids-singlecell's `rsc.pp.harmony_integrate`, which runs Harmony batch
+  integration on a PCA embedding stored in `.obsm` and writes the corrected
+  embedding to a new `.obsm` slot. Useful for removing batch effects prior to
+  downstream neighbor search, clustering, and embedding.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--obsm_input"
+        type: string
+        default: "X_pca"
+        required: false
+        description: Which .obsm slot to use as the PCA embedding to integrate (basis).
+
+      - name: "--obs_covariates"
+        type: string
+        required: true
+        multiple: true
+        multiple_sep: ","
+        description: |
+          The .obs columns to integrate over (the batch/covariate keys passed to
+          Harmony). Provide one or more comma-separated column names.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file containing the integrated embedding.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--obsm_output"
+        type: string
+        default: "X_pca_harmony"
+        description: In which .obsm slot to store the Harmony-corrected embedding.
+
+  - name: Options
+    arguments:
+      - name: "--theta"
+        type: double
+        default: 2.0
+        description: |
+          Diversity clustering penalty parameter. Larger values result in more
+          aggressive diversity-encouraging correction over the covariates.
+
+      - name: "--n_clusters"
+        type: integer
+        required: false
+        description: |
+          Number of clusters used by Harmony. If not set, the value is chosen
+          automatically.
+
+      - name: "--max_iter_harmony"
+        type: integer
+        default: 10
+        description: Maximum number of rounds to run Harmony.
+
+      - name: "--random_state"
+        type: integer
+        default: 0
+        min: 0
+        description: A random seed.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [highcpu, highmem, middisk, gpu]
