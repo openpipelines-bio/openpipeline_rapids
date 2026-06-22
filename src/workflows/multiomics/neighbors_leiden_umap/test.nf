@@ -4,7 +4,7 @@ params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
 include { neighbors_leiden_umap } from params.rootDir + "/target/nextflow/workflows/multiomics/neighbors_leiden_umap/main.nf"
 
-params.resources_test = params.resources_test ?: params.rootDir + "/resources_test"
+params.resources_test = params.resources_test ?: params.rootDir + "/resources_test/pbmc_1k_protein_v3"
 
 workflow test_wf {
 

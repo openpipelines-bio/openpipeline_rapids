@@ -4,7 +4,7 @@ params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
 include { log_normalize } from params.rootDir + "/target/nextflow/workflows/rna/log_normalize/main.nf"
 
-params.resources_test = params.resources_test ?: params.rootDir + "/resources_test"
+params.resources_test = params.resources_test ?: params.rootDir + "/resources_test/pbmc_1k_protein_v3"
 
 workflow test_wf {
 
