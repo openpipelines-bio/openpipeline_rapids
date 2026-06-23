@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component tools umap"
-LABEL org.opencontainers.image.created="2026-06-17T08:31:29Z"
+LABEL org.opencontainers.image.created="2026-06-23T12:49:58Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="05609fcab3ad9d16a2bc5ff67f09395de8aa3de9"
+LABEL org.opencontainers.image.revision="20abaf16a1466f9493f32812532ba7927c1b92dc"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
