@@ -1,4 +1,5 @@
 import sys
+import re
 import pytest
 import subprocess
 import mudata as mu
@@ -80,7 +81,7 @@ def test_qc_vars(run_component, random_h5mu_path):
 def test_raise_if_layer_missing(run_component, random_h5mu_path):
     """Requesting a layer that does not exist should fail."""
     output = random_h5mu_path()
-    with pytest.raises(subprocess.CalledProcessError):
+    with pytest.raises(subprocess.CalledProcessError) as err:
         run_component(
             [
                 "--input",
@@ -91,6 +92,10 @@ def test_raise_if_layer_missing(run_component, random_h5mu_path):
                 "nonexistent",
             ]
         )
+    assert re.search(
+        r"Layer 'nonexistent' not found in modality 'rna'",
+        err.value.stdout.decode("utf-8"),
+    )
 
 
 if __name__ == "__main__":
