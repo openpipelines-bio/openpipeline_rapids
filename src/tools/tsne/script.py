@@ -14,6 +14,7 @@ par = {
     "learning_rate": 200,
     "metric": "euclidean",
     "method": "barnes_hut",
+    "overwrite": False,
     "output_compression": None,
 }
 meta = {"name": "tsne"}
@@ -32,6 +33,12 @@ logger.info(par)
 if par["obsm_input"] not in dat.obsm:
     raise ValueError(
         f"'{par['obsm_input']}' was not found in .mod['{par['modality']}'].obsm."
+    )
+
+if par["obsm_output"] in dat.obsm and not par["overwrite"]:
+    raise ValueError(
+        f"Requested to create field {par['obsm_output']} in .obsm for modality "
+        f"{par['modality']}, but field already exists."
     )
 
 logger.info("Computing t-SNE for modality '%s'.", par["modality"])

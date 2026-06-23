@@ -84,5 +84,35 @@ def test_raise_if_obsm_input_missing(run_component, random_h5mu_path):
     )
 
 
+def test_overwrite_existing_slot(run_component, random_h5mu_path):
+    """Writing into an existing .obsm slot should fail without --overwrite
+    and succeed with it."""
+    first = random_h5mu_path()
+    run_component(
+        ["--input", input, "--output", first, "--output_compression", "gzip"]
+    )
+
+    second = random_h5mu_path()
+    with pytest.raises(subprocess.CalledProcessError) as err:
+        run_component(
+            ["--input", str(first), "--output", second, "--output_compression", "gzip"]
+        )
+    assert "but field already exists" in err.value.stdout.decode("utf-8")
+
+    run_component(
+        [
+            "--input",
+            str(first),
+            "--output",
+            second,
+            "--output_compression",
+            "gzip",
+            "--overwrite",
+            "true",
+        ]
+    )
+    assert "X_tsne" in mu.read_h5mu(second).mod["rna"].obsm
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
