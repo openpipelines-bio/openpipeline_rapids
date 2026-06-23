@@ -26,8 +26,8 @@ dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
-if not any(
-    par[threshold] is not None
+if all(
+    par[threshold] is None
     for threshold in ("min_counts", "min_cells", "max_counts", "max_cells")
 ):
     raise ValueError(

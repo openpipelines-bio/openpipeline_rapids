@@ -1,4 +1,5 @@
 import sys
+import re
 import pytest
 import subprocess
 import mudata as mu
@@ -66,7 +67,7 @@ def test_min_counts(run_component, random_h5mu_path):
 
 def test_raise_if_no_threshold(run_component, random_h5mu_path):
     output = random_h5mu_path()
-    with pytest.raises(subprocess.CalledProcessError):
+    with pytest.raises(subprocess.CalledProcessError) as err:
         run_component(
             [
                 "--input",
@@ -77,6 +78,11 @@ def test_raise_if_no_threshold(run_component, random_h5mu_path):
                 "gzip",
             ]
         )
+    assert re.search(
+        r"At least one of --min_counts, --min_cells, --max_counts, --max_cells "
+        r"must be set",
+        err.value.stdout.decode("utf-8"),
+    )
 
 
 if __name__ == "__main__":
