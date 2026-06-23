@@ -88,9 +88,7 @@ def test_overwrite_existing_slot(run_component, random_h5mu_path):
     """Writing into an existing .obsm slot should fail without --overwrite
     and succeed with it."""
     first = random_h5mu_path()
-    run_component(
-        ["--input", input, "--output", first, "--output_compression", "gzip"]
-    )
+    run_component(["--input", input, "--output", first, "--output_compression", "gzip"])
 
     second = random_h5mu_path()
     with pytest.raises(subprocess.CalledProcessError) as err:
