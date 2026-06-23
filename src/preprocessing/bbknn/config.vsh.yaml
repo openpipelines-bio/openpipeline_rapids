@@ -70,6 +70,11 @@ argument_groups:
         default: "connectivities"
         description: In which .obsp slot to store the connectivities matrix between the resulting neighbors.
 
+      - name: "--overwrite"
+        type: boolean
+        default: false
+        description: Allow overwriting the .uns/.obsp output slots if they already exist.
+
   - name: Options
     arguments:
       - name: "--neighbors_within_batch"

@@ -17,6 +17,7 @@ par = {
     "algorithm": "brute",
     "trim": None,
     "random_state": 0,
+    "overwrite": False,
     "output_compression": None,
 }
 meta = {"name": "bbknn"}
@@ -41,6 +42,18 @@ if par["batch_key"] not in dat.obs.columns:
     raise ValueError(
         f"batch_key '{par['batch_key']}' not found in .obs of modality '{par['modality']}'."
     )
+
+if not par["overwrite"]:
+    for field, key in (
+        ("uns", par["uns_output"]),
+        ("obsp", par["obsp_distances"]),
+        ("obsp", par["obsp_connectivities"]),
+    ):
+        if key in getattr(dat, field):
+            raise ValueError(
+                f"Requested to create field {key} in .{field} for modality "
+                f"{par['modality']}, but field already exists."
+            )
 
 # rsc.pp.bbknn writes to .uns and .obsp (no matrix transform), and reads the
 # embedding directly from .obsm[use_rep]. No anndata_to_GPU pre-stage is
