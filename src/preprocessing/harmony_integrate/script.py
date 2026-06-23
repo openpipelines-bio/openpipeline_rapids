@@ -13,6 +13,7 @@ par = {
     "n_clusters": None,
     "max_iter_harmony": 10,
     "random_state": 0,
+    "overwrite": False,
     "output_compression": None,
 }
 meta = {"name": "harmony_integrate"}
@@ -38,6 +39,12 @@ for covariate in par["obs_covariates"]:
         raise ValueError(
             f"obs column '{covariate}' not found in modality '{par['modality']}'."
         )
+
+if par["obsm_output"] in dat.obsm and not par["overwrite"]:
+    raise ValueError(
+        f"Requested to create field {par['obsm_output']} in .obsm for modality "
+        f"{par['modality']}, but field already exists."
+    )
 
 # rsc.pp.harmony_integrate reads the embedding from .obsm[basis] and writes the
 # corrected embedding to .obsm[adjusted_basis]. It does not transform the main

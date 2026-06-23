@@ -62,6 +62,11 @@ argument_groups:
         default: "X_pca_harmony"
         description: In which .obsm slot to store the Harmony-corrected embedding.
 
+      - name: "--overwrite"
+        type: boolean
+        default: false
+        description: Allow overwriting the .obsm output slot if it already exists.
+
   - name: Options
     arguments:
       - name: "--theta"
