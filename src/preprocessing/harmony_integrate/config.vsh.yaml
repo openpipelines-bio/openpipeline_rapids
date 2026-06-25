@@ -72,6 +72,7 @@ argument_groups:
       - name: "--theta"
         type: double
         default: 2.0
+        min: 0
         description: |
           Diversity clustering penalty parameter. Larger values result in more
           aggressive diversity-encouraging correction over the covariates.
@@ -79,6 +80,7 @@ argument_groups:
       - name: "--n_clusters"
         type: integer
         required: false
+        min: 1
         description: |
           Number of clusters used by Harmony. If not set, the value is chosen
           automatically.
@@ -86,6 +88,7 @@ argument_groups:
       - name: "--max_iter_harmony"
         type: integer
         default: 10
+        min: 1
         description: Maximum number of rounds to run Harmony.
 
       - name: "--random_state"
