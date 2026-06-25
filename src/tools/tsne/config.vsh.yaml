@@ -6,7 +6,7 @@ description: |
   dimensionality reduction technique for visualizing high-dimensional data.
   It computes a low-dimensional embedding from a precomputed representation
   in `.obsm` (e.g. `X_pca`) and writes the result to `.obsm`. Wraps the
-  `rapids_singlecell.tl.tsne` function. See van der Maaten & Hinton (2008).
+  `rapids_singlecell.tl.tsne` function.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -37,6 +37,7 @@ argument_groups:
       - name: "--n_pcs"
         type: integer
         required: false
+        min: 1
         description: |
           The number of dimensions of the representation to use. If not set,
           all dimensions of `--obsm_input` are used.
@@ -66,6 +67,7 @@ argument_groups:
     arguments:
       - name: "--perplexity"
         type: integer
+        min: 1
         description: |
           The perplexity is related to the number of nearest neighbors that
           is used in other manifold learning algorithms. Larger datasets
@@ -74,6 +76,7 @@ argument_groups:
 
       - name: "--early_exaggeration"
         type: double
+        min: 1
         description: |
           Controls how tight natural clusters in the original space are in
           the embedded space and how much space will be between them.
@@ -81,6 +84,7 @@ argument_groups:
 
       - name: "--learning_rate"
         type: double
+        min: 1
         description: |
           The learning rate for the optimization. If the learning rate is too
           high, the data may look like a 'ball' with any point approximately
