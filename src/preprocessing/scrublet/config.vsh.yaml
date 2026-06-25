@@ -2,7 +2,7 @@ name: scrublet
 namespace: "preprocessing"
 scope: "public"
 description: |
-  Predict doublets using Scrublet [Wolock19].
+  Predict doublets using Scrublet.
 
   Computes a doublet score for each cell from a raw count matrix by simulating
   doublets and comparing each observed transcriptome to the simulated ones.
@@ -30,6 +30,13 @@ argument_groups:
         required: false
         description: Which modality from the input MuData file to process.
 
+      - name: "--layer"
+        type: string
+        required: false
+        description: |
+          Layer of raw counts to run doublet detection on. If not set, `.X`
+          is used.
+
       - name: "--batch_key"
         type: string
         required: false
@@ -54,6 +61,7 @@ argument_groups:
       - name: "--sim_doublet_ratio"
         type: double
         default: 2.0
+        min: 0
         description: |
           Number of doublets to simulate relative to the number of observed
           cells.
@@ -61,18 +69,23 @@ argument_groups:
       - name: "--expected_doublet_rate"
         type: double
         default: 0.05
+        min: 0
+        max: 1
         description: |
           The estimated doublet rate for the experiment.
 
       - name: "--stdev_doublet_rate"
         type: double
         default: 0.02
+        min: 0
+        max: 1
         description: |
           Uncertainty in the expected doublet rate.
 
       - name: "--n_prin_comps"
         type: integer
         default: 30
+        min: 1
         description: |
           Number of principal components used to embed the transcriptomes prior
           to k-nearest-neighbor graph construction.
@@ -80,6 +93,7 @@ argument_groups:
       - name: "--n_neighbors"
         type: integer
         required: false
+        min: 1
         description: |
           Number of neighbors used to construct the KNN graph of observed and
           simulated transcriptomes. If not set, this is automatically set to
@@ -88,6 +102,8 @@ argument_groups:
       - name: "--threshold"
         type: double
         required: false
+        min: 0
+        max: 1
         description: |
           Doublet score threshold for calling a transcriptome a doublet. If not
           set, this is set automatically by looking for the minimum between the

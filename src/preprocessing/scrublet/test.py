@@ -1,5 +1,6 @@
 import sys
 import pytest
+import subprocess
 import mudata as mu
 
 ## VIASH START
@@ -75,6 +76,59 @@ def test_random_state(run_component, random_h5mu_path):
     )
     assert "predicted_doublet" in rna_out.obs, (
         'Output should contain .obs["predicted_doublet"].'
+    )
+
+
+def test_layer(run_component, random_h5mu_path):
+    """Scrublet should run on the requested layer and leave .X untouched."""
+    mu_in = mu.read_h5mu(input)
+    mu_in.mod["rna"].layers["counts"] = mu_in.mod["rna"].X.copy()
+    input_with_layer = random_h5mu_path()
+    mu_in.write(input_with_layer)
+
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            str(input_with_layer),
+            "--output",
+            output,
+            "--output_compression",
+            "gzip",
+            "--layer",
+            "counts",
+        ]
+    )
+
+    assert output.is_file(), "No output was created."
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    assert "doublet_score" in rna_out.obs, (
+        'Output should contain .obs["doublet_score"].'
+    )
+    assert "predicted_doublet" in rna_out.obs, (
+        'Output should contain .obs["predicted_doublet"].'
+    )
+
+
+def test_raise_if_layer_missing(run_component, random_h5mu_path):
+    """Should raise if the requested layer does not exist."""
+    output = random_h5mu_path()
+    with pytest.raises(subprocess.CalledProcessError) as err:
+        run_component(
+            [
+                "--input",
+                input,
+                "--output",
+                output,
+                "--output_compression",
+                "gzip",
+                "--layer",
+                "does_not_exist",
+            ]
+        )
+    assert not output.is_file(), "No output should be created."
+    assert "Layer does_not_exist not found in modality rna" in err.value.stdout.decode(
+        "utf-8"
     )
 
 
