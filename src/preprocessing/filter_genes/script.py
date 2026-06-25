@@ -26,12 +26,17 @@ dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
-if all(
-    par[threshold] is None
-    for threshold in ("min_counts", "min_cells", "max_counts", "max_cells")
+# rsc.pp.filter_genes accepts only a single threshold per call.
+if (
+    sum(
+        par[threshold] is not None
+        for threshold in ("min_counts", "min_cells", "max_counts", "max_cells")
+    )
+    != 1
 ):
     raise ValueError(
-        "At least one of --min_counts, --min_cells, --max_counts, --max_cells must be set."
+        "Exactly one of --min_counts, --min_cells, --max_counts, --max_cells "
+        "must be set per call."
     )
 
 with on_gpu(dat, logger):
