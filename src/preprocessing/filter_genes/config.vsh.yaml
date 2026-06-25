@@ -47,12 +47,14 @@ argument_groups:
       - name: "--min_counts"
         type: integer
         required: false
+        min: 0
         description: |
           Minimum number of counts required for a gene to pass filtering.
 
       - name: "--min_cells"
         type: integer
         required: false
+        min: 0
         description: |
           Minimum number of cells expressing a gene required for it to pass
           filtering.
@@ -60,12 +62,14 @@ argument_groups:
       - name: "--max_counts"
         type: integer
         required: false
+        min: 0
         description: |
           Maximum number of counts allowed for a gene to pass filtering.
 
       - name: "--max_cells"
         type: integer
         required: false
+        min: 0
         description: |
           Maximum number of cells expressing a gene allowed for it to pass
           filtering.
