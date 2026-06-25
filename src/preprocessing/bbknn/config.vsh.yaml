@@ -101,7 +101,7 @@ argument_groups:
       - name: "--algorithm"
         type: string
         default: "brute"
-        choices: [ "brute", "cagra", "ivfflat", "ivfpq", "nn_descent" ]
+        choices: [ "brute", "cagra", "ivfflat", "ivfpq", "mg_ivfflat", "mg_ivfpq" ]
         description: |
           The KNN query algorithm to use (provided by cuVS). See
           https://docs.rapids.ai/api/cuvs/stable/ for details.
@@ -114,8 +114,8 @@ argument_groups:
             - ivfpq: Inverted-file index combined with product quantization of
               the vectors. Approximate with a low memory footprint; scales to
               very large datasets.
-            - nn_descent: Graph-based approximate method that iteratively
-              refines a KNN graph from a random initialization.
+            - mg_ivfflat: Multi-GPU variant of ivfflat.
+            - mg_ivfpq: Multi-GPU variant of ivfpq.
 
       - name: "--trim"
         type: integer
