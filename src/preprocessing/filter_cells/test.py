@@ -117,5 +117,58 @@ def test_raise_if_multiple_thresholds(run_component, random_h5mu_path):
     )
 
 
+def test_layer(run_component, random_h5mu_path):
+    """Filtering should run on the requested layer and keep it in the output."""
+    mu_in = mu.read_h5mu(input)
+    mu_in.mod["rna"].layers["counts"] = mu_in.mod["rna"].X.copy()
+    input_with_layer = random_h5mu_path()
+    mu_in.write(input_with_layer)
+
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            str(input_with_layer),
+            "--output",
+            output,
+            "--output_compression",
+            "gzip",
+            "--min_genes",
+            "50",
+            "--layer",
+            "counts",
+        ]
+    )
+
+    rna_in = mu.read_h5mu(input).mod["rna"]
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    assert rna_out.n_vars == rna_in.n_vars, "Number of genes should be unchanged."
+    assert rna_out.n_obs < rna_in.n_obs, "Some cells should have been filtered out."
+    assert "counts" in rna_out.layers, "The input layer should be preserved."
+
+
+def test_raise_if_layer_missing(run_component, random_h5mu_path):
+    output = random_h5mu_path()
+    with pytest.raises(subprocess.CalledProcessError) as err:
+        run_component(
+            [
+                "--input",
+                input,
+                "--output",
+                output,
+                "--output_compression",
+                "gzip",
+                "--min_genes",
+                "50",
+                "--layer",
+                "does_not_exist",
+            ]
+        )
+    assert re.search(
+        r"Layer does_not_exist not found in modality rna",
+        err.value.stdout.decode("utf-8"),
+    )
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
