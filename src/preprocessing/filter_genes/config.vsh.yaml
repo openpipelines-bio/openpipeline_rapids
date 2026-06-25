@@ -31,6 +31,12 @@ argument_groups:
         required: false
         description: Which modality from the input MuData file to process.
 
+      - name: "--layer"
+        type: string
+        required: false
+        description: |
+          Layer of counts to filter on. If not set, .X is used.
+
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
     arguments:
