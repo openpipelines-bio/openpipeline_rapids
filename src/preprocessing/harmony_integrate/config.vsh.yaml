@@ -75,9 +75,21 @@ argument_groups:
         type: double
         default: 2.0
         min: 0
+        multiple: true
+        multiple_sep: ","
         description: |
-          Diversity clustering penalty parameter. Larger values result in more
-          aggressive diversity-encouraging correction over the covariates.
+          Diversity clustering penalty parameter. theta=0 does not encourage any
+          diversity; larger values result in more aggressive
+          diversity-encouraging correction over the covariates. Provide a single
+          value for all covariates, or one value per --obs_covariates entry.
+
+      - name: "--flavor"
+        type: string
+        choices: ["harmony2", "harmony1"]
+        default: "harmony2"
+        description: |
+          Which Harmony implementation to use. 'harmony2' is the faster
+          reimplementation; 'harmony1' reproduces the original algorithm.
 
       - name: "--n_clusters"
         type: integer

@@ -9,7 +9,8 @@ par = {
     "obsm_input": "X_pca",
     "obs_covariates": ["batch"],
     "obsm_output": "X_pca_harmony",
-    "theta": 2.0,
+    "theta": [2.0],
+    "flavor": "harmony2",
     "n_clusters": None,
     "max_iter_harmony": 10,
     "random_state": 0,
@@ -51,13 +52,20 @@ if par["obsm_output"] in dat.obsm and not par["overwrite"]:
 # matrix, so the obsm representation is transferred to GPU internally - call it
 # directly, no on_gpu pre-stage required.
 
+# A single --theta applies to all covariates; pass it as a scalar so Harmony
+# broadcasts it, otherwise pass the per-covariate list as given.
+theta = par["theta"]
+if theta is not None and len(theta) == 1:
+    theta = theta[0]
+
 logger.info("Integrating with Harmony.")
 rsc.pp.harmony_integrate(
     dat,
     key=par["obs_covariates"],
     basis=par["obsm_input"],
     adjusted_basis=par["obsm_output"],
-    theta=par["theta"],
+    theta=theta,
+    flavor=par["flavor"],
     n_clusters=par["n_clusters"],
     max_iter_harmony=par["max_iter_harmony"],
     random_state=par["random_state"],
