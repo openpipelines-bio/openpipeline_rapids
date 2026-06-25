@@ -78,6 +78,58 @@ def test_qc_vars(run_component, random_h5mu_path):
     )
 
 
+def test_log1p(run_component, random_h5mu_path):
+    """--log1p adds log1p-transformed metrics on top of the regular ones; with
+    --log1p false only the regular metrics are present."""
+    with_log1p = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            input,
+            "--output",
+            with_log1p,
+            "--output_compression",
+            "gzip",
+            "--log1p",
+            "true",
+        ]
+    )
+    rna_with = mu.read_h5mu(with_log1p).mod["rna"]
+    assert "total_counts" in rna_with.obs.columns, (
+        "Regular metrics should always be present."
+    )
+    assert "log1p_total_counts" in rna_with.obs.columns, (
+        "--log1p should add log1p-transformed .obs metrics on top of the regular ones."
+    )
+    assert "log1p_total_counts" in rna_with.var.columns, (
+        "--log1p should add log1p-transformed .var metrics on top of the regular ones."
+    )
+
+    without_log1p = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            input,
+            "--output",
+            without_log1p,
+            "--output_compression",
+            "gzip",
+            "--log1p",
+            "false",
+        ]
+    )
+    rna_without = mu.read_h5mu(without_log1p).mod["rna"]
+    assert "total_counts" in rna_without.obs.columns, (
+        "Regular metrics should still be present without --log1p."
+    )
+    assert "log1p_total_counts" not in rna_without.obs.columns, (
+        "No log1p metrics should be added when --log1p is false."
+    )
+    assert "log1p_total_counts" not in rna_without.var.columns, (
+        "No log1p metrics should be added when --log1p is false."
+    )
+
+
 def test_raise_if_layer_missing(run_component, random_h5mu_path):
     """Requesting a layer that does not exist should fail."""
     output = random_h5mu_path()
