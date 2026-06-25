@@ -29,6 +29,8 @@ logger.info(par)
 if par["input_layer"] and par["input_layer"] not in dat.layers.keys():
     raise ValueError(f"Input layer {par['input_layer']} not found in {par['modality']}")
 
+# Pre-stage the source matrix into the output layer so rsc.pp.scale can scale
+# it in place there, leaving the input (.X or --input_layer) untouched.
 if par["output_layer"]:
     source = dat.layers[par["input_layer"]] if par["input_layer"] else dat.X
     dat.layers[par["output_layer"]] = source.copy()
