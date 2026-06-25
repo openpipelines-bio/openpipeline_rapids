@@ -1,0 +1,129 @@
+name: tsne
+namespace: "tools"
+scope: "public"
+description: |
+  t-SNE (t-distributed Stochastic Neighbor Embedding) is a non-linear
+  dimensionality reduction technique for visualizing high-dimensional data.
+  It computes a low-dimensional embedding from a precomputed representation
+  in `.obsm` (e.g. `X_pca`) and writes the result to `.obsm`. Wraps the
+  `rapids_singlecell.tl.tsne` function.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--obsm_input"
+        type: string
+        default: "X_pca"
+        description: The `.obsm` slot to use as the representation to embed.
+
+      - name: "--n_pcs"
+        type: integer
+        required: false
+        min: 1
+        description: |
+          The number of dimensions of the representation to use. If not set,
+          all dimensions of `--obsm_input` are used.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--obsm_output"
+        type: string
+        description: In which .obsm slot to store the resulting t-SNE embedding.
+        default: "X_tsne"
+
+      - name: "--overwrite"
+        type: boolean
+        default: false
+        description: Allow overwriting the .obsm output slot if it already exists.
+
+  - name: Options
+    arguments:
+      - name: "--perplexity"
+        type: integer
+        min: 1
+        description: |
+          The perplexity is related to the number of nearest neighbors that
+          is used in other manifold learning algorithms. Larger datasets
+          usually require a larger perplexity.
+        default: 30
+
+      - name: "--early_exaggeration"
+        type: double
+        min: 1
+        description: |
+          Controls how tight natural clusters in the original space are in
+          the embedded space and how much space will be between them.
+        default: 12
+
+      - name: "--learning_rate"
+        type: double
+        min: 1
+        description: |
+          The learning rate for the optimization. If the learning rate is too
+          high, the data may look like a 'ball' with any point approximately
+          equidistant from its nearest neighbours. If it is too low, most
+          points may look compressed in a dense cloud with few outliers.
+        default: 200
+
+      - name: "--metric"
+        type: string
+        description: The metric to use when computing distances in the representation.
+        default: "euclidean"
+
+      - name: "--method"
+        type: string
+        description: The t-SNE method to use.
+        choices: ["barnes_hut", "fft"]
+        default: "barnes_hut"
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [highcpu, midmem, middisk, gpu]
