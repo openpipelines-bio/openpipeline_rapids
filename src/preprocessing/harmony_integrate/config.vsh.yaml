@@ -44,7 +44,9 @@ argument_groups:
         multiple_sep: ","
         description: |
           The .obs columns to integrate over (the batch/covariate keys passed to
-          Harmony). Provide one or more comma-separated column names.
+          Harmony). Provide one or more comma-separated column names. When
+          multiple keys are provided, a combined batch variable is created from
+          all columns.
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
