@@ -1,0 +1,93 @@
+name: regress_out
+namespace: "preprocessing"
+scope: "public"
+description: |
+  Regress out (mostly) unwanted sources of variation.
+
+  Uses simple linear regression. This is a GPU-accelerated wrapper around
+  rapids_singlecell.pp.regress_out, taking the listed .obs columns as
+  covariates to regress out of the expression matrix.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--input_layer"
+        type: string
+        required: false
+        description: Input layer to use. By default, X is used.
+
+      - name: "--obs_keys"
+        type: string
+        required: true
+        multiple: true
+        multiple_sep: ","
+        description: |
+          Keys of the .obs columns to regress out as covariates.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--output_layer"
+        type: string
+        required: false
+        description: Output layer to use. By default, use X.
+
+  - name: Options
+    arguments:
+      - name: "--batchsize"
+        type: integer
+        required: false
+        description: |
+          Number of genes per batch. If None, all genes are processed at once.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+  - path: /src/utils/gpu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [highcpu, highmem, middisk, gpu]
