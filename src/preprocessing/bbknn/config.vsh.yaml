@@ -97,6 +97,12 @@ argument_groups:
         type: string
         default: "euclidean"
         description: The distance metric to use.
+        choices: [
+          "l2", "chebyshev", "manhattan", "taxicab", "correlation",
+          "inner_product", "euclidean", "canberra", "lp", "minkowski",
+          "cosine", "jensenshannon", "linf", "cityblock", "l1", "haversine",
+          "sqeuclidean", "hellinger", "jaccard"
+        ]
 
       - name: "--algorithm"
         type: string
