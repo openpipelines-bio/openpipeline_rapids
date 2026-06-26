@@ -3407,7 +3407,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/scale",
     "viash_version" : "0.9.7",
-    "git_commit" : "7661c6c9c6a246dec12b659c6ef91193eeaa55d5",
+    "git_commit" : "c0155e2b48f01927b0fb0bfe051cc4ebb0c46bb4",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
