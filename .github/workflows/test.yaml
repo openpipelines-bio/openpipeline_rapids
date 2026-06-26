@@ -26,7 +26,4 @@ jobs:
         shell: bash
 
   test:
-    # Disabled: no GPU runner on CI yet — viash test requires --gpus all.
-    # Revert once a GPU runner is available. Tracking: #30
-    if: false
     uses: viash-io/viash-actions/.github/workflows/test.yaml@v6
