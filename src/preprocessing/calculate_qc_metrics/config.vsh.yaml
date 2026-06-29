@@ -1,0 +1,102 @@
+name: calculate_qc_metrics
+namespace: "preprocessing"
+scope: "public"
+description: |
+  Calculate quality control metrics.
+
+  Computes a number of per-cell (.obs) and per-gene (.var) quality control
+  metrics from a count matrix, such as the number of genes per cell, the
+  total counts per cell, the number of cells per gene, and the percentage
+  of counts dropped out per gene.
+
+  Wraps rapids_singlecell.pp.calculate_qc_metrics.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--layer"
+        type: string
+        required: false
+        description: |
+          Layer to compute QC metrics from. By default, X is used.
+
+      - name: "--qc_vars"
+        type: string
+        multiple: true
+        multiple_sep: ","
+        required: false
+        description: |
+          Names of boolean columns in .var for which per-cell percentage
+          metrics are computed (e.g. "mito" to compute pct_counts_mito).
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+  - name: Options
+    arguments:
+      - name: "--expr_type"
+        type: string
+        default: "counts"
+        description: Name of the expression unit, used to build the metric keys.
+
+      - name: "--var_type"
+        type: string
+        default: "genes"
+        description: Name of the variable type, used to build the metric keys.
+
+      - name: "--log1p"
+        type: boolean
+        default: true
+        description: Also compute log1p-transformed quality control metrics.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+  - path: /src/utils/gpu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [lowcpu, midmem, middisk, gpu]
