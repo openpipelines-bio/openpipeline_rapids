@@ -43,6 +43,12 @@ if (
 if par["layer"] and par["layer"] not in dat.layers.keys():
     raise ValueError(f"Layer {par['layer']} not found in modality {par['modality']}")
 
+# The GPU transfer promotes integer counts to float. Filtering only subsets the
+# data without changing values, so remember the input dtypes and restore them
+# afterward to avoid silently turning counts into floats in the output.
+original_x_dtype = dat.X.dtype
+original_layer_dtype = dat.layers[par["layer"]].dtype if par["layer"] else None
+
 # rsc.pp.filter_cells filters on .X. When --layer is given, swap it into .X for
 # the call; filtering subsets .X and all layers consistently, so swapping back
 # afterward leaves .X as the (subsetted) original matrix and the layer intact.
@@ -64,6 +70,14 @@ with on_gpu(dat, logger, **gpu_kwargs):
 
 if par["layer"]:
     dat.X, dat.layers[par["layer"]] = dat.layers[par["layer"]], dat.X
+
+if dat.X.dtype != original_x_dtype:
+    dat.X = dat.X.astype(original_x_dtype)
+if (
+    original_layer_dtype is not None
+    and dat.layers[par["layer"]].dtype != original_layer_dtype
+):
+    dat.layers[par["layer"]] = dat.layers[par["layer"]].astype(original_layer_dtype)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

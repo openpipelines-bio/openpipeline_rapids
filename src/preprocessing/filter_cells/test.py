@@ -140,11 +140,17 @@ def test_layer(run_component, random_h5mu_path):
         ]
     )
 
-    rna_in = mu.read_h5mu(input).mod["rna"]
+    rna_in = mu.read_h5mu(input_with_layer).mod["rna"]
     rna_out = mu.read_h5mu(output).mod["rna"]
     assert rna_out.n_vars == rna_in.n_vars, "Number of genes should be unchanged."
     assert rna_out.n_obs < rna_in.n_obs, "Some cells should have been filtered out."
     assert "counts" in rna_out.layers, "The input layer should be preserved."
+    assert rna_out.layers["counts"].dtype == rna_in.layers["counts"].dtype, (
+        "Filtering should not change the dtype of the counts layer."
+    )
+    assert rna_out.X.dtype == rna_in.X.dtype, (
+        "Filtering should not change the dtype of .X."
+    )
 
 
 def test_raise_if_layer_missing(run_component, random_h5mu_path):
