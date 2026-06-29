@@ -1,0 +1,100 @@
+name: filter_cells
+namespace: "preprocessing"
+scope: "public"
+description: |
+  Filter cell outliers based on counts and numbers of genes expressed.
+
+  Keep cells that have at least min_counts counts or min_genes genes expressed,
+  and at most max_counts counts or max_genes genes expressed. The thresholds
+  are applied to the counts in X on the GPU and the AnnData is subsetted in
+  place. Wraps the rapids-singlecell rsc.pp.filter_cells function.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--layer"
+        type: string
+        required: false
+        description: |
+          Layer of counts to filter on. If not set, .X is used.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+  - name: Options
+    arguments:
+      - name: "--min_counts"
+        type: integer
+        required: false
+        min: 0
+        description: Minimum number of counts required for a cell to pass filtering.
+
+      - name: "--min_genes"
+        type: integer
+        required: false
+        min: 0
+        description: Minimum number of genes expressed required for a cell to pass filtering.
+
+      - name: "--max_counts"
+        type: integer
+        required: false
+        min: 0
+        description: Maximum number of counts required for a cell to pass filtering.
+
+      - name: "--max_genes"
+        type: integer
+        required: false
+        min: 0
+        description: Maximum number of genes expressed required for a cell to pass filtering.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+  - path: /src/utils/gpu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [lowcpu, midmem, middisk, gpu]
