@@ -3485,7 +3485,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/tools/umap",
     "viash_version" : "0.9.7",
-    "git_commit" : "1c599ef4d20c56a7c3450c20ce2722867ce329d6",
+    "git_commit" : "4d37524e182c84e54ab9a4f1526f1babbf5150e2",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

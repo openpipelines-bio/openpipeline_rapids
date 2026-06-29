@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing scale"
-LABEL org.opencontainers.image.created="2026-06-29T09:45:10Z"
+LABEL org.opencontainers.image.created="2026-06-29T14:11:39Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="1c599ef4d20c56a7c3450c20ce2722867ce329d6"
+LABEL org.opencontainers.image.revision="4d37524e182c84e54ab9a4f1526f1babbf5150e2"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
