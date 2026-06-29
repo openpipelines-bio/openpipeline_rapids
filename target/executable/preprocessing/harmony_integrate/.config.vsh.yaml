@@ -1,5 +1,5 @@
-name: "spatial_autocorr"
-namespace: "squidpy"
+name: "harmony_integrate"
+namespace: "preprocessing"
 version: "build_main"
 authors:
 - name: "Jakub Majercik"
@@ -43,31 +43,22 @@ argument_groups:
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--layer"
-    description: "Layer in the modality to use for the autocorrelation analysis.\n\
-      If unset, .X is used.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "string"
-    name: "--obsp_connectivities"
-    description: "In which .obsp slot the spatial connectivities can be found."
+    name: "--obsm_input"
+    description: "Which .obsm slot to use as the PCA embedding to integrate (basis)."
     info: null
     default:
-    - "spatial_connectivities"
+    - "X_pca"
     required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
   - type: "string"
-    name: "--input_genes"
-    description: "Subset of genes (from .var_names) to compute autocorrelation for.\n\
-      If unset, all genes in .var['highly_variable'] (if present) or all\ngenes will\
-      \ be used.\n"
+    name: "--obs_covariates"
+    description: "The .obs columns to integrate over (the batch/covariate keys passed\
+      \ to\nHarmony). Provide one or more comma-separated column names. When\nmultiple\
+      \ keys are provided, a combined batch variable is created from\nall columns.\n"
     info: null
-    required: false
+    required: true
     direction: "input"
     multiple: true
     multiple_sep: ","
@@ -77,7 +68,7 @@ argument_groups:
     name: "--output"
     alternatives:
     - "-o"
-    description: "Output h5mu file."
+    description: "Output h5mu file containing the integrated embedding."
     info: null
     default:
     - "output.h5mu"
@@ -85,6 +76,26 @@ argument_groups:
     create_parent: true
     required: true
     direction: "output"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--obsm_output"
+    description: "In which .obsm slot to store the Harmony-corrected embedding."
+    info: null
+    default:
+    - "X_pca_harmony"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "boolean"
+    name: "--overwrite"
+    description: "Allow overwriting the .obsm output slot if it already exists."
+    info: null
+    default:
+    - false
+    required: false
+    direction: "input"
     multiple: false
     multiple_sep: ";"
   - type: "string"
@@ -103,66 +114,63 @@ argument_groups:
     multiple_sep: ";"
 - name: "Options"
   arguments:
-  - type: "string"
-    name: "--mode"
-    description: "Spatial autocorrelation statistic to compute. 'moran' for Moran's\
-      \ I,\n'geary' for Geary's C.\n"
+  - type: "double"
+    name: "--theta"
+    description: "Diversity clustering penalty parameter. theta=0 does not encourage\
+      \ any\ndiversity; larger values result in more aggressive\ndiversity-encouraging\
+      \ correction over the covariates. Provide a single\nvalue for all covariates,\
+      \ or one value per --obs_covariates entry.\n"
     info: null
     default:
-    - "moran"
+    - 2.0
+    required: false
+    min: 0.0
+    direction: "input"
+    multiple: true
+    multiple_sep: ","
+  - type: "string"
+    name: "--flavor"
+    description: "Which Harmony implementation to use. 'harmony2' is the faster\n\
+      reimplementation; 'harmony1' reproduces the original algorithm.\n"
+    info: null
+    default:
+    - "harmony2"
     required: false
     choices:
-    - "moran"
-    - "geary"
+    - "harmony2"
+    - "harmony1"
     direction: "input"
     multiple: false
     multiple_sep: ";"
   - type: "integer"
-    name: "--n_perms"
-    description: "Number of permutations for the permutation-based p-value\ncalculation.\
-      \ If unset, only analytical p-values are computed.\n"
+    name: "--n_clusters"
+    description: "Number of clusters used by Harmony. If not set, the value is chosen\n\
+      automatically.\n"
     info: null
     required: false
     min: 1
     direction: "input"
     multiple: false
     multiple_sep: ";"
-  - type: "boolean"
-    name: "--transformation"
-    description: "If true, row-normalize the connectivity matrix before computation.\n"
+  - type: "integer"
+    name: "--max_iter_harmony"
+    description: "Maximum number of rounds to run Harmony."
     info: null
     default:
-    - true
+    - 10
     required: false
+    min: 1
     direction: "input"
     multiple: false
     multiple_sep: ";"
-  - type: "boolean_true"
-    name: "--two_tailed"
-    description: "If set, compute two-tailed p-values from the permutation test\n\
-      instead of one-tailed.\n"
-    info: null
-    direction: "input"
-  - type: "string"
-    name: "--corr_method"
-    description: "Multiple-testing correction method to apply to p-values. Any method\n\
-      supported by `statsmodels.stats.multitest.multipletests`, e.g.\n'fdr_bh', 'fdr_by',\
-      \ 'bonferroni', 'holm'. Pass an empty string to\ndisable correction.\n"
+  - type: "integer"
+    name: "--random_state"
+    description: "A random seed."
     info: null
     default:
-    - "fdr_bh"
+    - 0
     required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "boolean"
-    name: "--use_sparse"
-    description: "If true, use a sparse representation of the expression matrix on\n\
-      the GPU.\n"
-    info: null
-    default:
-    - true
-    required: false
+    min: 0
     direction: "input"
     multiple: false
     multiple_sep: ";"
@@ -179,18 +187,17 @@ resources:
 - type: "file"
   path: "nextflow_labels.config"
   dest: "nextflow_labels.config"
-description: "Calculate spatial autocorrelation for genes using Moran's I or Geary's\
-  \ C\non a precomputed spatial neighborhood graph. Allows identification of\nspatially\
-  \ variable features.\n\nRequires a spatial connectivities matrix in .obsp, e.g.\
-  \ produced by\n`squidpy.gr.spatial_neighbors` or an equivalent GPU implementation.\n\
-  \nThe result is written to .uns as a DataFrame: `moranI` when `--mode` is\n'moran',\
-  \ or `gearyC` when `--mode` is 'geary'.\n"
+description: "Integrate observations over one or more batch/covariate columns on the\
+  \ GPU\nusing Harmony.\n\nWraps rapids-singlecell's `rsc.pp.harmony_integrate`, which\
+  \ runs Harmony batch\nintegration on a PCA embedding stored in `.obsm` and writes\
+  \ the corrected\nembedding to a new `.obsm` slot. Useful for removing batch effects\
+  \ prior to\ndownstream neighbor search, clustering, and embedding.\n"
 test_resources:
 - type: "python_script"
   path: "test.py"
   is_executable: true
 - type: "file"
-  path: "xenium"
+  path: "pbmc_1k_protein_v3"
 info: null
 status: "enabled"
 scope:
@@ -215,9 +222,9 @@ runners:
   id: "nextflow"
   directives:
     label:
-    - "midmem"
-    - "lowcpu"
-    - "highdisk"
+    - "highcpu"
+    - "highmem"
+    - "middisk"
     - "gpu"
     tag: "$id"
   auto:
@@ -327,11 +334,11 @@ engines:
   entrypoint: []
   cmd: null
 build_info:
-  config: "src/squidpy/spatial_autocorr/config.vsh.yaml"
+  config: "src/preprocessing/harmony_integrate/config.vsh.yaml"
   runner: "executable"
   engine: "docker"
-  output: "target/executable/squidpy/spatial_autocorr"
-  executable: "target/executable/squidpy/spatial_autocorr/spatial_autocorr"
+  output: "target/executable/preprocessing/harmony_integrate"
+  executable: "target/executable/preprocessing/harmony_integrate/harmony_integrate"
   viash_version: "0.9.7"
   git_commit: "1c599ef4d20c56a7c3450c20ce2722867ce329d6"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"

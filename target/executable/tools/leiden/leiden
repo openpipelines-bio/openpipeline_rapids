@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component tools leiden"
-LABEL org.opencontainers.image.created="2026-06-26T15:21:17Z"
+LABEL org.opencontainers.image.created="2026-06-29T09:45:11Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="f4eb5c0022a797e3c81555ff9e4325ae6d52f534"
+LABEL org.opencontainers.image.revision="1c599ef4d20c56a7c3450c20ce2722867ce329d6"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
