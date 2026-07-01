@@ -1,0 +1,132 @@
+name: tsne
+namespace: "workflows/tools"
+scope: "public"
+description: |
+  Compute a t-SNE embedding, running either the GPU (rapids-singlecell) or the
+  CPU (openpipeline) variant of tsne, selected with --device.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        type: file
+        required: true
+        direction: input
+        description: Input h5mu file.
+        example: input.h5mu
+      - name: "--modality"
+        type: string
+        default: "rna"
+        description: Which modality from the input MuData file to process.
+      - name: "--obsm_input"
+        type: string
+        default: "X_pca"
+        description: The `.obsm` slot to use as the representation to embed.
+      - name: "--n_pcs"
+        type: integer
+        min: 1
+        description: |
+          The number of dimensions of the representation to use. If not set,
+          all dimensions of `--obsm_input` are used.
+
+  - name: Compute
+    arguments:
+      - name: "--device"
+        type: string
+        choices: [cpu, gpu]
+        default: gpu
+        description: |
+          Which variant to run: the GPU (rapids-singlecell) component or the
+          CPU (openpipeline) component.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        type: file
+        required: true
+        direction: output
+        description: Output h5mu file.
+        example: output.h5mu
+      - name: "--obsm_output"
+        type: string
+        default: "X_tsne"
+        description: In which .obsm slot to store the resulting t-SNE embedding.
+      - name: "--overwrite"
+        type: boolean
+        default: false
+        description: |
+          (GPU variant only) Allow overwriting the .obsm output slot if it
+          already exists.
+
+  - name: Options
+    arguments:
+      - name: "--perplexity"
+        type: integer
+        min: 1
+        default: 30
+        description: |
+          The perplexity is related to the number of nearest neighbors that
+          is used in other manifold learning algorithms. Larger datasets
+          usually require a larger perplexity.
+      - name: "--early_exaggeration"
+        type: double
+        min: 1
+        default: 12
+        description: |
+          Controls how tight natural clusters in the original space are in
+          the embedded space and how much space will be between them.
+      - name: "--learning_rate"
+        type: double
+        min: 1
+        default: 200
+        description: |
+          The learning rate for the optimization. If the learning rate is too
+          high, the data may look like a 'ball' with any point approximately
+          equidistant from its nearest neighbours. If it is too low, most
+          points may look compressed in a dense cloud with few outliers.
+      - name: "--metric"
+        type: string
+        default: "euclidean"
+        description: The metric to use when computing distances in the representation.
+      - name: "--method"
+        type: string
+        choices: ["barnes_hut", "fft"]
+        default: "barnes_hut"
+        description: (GPU variant only) The t-SNE method to use.
+      - name: "--min_dist"
+        type: double
+        default: 0.5
+        description: |
+          (CPU variant only) The effective minimum distance between embedded
+          points. Smaller values result in a more clustered embedding, larger
+          values in a more even dispersal of points.
+      - name: "--random_state"
+        type: integer
+        default: 0
+        description: (CPU variant only) The random seed to use for the t-SNE computation.
+
+dependencies:
+  - name: tools/tsne
+    alias: tsne_gpu
+  - name: dimred/tsne
+    repository: openpipeline
+    alias: tsne_cpu
+
+resources:
+  - type: nextflow_script
+    path: main.nf
+    entrypoint: run_wf
+
+test_resources:
+  - type: nextflow_script
+    path: test.nf
+    entrypoint: test_wf
+  - path: /resources_test/pbmc_1k_protein_v3
+
+runners:
+  - type: nextflow
