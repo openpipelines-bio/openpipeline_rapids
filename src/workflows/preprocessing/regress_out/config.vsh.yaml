@@ -1,0 +1,87 @@
+name: regress_out
+namespace: "workflows/preprocessing"
+scope: "public"
+description: |
+  Regress out (mostly) unwanted sources of variation, running either the GPU
+  (rapids-singlecell) or the CPU (openpipeline) variant of regress_out,
+  selected with --device.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        type: file
+        required: true
+        direction: input
+        description: Input h5mu file.
+        example: input.h5mu
+      - name: "--modality"
+        type: string
+        default: "rna"
+        description: Which modality from the input MuData file to process.
+      - name: "--input_layer"
+        type: string
+        description: Input layer to use. By default, X is used.
+      - name: "--obs_keys"
+        type: string
+        required: true
+        multiple: true
+        multiple_sep: ","
+        description: |
+          Keys of the .obs columns to regress out as covariates.
+
+  - name: Compute
+    arguments:
+      - name: "--device"
+        type: string
+        choices: [cpu, gpu]
+        default: gpu
+        description: |
+          Which variant to run: the GPU (rapids-singlecell) component or the
+          CPU (openpipeline) component.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        type: file
+        required: true
+        direction: output
+        description: Output h5mu file.
+        example: output.h5mu
+      - name: "--output_layer"
+        type: string
+        description: Output layer to use. By default, use X.
+
+  - name: Options
+    arguments:
+      - name: "--batchsize"
+        type: integer
+        description: |
+          (GPU variant only) Number of genes per batch. If None, all genes are
+          processed at once.
+
+dependencies:
+  - name: preprocessing/regress_out
+    alias: regress_out_gpu
+  - name: transform/regress_out
+    repository: openpipeline
+    alias: regress_out_cpu
+
+resources:
+  - type: nextflow_script
+    path: main.nf
+    entrypoint: run_wf
+
+test_resources:
+  - type: nextflow_script
+    path: test.nf
+    entrypoint: test_wf
+  - path: /resources_test/pbmc_1k_protein_v3
+
+runners:
+  - type: nextflow
