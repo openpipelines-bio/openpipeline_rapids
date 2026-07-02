@@ -100,7 +100,7 @@ argument_groups:
 
       - name: "--overwrite"
         type: boolean
-        default: false
+        default: true
         description: Allow overwriting .obsm, .varm and .uns slots.
 
 resources:
