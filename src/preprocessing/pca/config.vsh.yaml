@@ -14,7 +14,10 @@ argument_groups:
       - name: "--input"
         alternatives: ["-i"]
         type: file
-        description: Input h5mu file.
+        description: |
+          Input h5mu file. Genes with zero expression must be filtered out
+          beforehand (e.g. with `filter_genes`); rapids-singlecell PCA raises an
+          error if any gene has zero total expression across all cells.
         direction: input
         required: true
         example: input.h5mu

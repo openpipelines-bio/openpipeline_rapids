@@ -17,7 +17,11 @@ argument_groups:
         type: file
         required: true
         direction: input
-        description: Input h5mu file.
+        description: |
+          Input h5mu file. When running the GPU variant (`--device gpu`), genes
+          with zero expression must be filtered out beforehand (e.g. with
+          `filter_genes`), as rapids-singlecell PCA raises an error otherwise.
+          The CPU variant tolerates zero-expression genes.
         example: input.h5mu
       - name: "--modality"
         type: string
