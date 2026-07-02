@@ -18,6 +18,14 @@ workflow test_wf {
         num_components: 25,
         overwrite: true,
         output_compression: "gzip"
+      ],
+      [
+        id: "gpu_execution_test",
+        input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
+        device: "gpu",
+        num_components: 25,
+        overwrite: true,
+        output_compression: "gzip"
       ]
     ])
     | map { state -> [state.id, state] }
@@ -25,7 +33,7 @@ workflow test_wf {
     | view { output ->
       assert output.size() == 2 : "Outputs should contain two elements; [id, state]"
       def id = output[0]
-      assert id == "cpu_execution_test"
+      assert id in ["cpu_execution_test", "gpu_execution_test"] : "Unexpected id: ${id}"
       def state = output[1]
       assert state instanceof Map : "State should be a map. Found: ${state}"
       assert state.containsKey("output") : "Output should contain key 'output'."
@@ -35,7 +43,7 @@ workflow test_wf {
     }
     | toSortedList({ a, b -> a[0] <=> b[0] })
     | map { output_list ->
-      assert output_list.size() == 1 : "output channel should contain 1 event"
-      assert output_list.collect{ it[0] } == ["cpu_execution_test"]
+      assert output_list.size() == 2 : "output channel should contain 2 events"
+      assert output_list.collect{ it[0] } == ["cpu_execution_test", "gpu_execution_test"]
     }
 }
