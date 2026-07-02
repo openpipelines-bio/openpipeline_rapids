@@ -3,6 +3,7 @@ nextflow.enable.dsl=2
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
 include { pca } from params.rootDir + "/target/nextflow/workflows/preprocessing/pca/main.nf"
+include { filter_genes } from params.rootDir + "/target/nextflow/preprocessing/filter_genes/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
 
@@ -29,6 +30,16 @@ workflow test_wf {
       ]
     ])
     | map { state -> [state.id, state] }
+    // rapids-singlecell PCA errors on genes with zero total expression, so
+    // drop them first (min_cells: 1 keeps only genes expressed in >= 1 cell).
+    | filter_genes.run(
+      fromState: [
+        "input": "input",
+        "modality": "modality"
+      ],
+      args: [ "min_cells": 1 ],
+      toState: [ "input": "output" ]
+    )
     | pca
     | view { output ->
       assert output.size() == 2 : "Outputs should contain two elements; [id, state]"
