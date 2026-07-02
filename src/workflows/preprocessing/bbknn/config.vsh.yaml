@@ -67,7 +67,7 @@ argument_groups:
         description: In which .obsp slot to store the connectivities matrix between the resulting neighbors.
       - name: "--overwrite"
         type: boolean
-        default: false
+        default: true
         description: |
           (GPU variant only) Allow overwriting the .uns/.obsp output slots if
           they already exist.
