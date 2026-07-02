@@ -58,7 +58,7 @@ argument_groups:
         description: In which .obsm slot to store the resulting t-SNE embedding.
       - name: "--overwrite"
         type: boolean
-        default: false
+        default: true
         description: |
           (GPU variant only) Allow overwriting the .obsm output slot if it
           already exists.

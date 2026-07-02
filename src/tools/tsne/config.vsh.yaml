@@ -60,7 +60,7 @@ argument_groups:
 
       - name: "--overwrite"
         type: boolean
-        default: false
+        default: true
         description: Allow overwriting the .obsm output slot if it already exists.
 
   - name: Options
