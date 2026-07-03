@@ -1,0 +1,3 @@
+type: docker
+image: nvidia/cuda:13.1.2-runtime-ubuntu24.04
+__merge__: [/src/base/requirements/python_base.yaml, /src/base/requirements/nvidia_notice.yaml, /src/base/requirements/rapids_singlecell.yaml, /src/base/requirements/python_test_setup.yaml, .]

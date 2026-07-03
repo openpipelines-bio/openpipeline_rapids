@@ -1,0 +1,139 @@
+name: umap
+namespace: "tools"
+scope: "public"
+description: |
+  UMAP (Uniform Manifold Approximation and Projection) is a manifold learning
+  technique for visualizing high-dimensional data. It optimizes the
+  low-dimensional embedding so that it best reflects the topology of the data,
+  as represented by a precomputed neighborhood graph (e.g. from the
+  `find_neighbors` component). See McInnes et al. (2018), arXiv:1802.03426.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        alternatives: ["-i"]
+        type: file
+        description: Input h5mu file.
+        direction: input
+        required: true
+        example: input.h5mu
+
+      - name: "--modality"
+        type: string
+        default: "rna"
+        required: false
+        description: Which modality from the input MuData file to process.
+
+      - name: "--uns_neighbors"
+        type: string
+        default: "neighbors"
+        description: The `.uns` neighbors slot as output by the `find_neighbors` component.
+
+  - name: Outputs
+    __merge__: [., /src/base/h5_compression_argument.yaml]
+    arguments:
+      - name: "--output"
+        alternatives: ["-o"]
+        type: file
+        description: Output h5mu file.
+        direction: output
+        required: true
+        default: output.h5mu
+
+      - name: "--obsm_output"
+        type: string
+        description: In which .obsm slot to store the resulting UMAP embedding.
+        default: "X_umap"
+
+  - name: Options
+    arguments:
+      - name: "--min_dist"
+        type: double
+        description: |
+          The effective minimum distance between embedded points. Smaller
+          values will result in a more clustered/clumped embedding where
+          nearby points on the manifold are drawn closer together, while
+          larger values will result on a more even dispersal of points. The
+          value should be set relative to the spread value, which determines
+          the scale at which embedded points will be spread out.
+        default: 0.5
+
+      - name: "--spread"
+        type: double
+        description: |
+          The effective scale of embedded points. In combination with
+          `min_dist` this determines how clustered/clumped the embedded
+          points are.
+        default: 1.0
+
+      - name: "--num_components"
+        type: integer
+        description: The number of dimensions of the embedding.
+        default: 2
+
+      - name: "--max_iter"
+        type: integer
+        description: |
+          The number of iterations (epochs) of the optimization. Called
+          `n_epochs` in the original UMAP.
+
+      - name: "--alpha"
+        type: double
+        description: The initial learning rate for the embedding optimization.
+        default: 1.0
+
+      - name: "--negative_sample_rate"
+        type: integer
+        description: |
+          The number of negative edge/1-simplex samples to use per positive
+          edge/1-simplex sample in optimizing the low dimensional embedding.
+        default: 5
+
+      - name: "--init_pos"
+        type: string
+        description: |
+          How to initialize the low dimensional embedding. Called `init` in
+          the original UMAP. Options are:
+
+          * `'auto'`: chooses `'spectral'` for n_samples < 1000000, `'random'` otherwise.
+          * `'spectral'`: use a spectral embedding of the graph.
+          * `'random'`: assign initial embedding positions at random.
+          * `'paga'`: use the paga() layout as initial embedding positions.
+          * Any key from `.obsm`.
+        default: "spectral"
+
+      - name: "--random_state"
+        type: integer
+        description: Seed used by the random number generator.
+        default: 0
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/setup_logger.py
+  - path: /src/utils/compress_h5mu.py
+  - path: /src/utils/anndata_io.py
+  - path: /src/utils/gpu.py
+
+test_resources:
+  - type: python_script
+    path: test.py
+  - path: /resources_test/pbmc_1k_protein_v3
+
+engines:
+  - __merge__: /src/base/rapids_docker.yaml
+    setup:
+      - type: python
+        __merge__: /src/base/requirements/mudata.yaml
+
+runners:
+  - type: executable
+    docker_run_args: --gpus all
+  - type: nextflow
+    directives:
+      label: [midmem, lowcpu, highdisk, gpu]
