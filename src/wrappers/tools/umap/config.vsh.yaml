@@ -1,9 +1,9 @@
 name: umap
-namespace: "workflows/tools"
+namespace: "wrappers/tools"
 scope: "public"
 description: |
   UMAP (Uniform Manifold Approximation and Projection), running either the GPU
-  (rapids-singlecell) or the CPU (openpipeline) variant, selected with --device.
+  (rapids-singlecell) or the CPU (openpipeline) variant, selected with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -28,14 +28,7 @@ argument_groups:
         description: The `.uns` neighbors slot as output by the `find_neighbors` component.
 
   - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+    __merge__: [., /src/base/device_type_argument.yaml]
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -101,18 +94,25 @@ argument_groups:
           * `'random'`: assign initial embedding positions at random.
           * `'paga'`: use the paga() layout as initial embedding positions.
           * Any key from `.obsm`.
+
+  - name: GPU options
+    description: Only used when --device_type is `gpu`.
+    arguments:
       - name: "--random_state"
         type: integer
         default: 0
-        description: |
-          (GPU variant only) Seed used by the random number generator.
+        description: Seed used by the random number generator.
+
+  - name: CPU options
+    description: Only used when --device_type is `cpu`.
+    arguments:
       - name: "--gamma"
         type: double
         default: 1.0
         description: |
-          (CPU variant only) Weighting applied to negative samples in low
-          dimensional embedding optimization. Values higher than one will
-          result in greater weight being given to negative samples.
+          Weighting applied to negative samples in low dimensional embedding
+          optimization. Values higher than one will result in greater weight
+          being given to negative samples.
 
 dependencies:
   - name: tools/umap

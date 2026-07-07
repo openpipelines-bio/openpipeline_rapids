@@ -1,0 +1,8 @@
+arguments:
+  - name: "--device_type"
+    type: string
+    choices: [cpu, gpu]
+    default: gpu
+    description: |
+      Which implementation to run: the GPU (rapids-singlecell) variant or the
+      CPU (openpipeline) variant of the component.

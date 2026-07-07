@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
-include { umap } from params.rootDir + "/target/nextflow/workflows/tools/umap/main.nf"
+include { umap } from params.rootDir + "/target/nextflow/wrappers/tools/umap/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
 
@@ -14,13 +14,13 @@ workflow test_wf {
       [
         id: "cpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "cpu",
+        device_type: "cpu",
         output_compression: "gzip"
       ],
       [
         id: "gpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "gpu",
+        device_type: "gpu",
         output_compression: "gzip"
       ]
     ])
