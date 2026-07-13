@@ -11,7 +11,7 @@ workflow run_wf {
     }
     // -- GPU variant (rapids-singlecell) --
     | scale_gpu.run(
-      runIf: { id, state -> state.device == "gpu" },
+      runIf: { id, state -> state.device_type == "gpu" },
       fromState: [
         "input": "input",
         "modality": "modality",
@@ -29,7 +29,7 @@ workflow run_wf {
     // disables centering. The workflow arg --zero_center is a boolean where
     // true means "do center", so only set the CPU flag when it is false.
     | scale_cpu.run(
-      runIf: { id, state -> state.device == "cpu" },
+      runIf: { id, state -> state.device_type == "cpu" },
       fromState: { id, state ->
         def m = [
           "input": state.input,

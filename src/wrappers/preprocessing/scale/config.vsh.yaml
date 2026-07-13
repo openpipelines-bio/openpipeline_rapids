@@ -1,10 +1,10 @@
 name: scale
-namespace: "workflows/preprocessing"
-scope: "public"
+namespace: "wrappers/preprocessing"
+scope: "private"
 description: |
   Scale data to unit variance and (optionally) zero mean, running either the
-  GPU (rapids-singlecell) or the CPU (openpipeline) variant of scale, selected
-  with --device.
+  GPU (rapids-singlecell) or the CPU (scanpy) variant of scale, selected
+  with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -27,15 +27,7 @@ argument_groups:
         type: string
         description: Input layer to use. By default, X is scaled.
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
