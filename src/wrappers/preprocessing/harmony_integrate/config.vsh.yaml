@@ -1,10 +1,10 @@
 name: harmony_integrate
-namespace: "workflows/preprocessing"
-scope: "public"
+namespace: "wrappers/preprocessing"
+scope: "private"
 description: |
   Integrate observations over one or more batch/covariate columns using Harmony,
-  running either the GPU (rapids-singlecell) or the CPU (openpipeline) variant of
-  harmony_integrate, selected with --device.
+  running either the GPU (rapids-singlecell) or the CPU (scanpy) variant of
+  harmony_integrate, selected with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -38,15 +38,7 @@ argument_groups:
           multiple keys are provided, a combined batch variable is created from
           all columns.
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -61,12 +53,6 @@ argument_groups:
         type: string
         default: "X_pca_integrated"
         description: In which .obsm slot to store the Harmony-corrected embedding.
-      - name: "--overwrite"
-        type: boolean
-        default: true
-        description: |
-          (GPU variant only) Allow overwriting the .obsm output slot if it
-          already exists.
 
   - name: Options
     arguments:
@@ -81,30 +67,37 @@ argument_groups:
           diversity; larger values result in more aggressive
           diversity-encouraging correction over the covariates. Provide a single
           value for all covariates, or one value per --obs_covariates entry.
+
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
+      - name: "--overwrite"
+        type: boolean
+        default: true
+        description: Allow overwriting the .obsm output slot if it already exists.
       - name: "--flavor"
         type: string
         choices: ["harmony2", "harmony1"]
         default: "harmony2"
         description: |
-          (GPU variant only) Which Harmony implementation to use. 'harmony2' is
-          the faster reimplementation; 'harmony1' reproduces the original
-          algorithm.
+          Which Harmony implementation to use. 'harmony2' is the faster
+          reimplementation; 'harmony1' reproduces the original algorithm.
       - name: "--n_clusters"
         type: integer
         min: 1
         description: |
-          (GPU variant only) Number of clusters used by Harmony. If not set, the
-          value is chosen automatically.
+          Number of clusters used by Harmony. If not set, the value is chosen
+          automatically.
       - name: "--max_iter_harmony"
         type: integer
         default: 10
         min: 1
-        description: (GPU variant only) Maximum number of rounds to run Harmony.
+        description: Maximum number of rounds to run Harmony.
       - name: "--random_state"
         type: integer
         default: 0
         min: 0
-        description: (GPU variant only) A random seed.
+        description: A random seed.
 
 dependencies:
   - name: preprocessing/harmony_integrate

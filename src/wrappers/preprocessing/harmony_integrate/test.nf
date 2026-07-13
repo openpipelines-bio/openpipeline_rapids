@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
-include { harmony_integrate } from params.rootDir + "/target/nextflow/workflows/preprocessing/harmony_integrate/main.nf"
+include { harmony_integrate } from params.rootDir + "/target/_private/nextflow/wrappers/preprocessing/harmony_integrate/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
 
@@ -14,7 +14,7 @@ workflow test_wf {
       [
         id: "cpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "cpu",
+        device_type: "cpu",
         obsm_input: "X_pca",
         obsm_output: "X_pca_int",
         obs_covariates: "harmony_integration_leiden_1.0",
@@ -23,7 +23,7 @@ workflow test_wf {
       [
         id: "gpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "gpu",
+        device_type: "gpu",
         obsm_input: "X_pca",
         obsm_output: "X_pca_int",
         obs_covariates: "harmony_integration_leiden_1.0",
