@@ -1,9 +1,9 @@
 name: tsne
-namespace: "workflows/tools"
-scope: "public"
+namespace: "wrappers/tools"
+scope: "private"
 description: |
   Compute a t-SNE embedding, running either the GPU (rapids-singlecell) or the
-  CPU (openpipeline) variant of tsne, selected with --device.
+  CPU (scanpy) variant of tsne, selected with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -33,15 +33,7 @@ argument_groups:
           The number of dimensions of the representation to use. If not set,
           all dimensions of `--obsm_input` are used.
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -56,12 +48,6 @@ argument_groups:
         type: string
         default: "X_tsne"
         description: In which .obsm slot to store the resulting t-SNE embedding.
-      - name: "--overwrite"
-        type: boolean
-        default: true
-        description: |
-          (GPU variant only) Allow overwriting the .obsm output slot if it
-          already exists.
 
   - name: Options
     arguments:
@@ -93,22 +79,34 @@ argument_groups:
         type: string
         default: "euclidean"
         description: The metric to use when computing distances in the representation.
+
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
+      - name: "--overwrite"
+        type: boolean
+        default: true
+        description: Allow overwriting the .obsm output slot if it already exists.
       - name: "--method"
         type: string
         choices: ["barnes_hut", "fft"]
         default: "barnes_hut"
-        description: (GPU variant only) The t-SNE method to use.
+        description: The t-SNE method to use.
+
+  - name: Scanpy options
+    description: Exposed only by the CPU (scanpy) variant (--device_type cpu).
+    arguments:
       - name: "--min_dist"
         type: double
         default: 0.5
         description: |
-          (CPU variant only) The effective minimum distance between embedded
-          points. Smaller values result in a more clustered embedding, larger
-          values in a more even dispersal of points.
+          The effective minimum distance between embedded points. Smaller
+          values result in a more clustered embedding, larger values in a more
+          even dispersal of points.
       - name: "--random_state"
         type: integer
         default: 0
-        description: (CPU variant only) The random seed to use for the t-SNE computation.
+        description: The random seed to use for the t-SNE computation.
 
 dependencies:
   - name: tools/tsne

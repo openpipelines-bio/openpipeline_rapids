@@ -9,7 +9,7 @@ export NXF_SYNTAX_PARSER=v1
 
 nextflow \
   run . \
-  -main-script src/workflows/tools/tsne/test.nf \
+  -main-script src/wrappers/tools/tsne/test.nf \
   -entry test_wf \
   -profile docker,no_publish \
   -c src/workflows/utils/labels_ci.config \
