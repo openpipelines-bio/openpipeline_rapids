@@ -11,7 +11,7 @@ workflow run_wf {
     }
     // -- GPU variant (rapids-singlecell) --
     | bbknn_gpu.run(
-      runIf: { id, state -> state.device == "gpu" },
+      runIf: { id, state -> state.device_type == "gpu" },
       fromState: [
         "input": "input",
         "modality": "modality",
@@ -34,7 +34,7 @@ workflow run_wf {
     )
     // -- CPU variant (openpipeline) --
     | bbknn_cpu.run(
-      runIf: { id, state -> state.device == "cpu" },
+      runIf: { id, state -> state.device_type == "cpu" },
       fromState: [
         "input": "input",
         "modality": "modality",
