@@ -11,7 +11,7 @@ workflow run_wf {
     }
     // -- GPU variant (rapids-singlecell) --
     | highly_variable_genes_gpu.run(
-      runIf: { id, state -> state.device == "gpu" },
+      runIf: { id, state -> state.device_type == "gpu" },
       fromState: [
         "input": "input",
         "modality": "modality",
@@ -39,7 +39,7 @@ workflow run_wf {
     )
     // -- CPU variant (openpipeline) --
     | highly_variable_genes_cpu.run(
-      runIf: { id, state -> state.device == "cpu" },
+      runIf: { id, state -> state.device_type == "cpu" },
       fromState: [
         "input": "input",
         "modality": "modality",

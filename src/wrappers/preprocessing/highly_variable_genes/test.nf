@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
-include { highly_variable_genes } from params.rootDir + "/target/nextflow/workflows/preprocessing/highly_variable_genes/main.nf"
+include { highly_variable_genes } from params.rootDir + "/target/_private/nextflow/wrappers/preprocessing/highly_variable_genes/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
 
@@ -14,14 +14,14 @@ workflow test_wf {
       [
         id: "cpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "cpu",
+        device_type: "cpu",
         input_layer: "log_normalized",
         output_compression: "gzip"
       ],
       [
         id: "gpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "gpu",
+        device_type: "gpu",
         input_layer: "log_normalized",
         output_compression: "gzip"
       ]

@@ -1,9 +1,9 @@
 name: highly_variable_genes
-namespace: "workflows/preprocessing"
-scope: "public"
+namespace: "wrappers/preprocessing"
+scope: "private"
 description: |
   Annotate highly variable genes, running either the GPU (rapids-singlecell) or
-  the CPU (openpipeline) variant of highly_variable_genes, selected with --device.
+  the CPU (scanpy) variant of highly_variable_genes, selected with --device_type.
 
   Expects log-normalized data for the default 'seurat' flavor. The GPU variant
   exposes additional flavors ('seurat_v3_paper', 'pearson_residuals',
@@ -31,15 +31,7 @@ argument_groups:
         description: |
           Input layer to use for expression values. By default, X is used.
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -128,62 +120,70 @@ argument_groups:
           Number of bins for binning the mean gene expression. Normalization is
           done with respect to each bin. If just a single gene falls into a
           bin, the normalized dispersion is artificially set to 1.
-      - name: "--theta"
-        type: integer
-        default: 100
-        description: |
-          (GPU variant only) The negative binomial overdispersion parameter for
-          Pearson residuals. Higher values correspond to less overdispersion.
-          Only used if flavor is 'pearson_residuals'.
-      - name: "--clip"
-        type: double
-        required: false
-        description: |
-          (GPU variant only) Determines if and how Pearson residuals are
-          clipped. If unset, residuals are clipped to [-sqrt(n_obs),
-          sqrt(n_obs)]. If a scalar c is given, residuals are clipped to
-          [-c, c]. Only used if flavor is 'pearson_residuals'.
-      - name: "--chunksize"
-        type: integer
-        default: 1000
-        description: |
-          (GPU variant only) If flavor is 'poisson_gene_selection', this
-          determines how many genes are processed at once. Choosing a smaller
-          value will reduce the required memory.
-      - name: "--n_samples"
-        type: integer
-        default: 10000
-        description: |
-          (GPU variant only) The number of Binomial samples used to estimate the
-          posterior probability of enrichment of zeros for each gene. Only used
-          if flavor is 'poisson_gene_selection'.
       - name: "--obs_batch_key"
         type: string
         required: false
         description: |
           If specified, highly-variable features are selected within each
           batch separately and merged.
+
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
+      - name: "--theta"
+        type: integer
+        default: 100
+        description: |
+          The negative binomial overdispersion parameter for Pearson residuals.
+          Higher values correspond to less overdispersion. Only used if flavor
+          is 'pearson_residuals'.
+      - name: "--clip"
+        type: double
+        required: false
+        description: |
+          Determines if and how Pearson residuals are clipped. If unset,
+          residuals are clipped to [-sqrt(n_obs), sqrt(n_obs)]. If a scalar c is
+          given, residuals are clipped to [-c, c]. Only used if flavor is
+          'pearson_residuals'.
+      - name: "--chunksize"
+        type: integer
+        default: 1000
+        description: |
+          If flavor is 'poisson_gene_selection', this determines how many genes
+          are processed at once. Choosing a smaller value will reduce the
+          required memory.
+      - name: "--n_samples"
+        type: integer
+        default: 10000
+        description: |
+          The number of Binomial samples used to estimate the posterior
+          probability of enrichment of zeros for each gene. Only used if flavor
+          is 'poisson_gene_selection'.
       - name: "--check_values"
         type: boolean
         default: true
         description: |
-          (GPU variant only) Check if counts in the selected layer are integers.
-          A warning is emitted otherwise. Only used if flavor is 'seurat_v3',
+          Check if counts in the selected layer are integers. A warning is
+          emitted otherwise. Only used if flavor is 'seurat_v3',
           'seurat_v3_paper', 'pearson_residuals' or 'poisson_gene_selection'.
+
+  - name: Scanpy options
+    description: Exposed only by the CPU (scanpy) variant (--device_type cpu).
+    arguments:
       - name: "--var_input"
         type: string
         required: false
         description: |
-          (CPU variant only) If specified, use boolean array in
-          adata.var[var_input] to calculate hvg on subset of vars.
+          If specified, use boolean array in adata.var[var_input] to calculate
+          hvg on subset of vars.
       - name: "--features_to_exclude"
         type: string
         multiple: true
         required: false
         description: |
-          (CPU variant only) User-defined list of feature names to exclude
-          before HVG calculation. These features will be excluded from HVG
-          selection but will remain in the output data.
+          User-defined list of feature names to exclude before HVG calculation.
+          These features will be excluded from HVG selection but will remain in
+          the output data.
         example: ["MT-CO1", "MT-CO2", "MT-ND1"]
 
 dependencies:
