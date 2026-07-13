@@ -1,3 +1,5 @@
+name: Compute
+description: Options controlling which implementation of the component runs.
 arguments:
   - name: "--device_type"
     type: string

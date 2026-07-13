@@ -27,8 +27,7 @@ argument_groups:
         default: "neighbors"
         description: The `.uns` neighbors slot as output by the `find_neighbors` component.
 
-  - name: Compute
-    __merge__: [., /src/base/device_type_argument.yaml]
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
