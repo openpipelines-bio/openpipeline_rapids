@@ -1,9 +1,9 @@
 name: log1p
-namespace: "workflows/preprocessing"
-scope: "public"
+namespace: "wrappers/preprocessing"
+scope: "private"
 description: |
   Logarithmize the data matrix, running either the GPU (rapids-singlecell) or
-  the CPU (openpipeline) variant of log1p, selected with --device.
+  the CPU (scanpy) variant of log1p, selected with --device_type.
 
   Computes X = log(X + 1), where log denotes the natural logarithm unless
   a different base is given.
@@ -28,21 +28,8 @@ argument_groups:
       - name: "--input_layer"
         type: string
         description: Input layer to use. If not set, .X is used.
-      - name: "--input_obsm"
-        type: string
-        description: |
-          (GPU variant only) Entry in .obsm to log-transform. Mutually
-          exclusive with --input_layer.
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -59,13 +46,6 @@ argument_groups:
           Output layer to write the transformed matrix to. If not set:
           when --input_layer is unset, .X is modified in-place; when
           --input_layer is set, that input layer is modified in-place.
-      - name: "--output_obsm"
-        type: string
-        description: |
-          (GPU variant only) Output entry in .obsm to write the transformed
-          matrix to. Only valid when --input_obsm is set. If not set, the
-          input .obsm entry is modified in-place. Mutually exclusive with
-          --output_layer.
 
   - name: Options
     arguments:
@@ -73,6 +53,21 @@ argument_groups:
         type: double
         description: |
           Base of the logarithm. If unset, the natural logarithm is used.
+
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
+      - name: "--input_obsm"
+        type: string
+        description: |
+          Entry in .obsm to log-transform. Mutually exclusive with
+          --input_layer.
+      - name: "--output_obsm"
+        type: string
+        description: |
+          Output entry in .obsm to write the transformed matrix to. Only valid
+          when --input_obsm is set. If not set, the input .obsm entry is
+          modified in-place. Mutually exclusive with --output_layer.
 
 dependencies:
   - name: preprocessing/log1p
