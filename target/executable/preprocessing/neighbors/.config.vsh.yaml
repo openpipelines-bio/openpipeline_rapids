@@ -386,7 +386,7 @@ build_info:
   output: "target/executable/preprocessing/neighbors"
   executable: "target/executable/preprocessing/neighbors/neighbors"
   viash_version: "0.9.7"
-  git_commit: "9daf79030254bac71f0296136a4b21908243b650"
+  git_commit: "5184135c3d7f44950bcd85472c6a29ce64ea56ac"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
 package_config:
   name: "openpipeline_rapids"
