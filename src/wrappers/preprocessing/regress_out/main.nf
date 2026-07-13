@@ -11,7 +11,7 @@ workflow run_wf {
     }
     // -- GPU variant (rapids-singlecell) --
     | regress_out_gpu.run(
-      runIf: { id, state -> state.device == "gpu" },
+      runIf: { id, state -> state.device_type == "gpu" },
       fromState: [
         "input": "input",
         "modality": "modality",
@@ -26,7 +26,7 @@ workflow run_wf {
     )
     // -- CPU variant (openpipeline) --
     | regress_out_cpu.run(
-      runIf: { id, state -> state.device == "cpu" },
+      runIf: { id, state -> state.device_type == "cpu" },
       fromState: [
         "input": "input",
         "modality": "modality",

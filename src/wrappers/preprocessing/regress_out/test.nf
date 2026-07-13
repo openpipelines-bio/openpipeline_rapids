@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
-include { regress_out } from params.rootDir + "/target/nextflow/workflows/preprocessing/regress_out/main.nf"
+include { regress_out } from params.rootDir + "/target/_private/nextflow/wrappers/preprocessing/regress_out/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
 
@@ -15,14 +15,14 @@ workflow test_wf {
         id: "cpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
         obs_keys: "total_counts",
-        device: "cpu",
+        device_type: "cpu",
         output_compression: "gzip"
       ],
       [
         id: "gpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
         obs_keys: "total_counts",
-        device: "gpu",
+        device_type: "gpu",
         output_compression: "gzip"
       ]
     ])

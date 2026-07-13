@@ -1,10 +1,10 @@
 name: regress_out
-namespace: "workflows/preprocessing"
-scope: "public"
+namespace: "wrappers/preprocessing"
+scope: "private"
 description: |
   Regress out (mostly) unwanted sources of variation, running either the GPU
-  (rapids-singlecell) or the CPU (openpipeline) variant of regress_out,
-  selected with --device.
+  (rapids-singlecell) or the CPU (scanpy) variant of regress_out,
+  selected with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -34,15 +34,7 @@ argument_groups:
         description: |
           Keys of the .obs columns to regress out as covariates.
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -57,7 +49,8 @@ argument_groups:
         type: string
         description: Output layer to use. By default, use X.
 
-  - name: Options
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
     arguments:
       - name: "--batchsize"
         type: integer
