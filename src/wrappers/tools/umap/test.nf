@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
-include { umap } from params.rootDir + "/target/nextflow/wrappers/tools/umap/main.nf"
+include { umap } from params.rootDir + "/target/_private/nextflow/wrappers/tools/umap/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
 
