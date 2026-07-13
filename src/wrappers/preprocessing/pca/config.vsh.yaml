@@ -1,10 +1,10 @@
 name: pca
-namespace: "workflows/preprocessing"
-scope: "public"
+namespace: "wrappers/preprocessing"
+scope: "private"
 description: |
   Computes PCA coordinates, loadings and variance decomposition, running either
-  the GPU (rapids-singlecell) or the CPU (openpipeline) variant of pca, selected
-  with --device.
+  the GPU (rapids-singlecell) or the CPU (scanpy) variant of pca, selected
+  with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -18,7 +18,7 @@ argument_groups:
         required: true
         direction: input
         description: |
-          Input h5mu file. When running the GPU variant (`--device gpu`), genes
+          Input h5mu file. When running the GPU variant (`--device_type gpu`), genes
           with zero expression must be filtered out beforehand (e.g. with
           `filter_genes`), as rapids-singlecell PCA raises an error otherwise.
           The CPU variant tolerates zero-expression genes.
@@ -39,15 +39,7 @@ argument_groups:
           to run the PCA on.
         example: filter_with_hvg
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Options
     arguments:

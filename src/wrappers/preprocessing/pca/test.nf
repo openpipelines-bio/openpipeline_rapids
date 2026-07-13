@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
-include { pca } from params.rootDir + "/target/nextflow/workflows/preprocessing/pca/main.nf"
+include { pca } from params.rootDir + "/target/_private/nextflow/wrappers/preprocessing/pca/main.nf"
 include { filter_genes } from params.rootDir + "/target/nextflow/preprocessing/filter_genes/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
@@ -15,7 +15,7 @@ workflow test_wf {
       [
         id: "cpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "cpu",
+        device_type: "cpu",
         num_components: 25,
         overwrite: true,
         output_compression: "gzip"
@@ -23,7 +23,7 @@ workflow test_wf {
       [
         id: "gpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "gpu",
+        device_type: "gpu",
         num_components: 25,
         overwrite: true,
         output_compression: "gzip"
