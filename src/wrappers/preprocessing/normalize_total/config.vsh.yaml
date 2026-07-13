@@ -1,9 +1,9 @@
 name: normalize_total
-namespace: "workflows/preprocessing"
-scope: "public"
+namespace: "wrappers/preprocessing"
+scope: "private"
 description: |
   Normalize counts per cell, running either the GPU (rapids-singlecell) or the
-  CPU (openpipeline) variant of normalize_total, selected with --device.
+  CPU (scanpy) variant of normalize_total, selected with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -26,15 +26,7 @@ argument_groups:
         type: string
         description: Input layer to use. By default, X is normalized.
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -63,13 +55,17 @@ argument_groups:
         description: |
           Exclude (very) highly expressed genes for the computation of the
           normalization factor (size factor) for each cell.
+
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
       - name: "--max_fraction"
         type: double
         default: 0.05
         description: |
-          (GPU variant only) If exclude_highly_expressed=True, consider cells
-          as highly expressed that have more counts than max_fraction of the
-          original total counts in at least one cell.
+          If exclude_highly_expressed=True, consider cells as highly expressed
+          that have more counts than max_fraction of the original total counts
+          in at least one cell.
 
 dependencies:
   - name: preprocessing/normalize_total
