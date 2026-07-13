@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
-include { leiden } from params.rootDir + "/target/nextflow/workflows/tools/leiden/main.nf"
+include { leiden } from params.rootDir + "/target/_private/nextflow/wrappers/tools/leiden/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
 
@@ -14,14 +14,14 @@ workflow test_wf {
       [
         id: "cpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "cpu",
+        device_type: "cpu",
         resolution: [1.0],
         output_compression: "gzip"
       ],
       [
         id: "gpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "gpu",
+        device_type: "gpu",
         resolution: [1.0],
         output_compression: "gzip"
       ]

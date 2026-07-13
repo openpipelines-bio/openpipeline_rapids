@@ -1,10 +1,10 @@
 name: leiden
-namespace: "workflows/tools"
-scope: "public"
+namespace: "wrappers/tools"
+scope: "private"
 description: |
   Cluster cells using the Leiden algorithm, running either the GPU
-  (rapids-singlecell) or the CPU (openpipeline) variant of leiden, selected
-  with --device. Requires a precomputed neighbor graph.
+  (rapids-singlecell) or the CPU (scanpy) variant of leiden, selected
+  with --device_type. Requires a precomputed neighbor graph.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -28,15 +28,7 @@ argument_groups:
         default: "connectivities"
         description: In which .obsp slot the neighbor connectivities can be found.
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -81,26 +73,33 @@ argument_groups:
         description: |
           Random seed to initialise the optimization. Use this to increase
           reproducibility.
+
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
       - name: "--theta"
         type: double
         required: false
         default: 1.0
         description: |
-          (GPU variant only) Scales modularity gain in the Leiden refinement
-          phase, used to compute the probability of joining a random Leiden
-          community.
+          Scales modularity gain in the Leiden refinement phase, used to
+          compute the probability of joining a random Leiden community.
       - name: "--use_weights"
         type: boolean
         default: true
         description: |
-          (GPU variant only) If true, edge weights from the graph are used in
-          the computation (placing more emphasis on stronger edges).
+          If true, edge weights from the graph are used in the computation
+          (placing more emphasis on stronger edges).
+
+  - name: Scanpy options
+    description: Exposed only by the CPU (scanpy) variant (--device_type cpu).
+    arguments:
       - name: "--flavor"
         type: string
         choices: ["leidenalg", "igraph"]
         default: "leidenalg"
         description: |
-          (CPU variant only) Which package's implementation to use.
+          Which package's implementation to use.
 
 dependencies:
   - name: tools/leiden
