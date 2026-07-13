@@ -3,7 +3,7 @@ namespace: "wrappers/preprocessing"
 scope: "private"
 description: |
   Integrate observations over one or more batch/covariate columns using Harmony,
-  running either the GPU (rapids-singlecell) or the CPU (scanpy) variant of
+  running either the GPU (rapids-singlecell) or the CPU (harmonypy) variant of
   harmony_integrate, selected with --device_type.
 
 authors:
