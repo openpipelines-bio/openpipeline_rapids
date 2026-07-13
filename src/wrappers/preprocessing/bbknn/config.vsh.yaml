@@ -3,7 +3,7 @@ namespace: "wrappers/preprocessing"
 scope: "private"
 description: |
   Compute a batch-balanced nearest-neighbor graph of observations, running
-  either the GPU (rapids-singlecell) or the CPU (scanpy) variant of
+  either the GPU (rapids-singlecell) or the CPU (bbknn) variant of
   bbknn, selected with --device_type.
 
 authors:
