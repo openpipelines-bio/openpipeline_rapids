@@ -1,9 +1,9 @@
 name: umap
 namespace: "wrappers/tools"
-scope: "public"
+scope: "private"
 description: |
   UMAP (Uniform Manifold Approximation and Projection), running either the GPU
-  (rapids-singlecell) or the CPU (openpipeline) variant, selected with --device_type.
+  (rapids-singlecell) or the CPU (scanpy/squidpy) variant, selected with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -95,16 +95,16 @@ argument_groups:
           * `'paga'`: use the paga() layout as initial embedding positions.
           * Any key from `.obsm`.
 
-  - name: GPU options
-    description: Only used when --device_type is `gpu`.
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
     arguments:
       - name: "--random_state"
         type: integer
         default: 0
         description: Seed used by the random number generator.
 
-  - name: CPU options
-    description: Only used when --device_type is `cpu`.
+  - name: Scanpy options
+    description: Exposed only by the CPU (scanpy) variant (--device_type cpu).
     arguments:
       - name: "--gamma"
         type: double
