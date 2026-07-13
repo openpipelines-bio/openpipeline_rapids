@@ -1,0 +1,12 @@
+name: Compute
+description: Options controlling which implementation of the component runs.
+arguments:
+  - name: "--device_type"
+    type: string
+    choices: [cpu, gpu]
+    default: gpu
+    description: |
+      Which implementation to run: the GPU (rapids-singlecell) variant or the
+      CPU (scanpy/squidpy) variant of the component. Selecting `gpu` requires a
+      CUDA-capable GPU; the component errors out if none is available (there is
+      no automatic fallback to CPU).
