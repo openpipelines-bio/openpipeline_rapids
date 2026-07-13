@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
-include { neighbors } from params.rootDir + "/target/nextflow/workflows/preprocessing/neighbors/main.nf"
+include { neighbors } from params.rootDir + "/target/_private/nextflow/wrappers/preprocessing/neighbors/main.nf"
 
 params.resources_test = params.rootDir + "/resources_test"
 
@@ -14,14 +14,14 @@ workflow test_wf {
       [
         id: "cpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "cpu",
+        device_type: "cpu",
         obsm_input: "X_pca",
         output_compression: "gzip"
       ],
       [
         id: "gpu_execution_test",
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
-        device: "gpu",
+        device_type: "gpu",
         obsm_input: "X_pca",
         output_compression: "gzip"
       ]

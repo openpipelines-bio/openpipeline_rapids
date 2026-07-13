@@ -1,10 +1,10 @@
 name: neighbors
-namespace: "workflows/preprocessing"
-scope: "public"
+namespace: "wrappers/preprocessing"
+scope: "private"
 description: |
   Compute a nearest-neighbor graph of observations, running either the GPU
-  (rapids-singlecell) or the CPU (openpipeline) variant of neighbors, selected
-  with --device.
+  (rapids-singlecell) or the CPU (scanpy) variant of neighbors, selected
+  with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -28,15 +28,7 @@ argument_groups:
         default: "X_pca"
         description: Which .obsm slot to use as a starting embedding (use_rep).
 
-  - name: Compute
-    arguments:
-      - name: "--device"
-        type: string
-        choices: [cpu, gpu]
-        default: gpu
-        description: |
-          Which variant to run: the GPU (rapids-singlecell) component or the
-          CPU (openpipeline) component.
+  - __merge__: /src/base/compute_argument_group.yaml
 
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
@@ -75,6 +67,14 @@ argument_groups:
         type: string
         default: "euclidean"
         description: The distance metric to use.
+      - name: "--random_state"
+        type: integer
+        default: 0
+        description: A random seed.
+
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
       - name: "--n_pcs"
         type: integer
         required: false
@@ -96,10 +96,6 @@ argument_groups:
           (GPU variant only) Method for computing connectivities. 'umap' uses
           the UMAP fuzzy simplicial set, 'gauss' uses an adaptive Gaussian
           kernel, 'jaccard' uses the PhenoGraph Jaccard index.
-      - name: "--random_state"
-        type: integer
-        default: 0
-        description: A random seed.
 
 dependencies:
   - name: preprocessing/neighbors
