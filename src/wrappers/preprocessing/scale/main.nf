@@ -4,11 +4,6 @@ workflow run_wf {
 
   main:
   output_ch = input_ch
-    // Preserve the requested final output filename across the step.
-    | map { id, state ->
-      def new_state = state + ["workflow_output": state.output]
-      [id, new_state]
-    }
     // -- GPU variant (rapids-singlecell) --
     | scale_gpu.run(
       runIf: { id, state -> state.device_type == "gpu" },
@@ -16,13 +11,12 @@ workflow run_wf {
         "input": "input",
         "modality": "modality",
         "input_layer": "input_layer",
-        "output": "workflow_output",
         "output_layer": "output_layer",
         "output_compression": "output_compression",
         "zero_center": "zero_center",
         "max_value": "max_value"
       ],
-      toState: ["input": "output"]
+      toState: ["output": "output"]
     )
     // -- CPU variant (openpipeline) --
     // The CPU scale exposes --zero_center as a boolean_false: its PRESENCE
@@ -35,7 +29,6 @@ workflow run_wf {
           "input": state.input,
           "modality": state.modality,
           "input_layer": state.input_layer,
-          "output": state.workflow_output,
           "output_layer": state.output_layer,
           "output_compression": state.output_compression,
           "max_value": state.max_value
@@ -43,9 +36,9 @@ workflow run_wf {
         if (state.zero_center == false) { m.zero_center = true }
         m
       },
-      toState: ["input": "output"]
+      toState: ["output": "output"]
     )
-    | setState(["output": "input"])
+    | setState(["output"])
 
   emit:
   output_ch
