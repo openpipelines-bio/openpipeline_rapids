@@ -66,7 +66,17 @@ argument_groups:
       - name: "--metric"
         type: string
         default: "euclidean"
-        description: The distance metric to use.
+        choices: [
+          "euclidean", "l1", "l2", "manhattan", "cityblock", "cosine",
+          "correlation", "chebyshev", "canberra", "minkowski", "sqeuclidean",
+          "jaccard"
+        ]
+        description: |
+          The distance metric to use. Restricted to the metrics supported by
+          both the CPU (scanpy) and GPU (rapids-singlecell) backends, so the
+          value is valid regardless of --device_type. Each backend supports
+          further metrics on its own, but only this common set is exposed here
+          to keep the two variants interchangeable.
       - name: "--random_state"
         type: integer
         default: 0
@@ -79,21 +89,21 @@ argument_groups:
         type: integer
         required: false
         description: |
-          (GPU variant only) Number of dimensions of the `--obsm_input`
-          representation to use. If not set, all available dimensions are used.
+          Number of dimensions of the `--obsm_input` representation to use. If
+          not set, all available dimensions are used.
       - name: "--algorithm"
         type: string
         default: "brute"
         choices: [ "brute", "cagra", "ivfflat", "ivfpq", "nn_descent" ]
         description: |
-          (GPU variant only) The KNN query algorithm to use (provided by cuVS).
+          The KNN query algorithm to use (provided by cuVS).
           See https://docs.rapids.ai/api/cuvs/stable/ for details.
       - name: "--method"
         type: string
         default: "umap"
         choices: [ "umap", "gauss", "jaccard" ]
         description: |
-          (GPU variant only) Method for computing connectivities. 'umap' uses
+          Method for computing connectivities. 'umap' uses
           the UMAP fuzzy simplicial set, 'gauss' uses an adaptive Gaussian
           kernel, 'jaccard' uses the PhenoGraph Jaccard index.
 
