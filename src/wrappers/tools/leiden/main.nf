@@ -4,11 +4,6 @@ workflow run_wf {
 
   main:
   output_ch = input_ch
-    // Preserve the requested final output filename across the step.
-    | map { id, state ->
-      def new_state = state + ["workflow_output": state.output]
-      [id, new_state]
-    }
     // -- GPU variant (rapids-singlecell) --
     | leiden_gpu.run(
       runIf: { id, state -> state.device_type == "gpu" },
@@ -16,7 +11,6 @@ workflow run_wf {
         "input": "input",
         "modality": "modality",
         "obsp_connectivities": "obsp_connectivities",
-        "output": "workflow_output",
         "obsm_name": "obsm_name",
         "output_compression": "output_compression",
         "resolution": "resolution",
@@ -25,7 +19,7 @@ workflow run_wf {
         "theta": "theta",
         "use_weights": "use_weights"
       ],
-      toState: ["input": "output"]
+      toState: ["output": "output"]
     )
     // -- CPU variant (openpipeline) --
     | leiden_cpu.run(
@@ -34,7 +28,6 @@ workflow run_wf {
         "input": "input",
         "modality": "modality",
         "obsp_connectivities": "obsp_connectivities",
-        "output": "workflow_output",
         "obsm_name": "obsm_name",
         "output_compression": "output_compression",
         "resolution": "resolution",
@@ -42,9 +35,9 @@ workflow run_wf {
         "seed": "random_state",
         "flavor": "flavor"
       ],
-      toState: ["input": "output"]
+      toState: ["output": "output"]
     )
-    | setState(["output": "input"])
+    | setState(["output"])
 
   emit:
   output_ch
