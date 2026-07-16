@@ -4,11 +4,6 @@ workflow run_wf {
 
   main:
   output_ch = input_ch
-    // Preserve the requested final output filename across the step.
-    | map { id, state ->
-      def new_state = state + ["workflow_output": state.output]
-      [id, new_state]
-    }
     // -- GPU variant (rapids-singlecell) --
     | highly_variable_genes_gpu.run(
       runIf: { id, state -> state.device_type == "gpu" },
@@ -16,7 +11,6 @@ workflow run_wf {
         "input": "input",
         "modality": "modality",
         "input_layer": "input_layer",
-        "output": "workflow_output",
         "output_compression": "output_compression",
         "var_name_filter": "var_name_filter",
         "varm_name": "varm_name",
@@ -35,7 +29,7 @@ workflow run_wf {
         "obs_batch_key": "obs_batch_key",
         "check_values": "check_values"
       ],
-      toState: ["input": "output"]
+      toState: ["output": "output"]
     )
     // -- CPU variant (openpipeline) --
     | highly_variable_genes_cpu.run(
@@ -44,7 +38,6 @@ workflow run_wf {
         "input": "input",
         "modality": "modality",
         "layer": "input_layer",
-        "output": "workflow_output",
         "output_compression": "output_compression",
         "var_name_filter": "var_name_filter",
         "varm_name": "varm_name",
@@ -60,9 +53,9 @@ workflow run_wf {
         "var_input": "var_input",
         "features_to_exclude": "features_to_exclude"
       ],
-      toState: ["input": "output"]
+      toState: ["output": "output"]
     )
-    | setState(["output": "input"])
+    | setState(["output"])
 
   emit:
   output_ch
