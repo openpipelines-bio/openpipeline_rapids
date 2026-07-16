@@ -55,8 +55,7 @@ argument_groups:
       - name: "--batchsize"
         type: integer
         description: |
-          (GPU variant only) Number of genes per batch. If None, all genes are
-          processed at once.
+          Number of genes per batch. If None, all genes are processed at once.
 
 dependencies:
   - name: preprocessing/regress_out
