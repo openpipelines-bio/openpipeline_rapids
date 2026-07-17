@@ -3423,7 +3423,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/filter_genes",
     "viash_version" : "0.9.7",
-    "git_commit" : "539554cdde70cc96f8133a5333e22165736d2de6",
+    "git_commit" : "92d252e492d2460c0dd2716a67e96f20e15dd471",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
