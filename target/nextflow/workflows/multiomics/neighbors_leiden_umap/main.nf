@@ -3267,6 +3267,12 @@ meta = [
       "name" : "openpipeline",
       "repo" : "openpipeline",
       "tag" : "v4.1.0"
+    },
+    {
+      "type" : "vsh",
+      "name" : "openpipeline_spatial",
+      "repo" : "openpipeline_spatial",
+      "tag" : "v0.5.0"
     }
   ],
   "license" : "MIT",
@@ -3358,7 +3364,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/workflows/multiomics/neighbors_leiden_umap",
     "viash_version" : "0.9.7",
-    "git_commit" : "d0835ed350e5f7fd24acf43b6bb6ad019de29f3e",
+    "git_commit" : "539554cdde70cc96f8133a5333e22165736d2de6",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3392,6 +3398,12 @@ meta = [
         "name" : "openpipeline",
         "repo" : "openpipeline",
         "tag" : "v4.1.0"
+      },
+      {
+        "type" : "vsh",
+        "name" : "openpipeline_spatial",
+        "repo" : "openpipeline_spatial",
+        "tag" : "v0.5.0"
       }
     ],
     "viash_version" : "0.9.7",

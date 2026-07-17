@@ -1,0 +1,137 @@
+name: spatial_autocorr
+namespace: "wrappers/squidpy"
+scope: "private"
+description: |
+  Calculate spatial autocorrelation (Moran's I or Geary's C) for genes on a
+  precomputed spatial neighborhood graph, running either the GPU
+  (rapids-singlecell) or the CPU (squidpy) variant, selected with --device_type.
+
+authors:
+  - __merge__: /src/authors/jakub_majercik.yaml
+    roles: [ author ]
+
+argument_groups:
+  - name: Inputs
+    arguments:
+      - name: "--input"
+        type: file
+        required: true
+        direction: input
+        description: Input h5mu file.
+        example: input.h5mu
+      - name: "--modality"
+        type: string
+        default: "rna"
+        description: Which modality from the input MuData file to process.
+      - name: "--layer"
+        type: string
+        description: |
+          Layer in the modality to use for the autocorrelation analysis.
+          If unset, .X is used.
+      - name: "--obsp_connectivities"
+        type: string
+        default: "spatial_connectivities"
+        description: In which .obsp slot the spatial connectivities can be found.
+      - name: "--input_genes"
+        type: string
+        multiple: true
+        multiple_sep: ","
+        description: |
+          Subset of genes (from .var_names) to compute autocorrelation for.
+          If unset, highly variable genes (if annotated) or all genes are used.
+
+  - __merge__: /src/base/compute_argument_group.yaml
+
+  - name: Outputs
+    arguments:
+      - name: "--output"
+        type: file
+        required: true
+        direction: output
+        description: Output h5mu file.
+        example: output.h5mu
+
+  - name: Options
+    arguments:
+      - name: "--mode"
+        type: string
+        choices: [moran, geary]
+        default: "moran"
+        description: |
+          Spatial autocorrelation statistic to compute. 'moran' for Moran's I,
+          'geary' for Geary's C.
+      - name: "--n_perms"
+        type: integer
+        min: 1
+        description: |
+          Number of permutations for the permutation-based p-value calculation.
+          If unset, only analytical p-values are computed.
+
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
+      - name: "--transformation"
+        type: boolean
+        default: true
+        description: If true, row-normalize the connectivity matrix before computation.
+      - name: "--two_tailed"
+        type: boolean_true
+        description: |
+          If set, compute two-tailed p-values from the permutation test instead
+          of one-tailed.
+      - name: "--corr_method"
+        type: string
+        default: "fdr_bh"
+        description: |
+          Multiple-testing correction method to apply to p-values (any method
+          supported by statsmodels multipletests, e.g. 'fdr_bh', 'bonferroni').
+          Pass an empty string to disable correction.
+      - name: "--use_sparse"
+        type: boolean
+        default: true
+        description: If true, use a sparse representation of the expression matrix on the GPU.
+      - name: "--output_compression"
+        type: string
+        choices: ["gzip", "lzf"]
+        description: The compression format to be used on the output h5mu object.
+
+  - name: Squidpy options
+    description: Exposed only by the CPU (squidpy) variant (--device_type cpu).
+    arguments:
+      - name: "--use_all_genes"
+        type: boolean
+        default: false
+        description: |
+          Use all genes even if highly variable genes are annotated in .var.
+      - name: "--attr"
+        type: string
+        default: "X"
+        choices: [X, obs, obsm]
+        description: |
+          Which AnnData attribute --input_genes refers to (X uses .var_names,
+          obs uses .obs columns, obsm uses indices in .obsm[layer]).
+      - name: "--use_raw"
+        type: boolean
+        default: false
+        description: Whether to use .raw for the expression values.
+
+dependencies:
+  - name: squidpy/spatial_autocorr
+    alias: spatial_autocorr_gpu
+  - name: feature_annotation/spatial_autocorr
+    repository: openpipeline_spatial
+    alias: spatial_autocorr_cpu
+
+resources:
+  - type: nextflow_script
+    path: main.nf
+    entrypoint: run_wf
+
+test_resources:
+  - type: nextflow_script
+    path: test.nf
+    entrypoint: test_wf
+  - path: /resources_test/xenium
+
+runners:
+  - type: nextflow

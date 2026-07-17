@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "spatial_autocorr",
+  "description": "Calculate spatial autocorrelation for genes using Moran's I or Geary's C.\nThis allows identifying spatially variable genes.\n",
+  "type": "object",
+  "$defs": {
+    "inputs": {
+      "title": "Inputs",
+      "type": "object",
+      "description": "No description",
+      "properties": {
+        "input": {
+          "type": "string",
+          "format": "path",
+          "exists": true,
+          "description": "Input h5mu file.",
+          "help_text": "Type: `file`, multiple: `False`, required, direction: `input`. "
+        },
+        "modality": {
+          "type": "string",
+          "description": "Modality to use.",
+          "help_text": "Type: `string`, multiple: `False`, default: `\"rna\"`. ",
+          "default": "rna"
+        },
+        "layer": {
+          "type": "string",
+          "description": "Layer in the AnnData object to use.\n- If `attr` is 'X', this is the key in `.layers` to use",
+          "help_text": "Type: `string`, multiple: `False`. "
+        },
+        "input_genes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The features to calculate autocorrelation for",
+          "help_text": "Type: `string`, multiple: `True`. "
+        },
+        "obsp_neighborhood_graph": {
+          "type": "string",
+          "description": "Key in .obsp where spatial connectivities are stored.",
+          "help_text": "Type: `string`, multiple: `False`, default: `\"spatial_connectivities\"`. ",
+          "default": "spatial_connectivities"
+        },
+        "use_all_genes": {
+          "type": "boolean",
+          "description": "Whether to use all genes even if highly variable genes are present in .var.\nIf set to true, all genes will be used.\n",
+          "help_text": "Type: `boolean`, multiple: `False`, default: `false`. ",
+          "default": false
+        }
+      }
+    },
+    "outputs": {
+      "title": "Outputs",
+      "type": "object",
+      "description": "No description",
+      "properties": {
+        "output": {
+          "type": "string",
+          "format": "path",
+          "description": "Output h5mu file with results in .uns.",
+          "help_text": "Type: `file`, multiple: `False`, required, default: `\"$id.$key.output\"`, direction: `output`. ",
+          "default": "$id.$key.output"
+        }
+      }
+    },
+    "parameters": {
+      "title": "Parameters",
+      "type": "object",
+      "description": "No description",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "description": "Mode of spatial autocorrelation.",
+          "help_text": "Type: `string`, multiple: `False`, default: `\"moran\"`, choices: ``moran`, `geary``. ",
+          "enum": [
+            "moran",
+            "geary"
+          ],
+          "default": "moran"
+        },
+        "attr": {
+          "type": "string",
+          "description": "The attribute of the AnnData object to use for calculation.\n- 'X': Use gene expression data (default).\n- 'obs': Use cell metadata.\n- 'obsm': Use multidimensional embeddings.\n",
+          "help_text": "Type: `string`, multiple: `False`, default: `\"X\"`, choices: ``X`, `obs`, `obsm``. ",
+          "enum": [
+            "X",
+            "obs",
+            "obsm"
+          ],
+          "default": "X"
+        },
+        "n_perms": {
+          "type": "integer",
+          "description": "Number of permutations for p-value calculation.",
+          "help_text": "Type: `integer`, multiple: `False`, default: `100`. ",
+          "default": 100
+        },
+        "use_raw": {
+          "type": "boolean",
+          "description": "Whether to use .raw attribute of AnnData.",
+          "help_text": "Type: `boolean`, multiple: `False`, default: `false`. ",
+          "default": false
+        }
+      }
+    },
+    "nextflow input-output arguments": {
+      "title": "Nextflow input-output arguments",
+      "type": "object",
+      "description": "Input/output parameters for Nextflow itself. Please note that both publishDir and publish_dir are supported but at least one has to be configured.",
+      "properties": {
+        "publish_dir": {
+          "type": "string",
+          "description": "Path to an output directory.",
+          "help_text": "Type: `string`, multiple: `False`, required, example: `\"output/\"`. "
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/$defs/inputs"
+    },
+    {
+      "$ref": "#/$defs/outputs"
+    },
+    {
+      "$ref": "#/$defs/parameters"
+    },
+    {
+      "$ref": "#/$defs/nextflow input-output arguments"
+    }
+  ]
+}
