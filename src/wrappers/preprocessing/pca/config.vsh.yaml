@@ -90,7 +90,7 @@ argument_groups:
         description: In which .uns slot to store the resulting variance objects.
       - name: "--overwrite"
         type: boolean
-        default: true
+        default: false
         description: Allow overwriting .obsm, .varm and .uns slots.
 
 dependencies:
