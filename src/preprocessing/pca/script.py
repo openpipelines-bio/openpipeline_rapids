@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 import rapids_singlecell as rsc
 
 ## VIASH START
@@ -73,6 +74,27 @@ for parameter_name, (field, key) in check_exist.items():
             f"Requested to create field {key} in .{field} for modality "
             f"{par['modality']}, but field already exists."
         )
+
+# rapids-singlecell PCA cannot handle genes with zero total expression (they
+# have zero variance) and fails with an opaque error deep in the call. Detect
+# them up front and raise an actionable message instead.
+matrix = dat.layers[par["layer"]] if par["layer"] else dat.X
+selected_var_names = dat.var_names
+if mask_var is not None:
+    selected = dat.var[mask_var].to_numpy().astype(bool)
+    matrix = matrix[:, selected]
+    selected_var_names = selected_var_names[selected]
+gene_totals = np.asarray(matrix.sum(axis=0)).ravel()
+zero_genes = selected_var_names[gene_totals == 0].tolist()
+if zero_genes:
+    preview = ", ".join(zero_genes[:10])
+    if len(zero_genes) > 10:
+        preview += ", ..."
+    raise ValueError(
+        f"{len(zero_genes)} gene(s) selected for PCA have zero total expression "
+        f"across all cells, which rapids-singlecell PCA cannot handle: "
+        f"{preview}. Filter these genes out first (e.g. with `filter_genes`)."
+    )
 
 with on_gpu(dat, logger, layer=par["layer"]):
     logger.info("Computing PCA.")

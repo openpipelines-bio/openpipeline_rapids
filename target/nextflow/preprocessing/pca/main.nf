@@ -3079,7 +3079,7 @@ meta = [
           "alternatives" : [
             "-i"
           ],
-          "description" : "Input h5mu file.",
+          "description" : "Input h5mu file. Genes with zero expression must be filtered out\nbeforehand (e.g. with `filter_genes`); rapids-singlecell PCA raises an\nerror if any gene has zero total expression across all cells.\n",
           "example" : [
             "input.h5mu"
           ],
@@ -3475,7 +3475,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/pca",
     "viash_version" : "0.9.7",
-    "git_commit" : "5184135c3d7f44950bcd85472c6a29ce64ea56ac",
+    "git_commit" : "e5903f449113832618ecb4e74af7d578da2a2be1",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3545,6 +3545,7 @@ def innerWorkflowFactory(args) {
 tempscript=".viash_script.py"
 cat > "$tempscript" << VIASHMAIN
 import sys
+import numpy as np
 import rapids_singlecell as rsc
 
 ## VIASH START
@@ -3644,6 +3645,27 @@ for parameter_name, (field, key) in check_exist.items():
             f"Requested to create field {key} in .{field} for modality "
             f"{par['modality']}, but field already exists."
         )
+
+# rapids-singlecell PCA cannot handle genes with zero total expression (they
+# have zero variance) and fails with an opaque error deep in the call. Detect
+# them up front and raise an actionable message instead.
+matrix = dat.layers[par["layer"]] if par["layer"] else dat.X
+selected_var_names = dat.var_names
+if mask_var is not None:
+    selected = dat.var[mask_var].to_numpy().astype(bool)
+    matrix = matrix[:, selected]
+    selected_var_names = selected_var_names[selected]
+gene_totals = np.asarray(matrix.sum(axis=0)).ravel()
+zero_genes = selected_var_names[gene_totals == 0].tolist()
+if zero_genes:
+    preview = ", ".join(zero_genes[:10])
+    if len(zero_genes) > 10:
+        preview += ", ..."
+    raise ValueError(
+        f"{len(zero_genes)} gene(s) selected for PCA have zero total expression "
+        f"across all cells, which rapids-singlecell PCA cannot handle: "
+        f"{preview}. Filter these genes out first (e.g. with \\`filter_genes\\`)."
+    )
 
 with on_gpu(dat, logger, layer=par["layer"]):
     logger.info("Computing PCA.")

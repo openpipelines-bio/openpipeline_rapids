@@ -4,6 +4,7 @@ import re
 import pytest
 import mudata as mu
 import numpy as np
+import scipy.sparse as sp
 import scanpy as sc
 from openpipeline_testutils.asserters import assert_annotation_objects_equal
 
@@ -226,6 +227,50 @@ def test_missing_layer_raises(run_component, random_h5mu_path):
         r"does_not_exist was not found in modality rna",
         err.value.stdout.decode("utf-8"),
     )
+
+
+def test_zero_expression_gene_raises(run_component, random_h5mu_path, clean_input):
+    """A gene with zero total expression should raise a clear, actionable error
+    naming the offending gene, rather than failing opaquely inside
+    rapids-singlecell."""
+    mu_in = mu.read_h5mu(clean_input)
+    rna = mu_in.mod["rna"]
+    # Force the first gene to have zero total expression across all cells.
+    if sp.issparse(rna.X):
+        X = rna.X.tocsc()
+        start, end = X.indptr[0], X.indptr[1]
+        X.data[start:end] = 0
+        X.eliminate_zeros()
+        rna.X = X.tocsr()
+    else:
+        X = rna.X.copy()
+        X[:, 0] = 0
+        rna.X = X
+    zero_gene = rna.var_names[0]
+    input_with_zero = random_h5mu_path()
+    mu_in.write(input_with_zero)
+
+    output = random_h5mu_path()
+    with pytest.raises(subprocess.CalledProcessError) as err:
+        run_component(
+            [
+                "--input",
+                str(input_with_zero),
+                "--output",
+                output,
+                "--output_compression",
+                "gzip",
+                "--num_components",
+                "26",
+            ]
+        )
+    stdout = err.value.stdout.decode("utf-8")
+    assert re.search(
+        r"gene\(s\) selected for PCA have zero total expression across all "
+        r"cells, which rapids-singlecell PCA cannot handle",
+        stdout,
+    )
+    assert zero_gene in stdout, "The offending gene should be named in the error."
 
 
 def test_chunked_requires_chunk_size(run_component, random_h5mu_path):

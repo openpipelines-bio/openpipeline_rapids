@@ -3404,7 +3404,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/regress_out",
     "viash_version" : "0.9.7",
-    "git_commit" : "5184135c3d7f44950bcd85472c6a29ce64ea56ac",
+    "git_commit" : "e5903f449113832618ecb4e74af7d578da2a2be1",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
