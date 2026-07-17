@@ -3426,7 +3426,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/_private/nextflow/wrappers/preprocessing/harmony_integrate",
     "viash_version" : "0.9.7",
-    "git_commit" : "e5903f449113832618ecb4e74af7d578da2a2be1",
+    "git_commit" : "d0835ed350e5f7fd24acf43b6bb6ad019de29f3e",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
