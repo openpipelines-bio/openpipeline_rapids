@@ -1,12 +1,9 @@
 name: tsne
-namespace: "tools"
-scope: "public"
+namespace: "wrappers/tools"
+scope: "private"
 description: |
-  t-SNE (t-distributed Stochastic Neighbor Embedding) is a non-linear
-  dimensionality reduction technique for visualizing high-dimensional data.
-  It computes a low-dimensional embedding from a precomputed representation
-  in `.obsm` (e.g. `X_pca`) and writes the result to `.obsm`. Wraps the
-  `rapids_singlecell.tl.tsne` function.
+  Compute a t-SNE embedding, running either the GPU (rapids-singlecell) or the
+  CPU (scanpy) variant of tsne, selected with --device_type.
 
 authors:
   - __merge__: /src/authors/jakub_majercik.yaml
@@ -16,114 +13,118 @@ argument_groups:
   - name: Inputs
     arguments:
       - name: "--input"
-        alternatives: ["-i"]
         type: file
-        description: Input h5mu file.
-        direction: input
         required: true
+        direction: input
+        description: Input h5mu file.
         example: input.h5mu
-
       - name: "--modality"
         type: string
         default: "rna"
-        required: false
         description: Which modality from the input MuData file to process.
-
       - name: "--obsm_input"
         type: string
         default: "X_pca"
         description: The `.obsm` slot to use as the representation to embed.
-
       - name: "--n_pcs"
         type: integer
-        required: false
         min: 1
         description: |
           The number of dimensions of the representation to use. If not set,
           all dimensions of `--obsm_input` are used.
 
+  - __merge__: /src/base/compute_argument_group.yaml
+
   - name: Outputs
     __merge__: [., /src/base/h5_compression_argument.yaml]
     arguments:
       - name: "--output"
-        alternatives: ["-o"]
         type: file
-        description: Output h5mu file.
-        direction: output
         required: true
-        default: output.h5mu
-
+        direction: output
+        description: Output h5mu file.
+        example: output.h5mu
       - name: "--obsm_output"
         type: string
-        description: In which .obsm slot to store the resulting t-SNE embedding.
         default: "X_tsne"
-
-      - name: "--overwrite"
-        type: boolean
-        default: true
-        description: Allow overwriting the .obsm output slot if it already exists.
+        description: In which .obsm slot to store the resulting t-SNE embedding.
 
   - name: Options
     arguments:
       - name: "--perplexity"
         type: integer
         min: 1
+        default: 30
         description: |
           The perplexity is related to the number of nearest neighbors that
           is used in other manifold learning algorithms. Larger datasets
           usually require a larger perplexity.
-        default: 30
-
       - name: "--early_exaggeration"
         type: double
         min: 1
+        default: 12
         description: |
           Controls how tight natural clusters in the original space are in
           the embedded space and how much space will be between them.
-        default: 12
-
       - name: "--learning_rate"
         type: double
         min: 1
+        default: 200
         description: |
           The learning rate for the optimization. If the learning rate is too
           high, the data may look like a 'ball' with any point approximately
           equidistant from its nearest neighbours. If it is too low, most
           points may look compressed in a dense cloud with few outliers.
-        default: 200
-
       - name: "--metric"
         type: string
-        description: The metric to use when computing distances in the representation.
         default: "euclidean"
+        description: The metric to use when computing distances in the representation.
 
+  - name: rapids-singlecell options
+    description: Exposed only by the GPU (rapids-singlecell) variant (--device_type gpu).
+    arguments:
+      - name: "--overwrite"
+        type: boolean
+        default: true
+        description: Allow overwriting the .obsm output slot if it already exists.
       - name: "--method"
         type: string
-        description: The t-SNE method to use.
         choices: ["barnes_hut", "fft"]
         default: "barnes_hut"
+        description: The t-SNE method to use.
+
+  - name: Scanpy options
+    description: Exposed only by the CPU (scanpy) variant (--device_type cpu).
+    arguments:
+      - name: "--min_dist"
+        type: double
+        default: 0.5
+        description: |
+          The effective minimum distance between embedded points. Smaller
+          values result in a more clustered embedding, larger values in a more
+          even dispersal of points.
+      - name: "--random_state"
+        type: integer
+        default: 0
+        description: The random seed to use for the t-SNE computation.
+
+dependencies:
+  - name: tools/tsne
+    alias: tsne_gpu
+  - name: dimred/tsne
+    repository: openpipeline
+    alias: tsne_cpu
 
 resources:
-  - type: python_script
-    path: script.py
-  - path: /src/utils/setup_logger.py
-  - path: /src/utils/compress_h5mu.py
-  - path: /src/utils/anndata_io.py
+  - type: nextflow_script
+    path: main.nf
+    entrypoint: run_wf
 
 test_resources:
-  - type: python_script
-    path: test.py
+  - type: nextflow_script
+    path: test.nf
+    entrypoint: test_wf
   - path: /resources_test/pbmc_1k_protein_v3
 
-engines:
-  - __merge__: /src/base/rapids_docker.yaml
-    setup:
-      - type: python
-        __merge__: /src/base/requirements/mudata.yaml
-
 runners:
-  - type: executable
-    docker_run_args: --gpus all
   - type: nextflow
-    directives:
-      label: [highcpu, midmem, middisk, gpu]
