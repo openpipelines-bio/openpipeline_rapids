@@ -3457,7 +3457,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/_private/nextflow/wrappers/tools/umap",
     "viash_version" : "0.9.7",
-    "git_commit" : "a3ed55837728c41d6f1f6861d767161965bc0dc2",
+    "git_commit" : "7fd9c3c55fda7ae86d418562637dd14ade9e4695",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3538,11 +3538,6 @@ workflow run_wf {
 
   main:
   output_ch = input_ch
-    // Preserve the requested final output filename across the step.
-    | map { id, state ->
-      def new_state = state + ["workflow_output": state.output]
-      [id, new_state]
-    }
     // -- GPU variant (rapids-singlecell) --
     | umap_gpu.run(
       runIf: { id, state -> state.device_type =="gpu" },
@@ -3550,7 +3545,6 @@ workflow run_wf {
         "input": "input",
         "modality": "modality",
         "uns_neighbors": "uns_neighbors",
-        "output": "workflow_output",
         "obsm_output": "obsm_output",
         "output_compression": "output_compression",
         "min_dist": "min_dist",
@@ -3562,7 +3556,7 @@ workflow run_wf {
         "init_pos": "init_pos",
         "random_state": "random_state"
       ],
-      toState: ["input": "output"]
+      toState: ["output": "output"]
     )
     // -- CPU variant (openpipeline) --
     | umap_cpu.run(
@@ -3571,7 +3565,6 @@ workflow run_wf {
         "input": "input",
         "modality": "modality",
         "uns_neighbors": "uns_neighbors",
-        "output": "workflow_output",
         "obsm_output": "obsm_output",
         "output_compression": "output_compression",
         "min_dist": "min_dist",
@@ -3583,9 +3576,9 @@ workflow run_wf {
         "init_pos": "init_pos",
         "gamma": "gamma"
       ],
-      toState: ["input": "output"]
+      toState: ["output": "output"]
     )
-    | setState(["output": "input"])
+    | setState(["output"])
 
   emit:
   output_ch

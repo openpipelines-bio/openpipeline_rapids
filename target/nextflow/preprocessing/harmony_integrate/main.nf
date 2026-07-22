@@ -3480,7 +3480,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/harmony_integrate",
     "viash_version" : "0.9.7",
-    "git_commit" : "a3ed55837728c41d6f1f6861d767161965bc0dc2",
+    "git_commit" : "7fd9c3c55fda7ae86d418562637dd14ade9e4695",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
