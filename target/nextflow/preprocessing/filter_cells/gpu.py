@@ -1,5 +1,36 @@
 from contextlib import contextmanager
+import numpy as np
 import rapids_singlecell as rsc
+
+
+def _ensure_gpu_compatible_dtype(matrix):
+    """Cast integer matrices to float32 so they can be moved to the GPU.
+
+    cupy sparse matrices only support bool/float/complex dtypes, so integer
+    count matrices (e.g. raw counts) cannot be transferred as-is. The
+    rapids-singlecell operations that run on the transferred data produce float
+    values anyway, so casting integer counts to float loses no information.
+    """
+    if matrix is not None and np.issubdtype(matrix.dtype, np.integer):
+        return matrix.astype("float32")
+    return matrix
+
+
+def _cast_transfer_targets(adata, kwargs):
+    """Cast the matrices ``anndata_to_GPU`` will transfer to a GPU-safe dtype.
+
+    Mirrors what ``anndata_to_GPU`` moves for the given keyword arguments so
+    that matrices it does not touch keep their original dtype.
+    """
+    if kwargs.get("convert_all"):
+        adata.X = _ensure_gpu_compatible_dtype(adata.X)
+        for key in list(adata.layers.keys()):
+            adata.layers[key] = _ensure_gpu_compatible_dtype(adata.layers[key])
+    elif kwargs.get("layer") is not None:
+        layer = kwargs["layer"]
+        adata.layers[layer] = _ensure_gpu_compatible_dtype(adata.layers[layer])
+    else:
+        adata.X = _ensure_gpu_compatible_dtype(adata.X)
 
 
 @contextmanager
@@ -16,6 +47,9 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
     key(s) within it, e.g. ``{"obsm": "X_pca"}`` or
     ``{"obsm": ["X_pca", "X_umap"], "varm": ["loadings"]}``. When only ``slots``
     is requested, ``.X``/``.layers`` are left on the CPU.
+
+    Integer matrices among the transferred ``.X``/``.layers`` are cast to
+    float32 first, since cupy sparse cannot represent integer dtypes.
     """
     slot_keys = {
         attr: [keys] if isinstance(keys, str) else list(keys)
@@ -34,6 +68,7 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
     if logger is not None:
         logger.info("Transferring %s to GPU.", description)
     if transfer_adata:
+        _cast_transfer_targets(adata, kwargs)
         rsc.get.anndata_to_GPU(adata, **kwargs)
     move_slots(rsc.get.X_to_GPU)
 
