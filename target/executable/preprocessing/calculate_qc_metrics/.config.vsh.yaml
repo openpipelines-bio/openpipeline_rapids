@@ -292,7 +292,7 @@ build_info:
   output: "target/executable/preprocessing/calculate_qc_metrics"
   executable: "target/executable/preprocessing/calculate_qc_metrics/calculate_qc_metrics"
   viash_version: "0.9.7"
-  git_commit: "a2992ae89b0cea21fac6d1218d3e0c65229a83d6"
+  git_commit: "84f242ee28233a92bb591b99685377ea7f4e6ad2"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
 package_config:
   name: "openpipeline_rapids"
