@@ -73,7 +73,7 @@ argument_groups:
     arguments:
       - name: "--overwrite"
         type: boolean
-        default: true
+        default: false
         description: Allow overwriting the .obsm output slot if it already exists.
       - name: "--flavor"
         type: string
