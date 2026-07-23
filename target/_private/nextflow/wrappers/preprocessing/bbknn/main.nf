@@ -3262,7 +3262,7 @@ meta = [
           "name" : "--overwrite",
           "description" : "Allow overwriting the .uns/.obsp output slots if they already exist.\n",
           "default" : [
-            true
+            false
           ],
           "required" : false,
           "direction" : "input",
@@ -3490,7 +3490,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/_private/nextflow/wrappers/preprocessing/bbknn",
     "viash_version" : "0.9.7",
-    "git_commit" : "84f242ee28233a92bb591b99685377ea7f4e6ad2",
+    "git_commit" : "d72291cc2bac4c46b47ccb991d06eef57e705e3e",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

@@ -114,7 +114,7 @@ argument_groups:
     description: "Allow overwriting the .uns/.obsp output slots if they already exist."
     info: null
     default:
-    - true
+    - false
     required: false
     direction: "input"
     multiple: false
@@ -406,7 +406,7 @@ build_info:
   output: "target/nextflow/preprocessing/bbknn"
   executable: "target/nextflow/preprocessing/bbknn/main.nf"
   viash_version: "0.9.7"
-  git_commit: "84f242ee28233a92bb591b99685377ea7f4e6ad2"
+  git_commit: "d72291cc2bac4c46b47ccb991d06eef57e705e3e"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
 package_config:
   name: "openpipeline_rapids"

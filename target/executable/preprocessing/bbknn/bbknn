@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing bbknn"
-LABEL org.opencontainers.image.created="2026-07-23T12:13:30Z"
+LABEL org.opencontainers.image.created="2026-07-23T13:41:24Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="84f242ee28233a92bb591b99685377ea7f4e6ad2"
+LABEL org.opencontainers.image.revision="d72291cc2bac4c46b47ccb991d06eef57e705e3e"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
@@ -649,7 +649,7 @@ function ViashHelp {
   echo ""
   echo "    --overwrite"
   echo "        type: boolean"
-  echo "        default: true"
+  echo "        default: false"
   echo "        Allow overwriting the .uns/.obsp output slots if they already exist."
   echo ""
   echo "    --output_compression"
@@ -1175,7 +1175,7 @@ if [ -z ${VIASH_PAR_OBSP_CONNECTIVITIES+x} ]; then
   VIASH_PAR_OBSP_CONNECTIVITIES="connectivities"
 fi
 if [ -z ${VIASH_PAR_OVERWRITE+x} ]; then
-  VIASH_PAR_OVERWRITE="true"
+  VIASH_PAR_OVERWRITE="false"
 fi
 if [ -z ${VIASH_PAR_NEIGHBORS_WITHIN_BATCH+x} ]; then
   VIASH_PAR_NEIGHBORS_WITHIN_BATCH="3"
