@@ -10,11 +10,6 @@ cd "$REPO_ROOT"
 SPATIAL_TAG=$(grep -A3 '^  - name: openpipeline_spatial$' _viash.yaml | grep 'tag:' | head -1 | awk '{print $2}')
 OP_TAG=$(grep -A3 '^  - name: openpipeline$' _viash.yaml | grep 'tag:' | head -1 | awk '{print $2}')
 
-# openpipeline_spatial is published as a built package on Viash Hub. Its GitLab
-# REST API isn't reachable for `nextflow run -hub`, but a plain git clone is, so
-# we shallow-clone the built package (below) and run its local target/ modules
-# (prebuilt images, no source build). openpipeline ships built target/ on its
-# GitHub release tags, so the QC step runs straight from GitHub.
 SPATIAL_REPO=https://packages.viash-hub.com/vsh/openpipeline_spatial
 
 DIR="$REPO_ROOT/resources_test/xenium"
