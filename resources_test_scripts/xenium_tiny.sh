@@ -2,16 +2,6 @@
 
 set -eo pipefail
 
-# Regenerate the xenium test resource consumed by this package.
-#
-# The squidpy/spatial_autocorr component and its wrapper workflow read:
-#   - xenium/xenium_tiny.qc.neighbors.h5mu
-#
-# The spatial components are driven straight from Viash Hub via the `vsh`
-# Nextflow SCM provider; the QC step is driven from the openpipeline release on
-# GitHub. Both ship built Nextflow modules that reference the pinned prebuilt
-# images, so there is no local checkout or build.
-
 # get the root of the directory
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"

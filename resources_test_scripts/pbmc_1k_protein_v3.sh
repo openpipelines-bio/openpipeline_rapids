@@ -2,16 +2,6 @@
 
 set -eo pipefail
 
-# Regenerate the pbmc_1k_protein_v3 test resources consumed by this package.
-#
-# The RNA components and workflows in openpipeline_rapids read two files:
-#   - pbmc_1k_protein_v3_filtered_feature_bc_matrix.h5mu  (raw counts as MuData)
-#   - pbmc_1k_protein_v3_mms.h5mu                          (multi-sample, processed + dimred)
-#
-# Both are produced by driving the upstream openpipeline pipelines directly from
-# GitHub, which ships the built Nextflow target (referencing the pinned prebuilt
-# images) on its release tags, so there is no local checkout or build.
-
 # get the root of the directory
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
