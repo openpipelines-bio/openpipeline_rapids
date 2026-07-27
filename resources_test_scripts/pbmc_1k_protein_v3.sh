@@ -6,7 +6,7 @@ set -eo pipefail
 #
 # The RNA components and workflows in openpipeline_rapids read two files:
 #   - pbmc_1k_protein_v3_filtered_feature_bc_matrix.h5mu  (raw counts as MuData)
-#   - pbmc_1k_protein_v3_mms.h5mu                          (multi-sample, dimred + integrated)
+#   - pbmc_1k_protein_v3_mms.h5mu                          (multi-sample, processed + dimred)
 #
 # Both are produced by driving the upstream openpipeline pipelines directly from
 # GitHub, which ships the built Nextflow target (referencing the pinned prebuilt
@@ -51,68 +51,18 @@ nextflow run openpipelines-bio/openpipeline \
   --publishDir "$DIR" \
   -resume
 
-# run single sample
+# process the sample into a multi-sample object with dimensionality reduction
+# (consumed file #2); process_samples runs the full singlesample -> multisample
+# -> dimred pipeline, producing the X_pca the components read
 nextflow run openpipelines-bio/openpipeline \
   -r "$OP_TAG" \
-  -main-script target/nextflow/workflows/rna/rna_singlesample/main.nf \
-  -profile docker \
-  -c src/workflows/utils/labels_ci.config \
-  --id "${ID}_uss" \
-  --input "${OUT}_filtered_feature_bc_matrix.h5mu" \
-  --output "$(basename "$OUT")_uss.h5mu" \
-  --publishDir "$DIR" \
-  -resume
-
-# add the sample ID to the mudata object
-nextflow run openpipelines-bio/openpipeline \
-  -r "$OP_TAG" \
-  -main-script target/nextflow/metadata/add_id/main.nf \
-  -profile docker \
-  -c src/workflows/utils/labels_ci.config \
-  --id "${ID}_uss" \
-  --input "${OUT}_uss.h5mu" \
-  --input_id "${ID}_uss" \
-  --output "$(basename "$OUT")_uss_with_id.h5mu" \
-  --output_compression "gzip" \
-  --publishDir "$DIR" \
-  -resume
-
-# run multisample
-nextflow run openpipelines-bio/openpipeline \
-  -r "$OP_TAG" \
-  -main-script target/nextflow/workflows/rna/rna_multisample/main.nf \
-  -profile docker \
-  -c src/workflows/utils/labels_ci.config \
-  --id "${ID}_ums" \
-  --input "${OUT}_uss_with_id.h5mu" \
-  --output "$(basename "$OUT")_ums.h5mu" \
-  --publishDir "$DIR" \
-  -resume
-
-# run dimensionality reduction
-nextflow run openpipelines-bio/openpipeline \
-  -r "$OP_TAG" \
-  -main-script target/nextflow/workflows/multiomics/dimensionality_reduction/main.nf \
+  -main-script target/nextflow/workflows/multiomics/process_samples/main.nf \
   -profile docker \
   -c src/workflows/utils/labels_ci.config \
   --id "${ID}_mms" \
-  --input "${OUT}_ums.h5mu" \
+  --input "${OUT}_filtered_feature_bc_matrix.h5mu" \
   --output "$(basename "$OUT")_mms.h5mu" \
   --publishDir "$DIR" \
-  --obs_covariates sample_id \
-  -resume
-
-# run integration (overwrites _mms.h5mu with the harmony + leiden result; consumed file #2)
-nextflow run openpipelines-bio/openpipeline \
-  -r "$OP_TAG" \
-  -main-script target/nextflow/workflows/integration/harmony_leiden/main.nf \
-  -profile docker \
-  -c src/workflows/utils/labels_ci.config \
-  --id "${ID}_mms_integration" \
-  --input "${OUT}_mms.h5mu" \
-  --output "$(basename "$OUT")_mms.h5mu" \
-  --publishDir "$DIR" \
-  --obs_covariates sample_id \
   -resume
 
 # drop everything else (intermediates, raw downloads, Nextflow .state.yaml
