@@ -103,15 +103,19 @@ nextflow run "$SPATIAL_DIR/target/nextflow/neighbors/spatial_neighborhood_graph/
 
 # drop low-detection genes (consumed file): rsc.gr.spatial_autocorr's float32
 # reduction yields nan/inf on constant or near-constant genes, which this tiny
-# Xenium panel has several of. Mirrors the min_cells=3 filter already applied
-# in src/squidpy/spatial_autocorr/test.py.
-nextflow run . \
-  -main-script target/nextflow/preprocessing/filter_genes/main.nf \
+# Xenium panel has several of. filter_with_counts --min_cells_per_gene 3 is the
+# CPU equivalent of sc.pp.filter_genes(min_cells=3), matching the filter applied
+# in src/squidpy/spatial_autocorr/test.py; using the CPU component keeps the
+# whole recipe GPU-free.
+nextflow run openpipelines-bio/openpipeline \
+  -r "$OP_TAG" \
+  -main-script target/nextflow/filter/filter_with_counts/main.nf \
   -profile docker \
   -c src/workflows/utils/labels_ci.config \
   --id "$ID" \
   --input "$DIR/${ID}.qc.neighbors_unfiltered.h5mu" \
-  --min_cells 3 \
+  --min_cells_per_gene 3 \
+  --do_subset \
   --output "${ID}.qc.neighbors.h5mu" \
   --publishDir "$DIR" \
   -resume
