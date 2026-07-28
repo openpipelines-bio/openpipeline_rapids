@@ -91,12 +91,27 @@ nextflow run openpipelines-bio/openpipeline \
   -c src/workflows/utils/labels_ci.config \
   -resume
 
-# spatial neighborhood graph on the QC'd object (consumed file)
+# spatial neighborhood graph on the QC'd object
 nextflow run "$SPATIAL_DIR/target/nextflow/neighbors/spatial_neighborhood_graph/main.nf" \
   -profile docker \
   -c src/workflows/utils/labels_ci.config \
   --id "$ID" \
   --input "$DIR/$ID.qc.h5mu" \
+  --output "${ID}.qc.neighbors_unfiltered.h5mu" \
+  --publishDir "$DIR" \
+  -resume
+
+# drop low-detection genes (consumed file): rsc.gr.spatial_autocorr's float32
+# reduction yields nan/inf on constant or near-constant genes, which this tiny
+# Xenium panel has several of. Mirrors the min_cells=3 filter already applied
+# in src/squidpy/spatial_autocorr/test.py.
+nextflow run . \
+  -main-script target/nextflow/preprocessing/filter_genes/main.nf \
+  -profile docker \
+  -c src/workflows/utils/labels_ci.config \
+  --id "$ID" \
+  --input "$DIR/${ID}.qc.neighbors_unfiltered.h5mu" \
+  --min_cells 3 \
   --output "${ID}.qc.neighbors.h5mu" \
   --publishDir "$DIR" \
   -resume
