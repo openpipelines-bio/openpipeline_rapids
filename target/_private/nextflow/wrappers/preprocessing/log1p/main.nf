@@ -3367,7 +3367,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/_private/nextflow/wrappers/preprocessing/log1p",
     "viash_version" : "0.9.7",
-    "git_commit" : "d72291cc2bac4c46b47ccb991d06eef57e705e3e",
+    "git_commit" : "b30b45bcc3bfbbdb7f242e1cab143b7830e41934",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3379,13 +3379,8 @@ meta = [
       "test_resources" : [
         {
           "type" : "s3",
-          "path" : "s3://openpipelines-data/pbmc_1k_protein_v3",
-          "dest" : "resources_test/pbmc_1k_protein_v3"
-        },
-        {
-          "type" : "s3",
-          "path" : "s3://openpipelines-bio/openpipeline_spatial/resources_test/xenium",
-          "dest" : "resources_test/xenium"
+          "path" : "s3://openpipelines-bio/openpipeline_rapids/resources_test",
+          "dest" : "resources_test"
         }
       ],
       "nextflow_labels_ci" : [

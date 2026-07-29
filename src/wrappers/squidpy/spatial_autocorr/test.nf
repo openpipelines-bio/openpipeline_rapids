@@ -17,6 +17,7 @@ workflow test_wf {
         device_type: "cpu",
         mode: "moran",
         n_perms: 10,
+        output: "output_cpu.h5mu",
         output_compression: "gzip"
       ],
       [
@@ -25,6 +26,7 @@ workflow test_wf {
         device_type: "gpu",
         mode: "moran",
         n_perms: 10,
+        output: "output_gpu.h5mu",
         output_compression: "gzip"
       ]
     ])

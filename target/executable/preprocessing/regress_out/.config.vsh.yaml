@@ -277,7 +277,7 @@ build_info:
   output: "target/executable/preprocessing/regress_out"
   executable: "target/executable/preprocessing/regress_out/regress_out"
   viash_version: "0.9.7"
-  git_commit: "d72291cc2bac4c46b47ccb991d06eef57e705e3e"
+  git_commit: "b30b45bcc3bfbbdb7f242e1cab143b7830e41934"
   git_remote: "https://github.com/openpipelines-bio/openpipeline_rapids"
 package_config:
   name: "openpipeline_rapids"
@@ -290,11 +290,8 @@ package_config:
   info:
     test_resources:
     - type: "s3"
-      path: "s3://openpipelines-data/pbmc_1k_protein_v3"
-      dest: "resources_test/pbmc_1k_protein_v3"
-    - type: "s3"
-      path: "s3://openpipelines-bio/openpipeline_spatial/resources_test/xenium"
-      dest: "resources_test/xenium"
+      path: "s3://openpipelines-bio/openpipeline_rapids/resources_test"
+      dest: "resources_test"
     nextflow_labels_ci:
     - path: "src/workflows/utils/labels_ci.config"
       description: "Adds the correct memory and CPU labels when running on the Viash\
