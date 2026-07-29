@@ -19,7 +19,8 @@ workflow run_wf {
         "transformation": "transformation",
         "two_tailed": "two_tailed",
         "corr_method": "corr_method",
-        "use_sparse": "use_sparse"
+        "use_sparse": "use_sparse",
+        "output": "output"
       ],
       toState: ["output": "output"]
     )
@@ -36,7 +37,8 @@ workflow run_wf {
         "n_perms": "n_perms",
         "use_all_genes": "use_all_genes",
         "attr": "attr",
-        "use_raw": "use_raw"
+        "use_raw": "use_raw",
+        "output": "output"
       ],
       toState: ["output": "output"]
     )
