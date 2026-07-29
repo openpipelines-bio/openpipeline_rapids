@@ -41,9 +41,9 @@ nextflow run openpipelines-bio/openpipeline \
   --publishDir "$DIR" \
   -resume
 
-# process the sample into a multi-sample object with dimensionality reduction
-# (consumed file #2); process_samples runs the full singlesample -> multisample
-# -> dimred pipeline, producing the X_pca the components read
+# process the sample into a multi-sample object with dimensionality reduction;
+# process_samples runs the full singlesample -> multisample -> dimred pipeline,
+# producing the X_pca the components read
 nextflow run openpipelines-bio/openpipeline \
   -r "$OP_TAG" \
   -main-script target/nextflow/workflows/multiomics/process_samples/main.nf \
@@ -51,8 +51,23 @@ nextflow run openpipelines-bio/openpipeline \
   -c src/workflows/utils/labels_ci.config \
   --id "${ID}_mms" \
   --input "${OUT}_filtered_feature_bc_matrix.h5mu" \
+  --output "$(basename "$OUT")_processed.h5mu" \
+  --publishDir "$DIR" \
+  -resume
+
+# integrate (harmony) + cluster (leiden) -> consumed file #2; adds the
+# harmony_integration_leiden_1.0 obs column and X_pca_integrated obsm that the
+# integration wrapper workflow tests consume
+nextflow run openpipelines-bio/openpipeline \
+  -r "$OP_TAG" \
+  -main-script target/nextflow/workflows/integration/harmony_leiden/main.nf \
+  -profile docker \
+  -c src/workflows/utils/labels_ci.config \
+  --id "${ID}_mms_integration" \
+  --input "${OUT}_processed.h5mu" \
   --output "$(basename "$OUT")_mms.h5mu" \
   --publishDir "$DIR" \
+  --obs_covariates sample_id \
   -resume
 
 # drop everything else (intermediates, raw downloads, Nextflow .state.yaml
