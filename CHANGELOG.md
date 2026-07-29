@@ -1,4 +1,4 @@
-# openpipeline_rapids x.x.x
+# openpipeline_rapids v0.1.0
 
 ## NEW FEATURES
 
