@@ -16,6 +16,7 @@ workflow test_wf {
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
         device_type: "cpu",
         batch_key: "sample_id",
+        overwrite: true,
         output_compression: "gzip"
       ],
       [
@@ -23,6 +24,7 @@ workflow test_wf {
         input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_mms.h5mu"),
         device_type: "gpu",
         batch_key: "sample_id",
+        overwrite: true,
         output_compression: "gzip"
       ]
     ])

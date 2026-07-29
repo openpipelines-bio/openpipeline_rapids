@@ -4,7 +4,7 @@ params.rootDir = params.rootDir ?: projectDir + "/../../../.."
 
 include { log_normalize } from params.rootDir + "/target/nextflow/workflows/rna/log_normalize/main.nf"
 
-params.resources_test = params.resources_test ?: params.rootDir + "/resources_test/pbmc_1k_protein_v3"
+params.resources_test = params.rootDir + "/resources_test"
 
 workflow test_wf {
 
@@ -13,7 +13,7 @@ workflow test_wf {
   output_ch = Channel.fromList([
       [
         id: "simple_execution_test",
-        input: resources_test.resolve("pbmc_1k_protein_v3_filtered_feature_bc_matrix.h5mu"),
+        input: resources_test.resolve("pbmc_1k_protein_v3/pbmc_1k_protein_v3_filtered_feature_bc_matrix.h5mu"),
         output_layer: "log_normalized"
       ]
     ])
