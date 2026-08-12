@@ -3571,7 +3571,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/highly_variable_genes",
     "viash_version" : "0.9.7",
-    "git_commit" : "17f07ca9916143db4d00560219eacc59a0f8fa73",
+    "git_commit" : "e063c691dec21241f97f4e7a3df68c70dcecf01b",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3770,20 +3770,19 @@ hvg_var_columns = [
 ]
 present_columns = [c for c in hvg_var_columns if c in dat.var.columns]
 
+if par["varm_name"] and present_columns:
+    # Copy the full per-gene HVG output into .varm, including the boolean
+    # "highly_variable" flag.
+    dat.varm[par["varm_name"]] = dat.var[present_columns].copy()
+
 if par["var_name_filter"] and par["var_name_filter"] != "highly_variable":
     dat.var[par["var_name_filter"]] = dat.var["highly_variable"]
-    dat.var = dat.var.drop(columns=["highly_variable"])
-    present_columns = [
-        par["var_name_filter"] if c == "highly_variable" else c for c in present_columns
-    ]
 
-if par["varm_name"]:
-    # Move the per-gene HVG metrics out of .var into .varm so the original
-    # .var stays clean apart from the boolean filter column.
-    metric_columns = [c for c in present_columns if c != par["var_name_filter"]]
-    if metric_columns:
-        dat.varm[par["varm_name"]] = dat.var[metric_columns].copy()
-        dat.var = dat.var.drop(columns=metric_columns)
+if par["varm_name"] and present_columns:
+    # .var only keeps the boolean filter column; the metrics live in .varm.
+    dat.var = dat.var.drop(
+        columns=[c for c in present_columns if c != par["var_name_filter"]]
+    )
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

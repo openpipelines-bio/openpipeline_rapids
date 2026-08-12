@@ -80,9 +80,17 @@ def test_run(run_component, random_h5mu_path, lognormed_input):
     assert "hvg" in rna_out.varm, "Output should contain an 'hvg' .varm slot"
     assert rna_out.varm["hvg"].shape[0] == rna_out.n_vars
     # The per-gene dispersion metrics should land in .varm (openpipeline#1143)
-    assert {"means", "dispersions", "dispersions_norm"}.issubset(
-        rna_out.varm["hvg"].columns
-    ), "Dispersion metrics should be stored in the 'hvg' .varm slot"
+    assert {
+        "highly_variable",
+        "means",
+        "dispersions",
+        "dispersions_norm",
+    }.issubset(rna_out.varm["hvg"].columns), (
+        "Dispersion metrics should be stored in the 'hvg' .varm slot"
+    )
+    assert rna_out.varm["hvg"]["highly_variable"].equals(
+        rna_out.var["highly_variable"]
+    ), ".varm and .var should agree on which features are highly variable"
 
     # rapids-singlecell records the flavor in .uns (openpipeline#1141)
     assert rna_out.uns["hvg"]["flavor"] == "seurat", (
@@ -209,9 +217,16 @@ def test_flavor_seurat_v3(run_component, random_h5mu_path):
     assert int(rna_out.var["highly_variable"].sum()) == 50
     # seurat_v3 stores variance-based metrics; ensure they reach .varm
     # rather than being dropped (openpipeline#1143)
-    assert {"means", "variances", "variances_norm", "highly_variable_rank"}.issubset(
-        rna_out.varm["hvg"].columns
-    ), "seurat_v3 variance metrics should be stored in the 'hvg' .varm slot"
+    assert {
+        "highly_variable",
+        "means",
+        "variances",
+        "variances_norm",
+        "highly_variable_rank",
+    }.issubset(rna_out.varm["hvg"].columns), (
+        "seurat_v3 variance metrics should be stored in the 'hvg' .varm slot"
+    )
+    assert int(rna_out.varm["hvg"]["highly_variable"].sum()) == 50
     assert rna_out.uns["hvg"]["flavor"] == "seurat_v3", (
         "The flavor should be recorded in .uns['hvg']"
     )
@@ -278,6 +293,11 @@ def test_var_name_filter_and_varm_name(
     assert "hvg_metrics" in rna_out.varm
     assert "hvg" not in rna_out.varm
     assert int(rna_out.var["filter_with_hvg"].sum()) == 50
+    # .varm keeps the flag under the name rapids-singlecell assigned it
+    assert "highly_variable" in rna_out.varm["hvg_metrics"].columns
+    assert rna_out.varm["hvg_metrics"]["highly_variable"].equals(
+        rna_out.var["filter_with_hvg"].rename("highly_variable")
+    )
 
 
 def test_obs_batch_key(run_component, random_h5mu_path, lognormed_input):
