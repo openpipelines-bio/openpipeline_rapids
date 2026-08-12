@@ -1,5 +1,13 @@
 # openpipeline_rapids v0.1.0
 
+## BUG FIXES
+
+* `preprocessing/highly_variable_genes`: the boolean `highly_variable` column is now also
+  included in the `.varm` output instead of being dropped while moving the per-gene HVG
+  metrics out of `.var`.
+
+# openpipeline_rapids v0.1.0
+
 ## NEW FEATURES
 
 Initial release of **OpenPipeline Rapids**: GPU-accelerated single-cell components built on
