@@ -104,7 +104,7 @@ present_columns = [c for c in hvg_var_columns if c in dat.var.columns]
 
 if par["varm_name"] and present_columns:
     # Copy the full per-gene HVG output into .varm, including the boolean
-    # "highly_variable" flag under the name rapids-singlecell gave it.
+    # "highly_variable" flag.
     dat.varm[par["varm_name"]] = dat.var[present_columns].copy()
 
 if par["var_name_filter"] and par["var_name_filter"] != "highly_variable":
