@@ -1,4 +1,6 @@
-# openpipeline_rapids x.x.x
+# openpipeline_rapids vx.x.x
+
+# openpipeline_rapids v0.1.1
 
 ## BUG FIXES
 

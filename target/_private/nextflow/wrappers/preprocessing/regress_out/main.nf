@@ -3353,7 +3353,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/_private/nextflow/wrappers/preprocessing/regress_out",
     "viash_version" : "0.9.7",
-    "git_commit" : "e063c691dec21241f97f4e7a3df68c70dcecf01b",
+    "git_commit" : "5af755e0c7ca041b67c8c4951b444438095e72de",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
