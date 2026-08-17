@@ -6,7 +6,7 @@ target: target
 # Note: this causes the docker images to be renamed
 name: openpipeline_rapids
 organization: openpipelines-bio
-version: 0.1.1
+version: v0.1.1
 summary: |
   Best-practice workflows for single-cell multi-omics analyses using rapids-singlecell.
   
