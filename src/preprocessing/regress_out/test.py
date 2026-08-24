@@ -115,5 +115,24 @@ def test_missing_obs_key_raises(run_component, random_h5mu_path, clean_input):
     assert "does_not_exist" in err.value.stdout.decode("utf-8")
 
 
+def test_empty_input_layer_uses_x(run_component, random_h5mu_path, clean_input):
+    """An empty --input_layer means ".X"; it must not be treated as a layer name."""
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            clean_input,
+            "--output",
+            output,
+            "--obs_keys",
+            "total_counts",
+            "--input_layer",
+            "",
+        ]
+    )
+
+    assert output.is_file(), "No output was created."
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
