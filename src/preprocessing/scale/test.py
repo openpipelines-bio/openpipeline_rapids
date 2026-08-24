@@ -118,5 +118,25 @@ def test_raise_if_input_layer_missing(run_component, random_h5mu_path):
         )
 
 
+def test_empty_input_layer_uses_x(run_component, random_h5mu_path):
+    """An empty --input_layer means ".X"; it must not be treated as a layer name."""
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            input,
+            "--output",
+            output,
+            "--input_layer",
+            "",
+        ]
+    )
+
+    assert output.is_file(), "No output was created."
+    rna_in = mu.read_h5mu(input).mod["rna"]
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    assert rna_in.shape == rna_out.shape
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))

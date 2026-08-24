@@ -376,5 +376,29 @@ def test_overwrite_existing_slot(run_component, random_h5mu_path, clean_input):
     assert rna_out.obsm["X_pca"].shape == (rna_out.n_obs, 26)
 
 
+def test_empty_layer_uses_x(run_component, random_h5mu_path, clean_input):
+    """An empty --layer means ".X"; it must not be treated as a layer name.
+
+    Workflows pass their "no layer" sentinel through explicitly rather than
+    omitting the argument, so the empty string has to be accepted here.
+    """
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            clean_input,
+            "--output",
+            output,
+            "--num_components",
+            "26",
+            "--layer",
+            "",
+        ]
+    )
+
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    assert rna_out.obsm["X_pca"].shape == (rna_out.n_obs, 26)
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))

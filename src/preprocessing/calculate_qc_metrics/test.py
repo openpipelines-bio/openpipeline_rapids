@@ -150,5 +150,22 @@ def test_raise_if_layer_missing(run_component, random_h5mu_path):
     )
 
 
+def test_empty_layer_uses_x(run_component, random_h5mu_path):
+    """An empty --layer means ".X"; it must not be treated as a layer name."""
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            input,
+            "--output",
+            output,
+            "--layer",
+            "",
+        ]
+    )
+
+    assert output.is_file(), "No output was created."
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
