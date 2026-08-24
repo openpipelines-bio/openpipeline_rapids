@@ -26,7 +26,7 @@ def _cast_transfer_targets(adata, kwargs):
         adata.X = _ensure_gpu_compatible_dtype(adata.X)
         for key in list(adata.layers.keys()):
             adata.layers[key] = _ensure_gpu_compatible_dtype(adata.layers[key])
-    elif kwargs.get("layer") is not None:
+    elif kwargs.get("layer"):
         layer = kwargs["layer"]
         adata.layers[layer] = _ensure_gpu_compatible_dtype(adata.layers[layer])
     else:
@@ -51,6 +51,12 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
     Integer matrices among the transferred ``.X``/``.layers`` are cast to
     float32 first, since cupy sparse cannot represent integer dtypes.
     """
+    # Components treat an empty --layer as "use .X", and pass it through
+    # explicitly rather than omitting the argument. An empty string is not a
+    # layer name, so drop it instead of forwarding it to anndata_to_GPU.
+    if "layer" in kwargs and not kwargs["layer"]:
+        del kwargs["layer"]
+
     slot_keys = {
         attr: [keys] if isinstance(keys, str) else list(keys)
         for attr, keys in (slots or {}).items()

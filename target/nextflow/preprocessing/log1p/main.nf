@@ -3442,7 +3442,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/log1p",
     "viash_version" : "0.9.7",
-    "git_commit" : "5af755e0c7ca041b67c8c4951b444438095e72de",
+    "git_commit" : "4621ba0e1a5d376b2827c72c9354ecf9bad881ea",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3564,6 +3564,10 @@ logger = setup_logger()
 dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
+
+# An empty string is a sentinel for "use .X"; normalize to None.
+if not par["input_layer"]:
+    par["input_layer"] = None
 
 if par["input_layer"] and par["input_obsm"]:
     raise ValueError("--input_layer and --input_obsm are mutually exclusive.")

@@ -334,5 +334,22 @@ def test_obs_batch_key(run_component, random_h5mu_path, lognormed_input):
     assert "highly_variable_intersection" in hvg_metrics.columns
 
 
+def test_empty_input_layer_uses_x(run_component, random_h5mu_path, lognormed_input):
+    """An empty --input_layer means ".X"; it must not be treated as a layer name."""
+    output = random_h5mu_path()
+    run_component(
+        [
+            "--input",
+            lognormed_input,
+            "--output",
+            output,
+            "--input_layer",
+            "",
+        ]
+    )
+
+    assert output.is_file(), "No output was created."
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))

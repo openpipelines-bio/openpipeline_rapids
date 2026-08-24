@@ -26,6 +26,10 @@ dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
+# An empty string is a sentinel for "use .X"; normalize to None.
+if not par["input_layer"]:
+    par["input_layer"] = None
+
 if par["input_layer"] and par["input_obsm"]:
     raise ValueError("--input_layer and --input_obsm are mutually exclusive.")
 if par["output_layer"] and par["output_obsm"]:
