@@ -26,6 +26,10 @@ dat = read_modality(par["input"], par["modality"], logger)
 
 logger.info(par)
 
+# An empty string is a sentinel for "use .X"; normalize to None.
+if not par["input_layer"]:
+    par["input_layer"] = None
+
 if par["input_layer"] and par["input_layer"] not in dat.layers.keys():
     raise ValueError(f"Input layer {par['input_layer']} not found in {par['modality']}")
 
