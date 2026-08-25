@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing highly_variable_genes"
-LABEL org.opencontainers.image.created="2026-08-24T13:54:23Z"
+LABEL org.opencontainers.image.created="2026-08-25T15:27:28Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="22061b12f28079c8a633f45cb1ed3936078f7c4a"
+LABEL org.opencontainers.image.revision="2ca0a99a56d993b89460ad375a4d1c8d63b8b6dc"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
@@ -646,7 +646,7 @@ function ViashHelp {
   echo "        In which .varm slot to store the per-gene HVG metrics"
   echo "        (means, dispersions, dispersions_norm, variances, variances_norm,"
   echo "        residual_variances, highly_variable_rank, highly_variable_nbatches,"
-  echo "        highly_variable_intersection — depending on flavor and batch_key)."
+  echo "        highly_variable_intersection - depending on flavor and batch_key)."
   echo ""
   echo "    --output_compression"
   echo "        type: string"

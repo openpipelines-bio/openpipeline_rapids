@@ -32,7 +32,7 @@ def lognormed_input(random_h5mu_path):
 
 @pytest.fixture
 def lognormed_filtered_input(random_h5mu_path):
-    """cell_ranger flavor requires gene-filtered data — running it on the
+    """cell_ranger flavor requires gene-filtered data - running it on the
     raw filtered_feature_bc_matrix collapses pandas.cut's bin edges to
     identical near-zero means."""
     mu_in = mu.read_h5mu(input)
@@ -97,7 +97,7 @@ def test_run(run_component, random_h5mu_path, lognormed_input):
         "The flavor should be recorded in .uns['hvg']"
     )
 
-    # X should be untouched — hvg only annotates .var / .varm / .uns
+    # X should be untouched - hvg only annotates .var / .varm / .uns
     assert np.allclose(rna_out.X.toarray(), rna_in.X.toarray()), (
         "X should be untouched by highly_variable_genes"
     )
