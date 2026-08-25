@@ -38,7 +38,7 @@ if par["obsm_input"] not in dat.obsm.keys():
 
 # rsc.pp.neighbors writes to .uns and .obsp (no matrix transform), and reads
 # the embedding directly from .obsm[use_rep]. No anndata_to_GPU pre-stage is
-# required — the function transfers the obsm representation to GPU internally.
+# required - the function transfers the obsm representation to GPU internally.
 
 logger.info("Computing a neighborhood graph.")
 rsc.pp.neighbors(

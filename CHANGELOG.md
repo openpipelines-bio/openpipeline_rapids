@@ -1,3 +1,13 @@
+# openpipeline_rapids x.x.x
+
+## BUG FIXES
+
+* Replaced non-ASCII characters (em-dashes) in component configs and scripts with ASCII
+  equivalents. Consumers that build with a non-UTF-8 `file.encoding` could not parse the
+  affected configs; when this package was used as a remote dependency the Viash dependency
+  resolver failed there with `key not found: namespace`. A CI check now guards against
+  reintroducing them.
+
 # openpipeline_rapids v0.1.2
 
 ## BUG FIXES

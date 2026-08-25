@@ -59,7 +59,7 @@ for resolution in par["resolution"]:
     # Drop the per-resolution scratch column so it doesn't leak into output.obs
     del dat.obs[par["obsm_name"]]
 
-# Also drop the .uns entry that rsc.tl.leiden writes — we keep results in
+# Also drop the .uns entry that rsc.tl.leiden writes - we keep results in
 # .obsm to match the openpipeline interface.
 if par["obsm_name"] in dat.uns:
     del dat.uns[par["obsm_name"]]
