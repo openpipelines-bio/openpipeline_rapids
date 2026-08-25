@@ -70,7 +70,7 @@ argument_groups:
           In which .varm slot to store the per-gene HVG metrics
           (means, dispersions, dispersions_norm, variances, variances_norm,
           residual_variances, highly_variable_rank, highly_variable_nbatches,
-          highly_variable_intersection — depending on flavor and batch_key).
+          highly_variable_intersection - depending on flavor and batch_key).
 
   - name: Options
     arguments:

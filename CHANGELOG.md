@@ -1,3 +1,9 @@
+# openpipeline_rapids x.x.x
+
+## BUG FIXES
+
+* Replaced non-ASCII characters in configs and scripts with ASCII equivalents (PR #101).
+
 # openpipeline_rapids v0.1.2
 
 ## BUG FIXES
