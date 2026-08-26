@@ -21,7 +21,7 @@ def filtered_input(random_h5mu_path):
     """rsc.gr.spatial_autocorr's default float32 reduction yields nan/inf
     on constant or low-variance genes, which the xenium test panel has
     several of. Drop genes detected in fewer than 3 cells before passing
-    to the component — matches typical pre-spatial-autocorr filtering."""
+    to the component - matches typical pre-spatial-autocorr filtering."""
     mu_in = mu.read_h5mu(input)
     rna = mu_in.mod["rna"]
     sc.pp.filter_genes(rna, min_cells=3)

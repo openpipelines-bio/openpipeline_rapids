@@ -24,9 +24,16 @@ jobs:
         shell: bash
       - run: pre-commit run --show-diff-on-failure --color=always --all-files
         shell: bash
+      - name: Check for non-ASCII characters
+        run: |
+          if grep -rPn "[^\x00-\x7F]" src/; then
+            echo "::error::Non-ASCII characters found in src/ (listed above). Use ASCII equivalents, e.g. '-' instead of an em-dash."
+            exit 1
+          fi
+        shell: bash
 
   test:
-    # Disabled: no GPU runner on CI yet — viash test requires --gpus all.
+    # Disabled: no GPU runner on CI yet - viash test requires --gpus all.
     # Revert once a GPU runner is available. Tracking: #30
     if: false
     uses: viash-io/viash-actions/.github/workflows/test.yaml@v6
