@@ -1,4 +1,4 @@
-# openpipeline_rapids x.x.x
+# openpipeline_rapids v0.1.3
 
 ## BUG FIXES
 
@@ -10,7 +10,7 @@
 
 * Passing an explicit empty string for `--layer`/`--input_layer` (a sentinel for "use .X")
   no longer crashes GPU preprocessing components with `KeyError: ''`; it is now normalized
-  to `None` like an omitted argument (PR#100).
+  to `None` like an omitted argument (PR #100).
 
 # openpipeline_rapids v0.1.1
 
@@ -18,7 +18,7 @@
 
 * `preprocessing/highly_variable_genes`: the boolean `highly_variable` column is now also
   included in the `.varm` output instead of being dropped while moving the per-gene HVG
-  metrics out of `.var` (PR#98).
+  metrics out of `.var` (PR #98).
 
 # openpipeline_rapids v0.1.0
 
