@@ -3531,7 +3531,7 @@ meta = [
         {
           "type" : "docker",
           "run" : [
-            "pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com \\\\\n  \\"rapids-singlecell-cu13==0.15.0\\" \\\\\n  \\"cudf-cu13==26.04.*\\" \\\\\n  \\"cuml-cu13==26.04.*\\" \\\\\n  \\"cugraph-cu13==26.04.*\\" \\\\\n  \\"cuvs-cu13==26.04.*\\""
+            "pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com \\\\\n  \\"rapids-singlecell-cu13==0.18.1\\" \\\\\n  \\"cudf-cu13==26.04.*\\" \\\\\n  \\"cuml-cu13==26.04.*\\" \\\\\n  \\"cugraph-cu13==26.04.*\\" \\\\\n  \\"cuvs-cu13==26.04.*\\""
           ]
         },
         {
@@ -3571,7 +3571,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/highly_variable_genes",
     "viash_version" : "0.9.7",
-    "git_commit" : "a280075332c44ea0f4ca58a6812ed207ef24294c",
+    "git_commit" : "afcbc8a1111770d4db4250c30331ace40bc2a21e",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

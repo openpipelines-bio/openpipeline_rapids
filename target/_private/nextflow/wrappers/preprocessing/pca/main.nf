@@ -3423,7 +3423,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/_private/nextflow/wrappers/preprocessing/pca",
     "viash_version" : "0.9.7",
-    "git_commit" : "a280075332c44ea0f4ca58a6812ed207ef24294c",
+    "git_commit" : "afcbc8a1111770d4db4250c30331ace40bc2a21e",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

@@ -1,3 +1,20 @@
+# openpipeline_rapids vx.x.x
+
+## MINOR CHANGES
+
+* Bumped `rapids-singlecell-cu13` from 0.15.0 to 0.18.1 (PR #103). Upstream changes that are
+  visible in component output:
+  * `preprocessing/filter_cells` and `preprocessing/filter_genes` only annotate the count column
+    that matches the threshold used (`n_counts` for `--min_counts`/`--max_counts`, `n_genes` or
+    `n_cells` otherwise), instead of both.
+  * `preprocessing/harmony_integrate` now computes in float32, uses a k-means++ initialization
+    and models multiple `--obs_covariates` separately, so seeded results differ from earlier
+    versions.
+  * `tools/umap` runs the correct number of epochs for inputs above 10,000 cells, which changes
+    embeddings for large datasets.
+  * `preprocessing/bbknn` connectivities now match the upstream bbknn package.
+  * `squidpy/spatial_autocorr` normalizes Geary's C p-values like squidpy 1.8.2.
+
 # openpipeline_rapids v0.1.3
 
 ## BUG FIXES
