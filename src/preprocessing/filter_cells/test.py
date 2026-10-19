@@ -43,6 +43,9 @@ def test_run(run_component, random_h5mu_path):
     assert rna_out.n_vars == rna_in.n_vars, "Number of genes should be unchanged"
     assert rna_out.n_obs <= rna_in.n_obs, "Number of cells should not increase"
     assert rna_out.n_obs < rna_in.n_obs, "Some cells should have been filtered out"
+    assert "n_genes" in rna_out.obs.columns, (
+        "filter_cells should annotate .obs with n_genes."
+    )
 
 
 def test_min_counts(run_component, random_h5mu_path):
@@ -68,9 +71,6 @@ def test_min_counts(run_component, random_h5mu_path):
     assert rna_out.n_obs < rna_in.n_obs, "Some cells should have been filtered out"
     assert "n_counts" in rna_out.obs.columns, (
         "filter_cells should annotate .obs with n_counts."
-    )
-    assert "n_genes" in rna_out.obs.columns, (
-        "filter_cells should annotate .obs with n_genes."
     )
 
 
