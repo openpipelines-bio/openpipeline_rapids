@@ -16,6 +16,38 @@ meta = {
 
 input = f"{meta['resources_dir']}/pbmc_1k_protein_v3/pbmc_1k_protein_v3_filtered_feature_bc_matrix.h5mu"
 
+# Columns whose only valid values are True and False. The input carries plenty
+# of genes hvg cannot score (roughly half of the PBMC features have zero counts
+# and therefore zero variance); those must come back as False rather than NA,
+# because downstream components read these columns as boolean masks and NA has
+# no defensible reading there (openpipeline_rapids#102).
+BOOLEAN_HVG_COLUMNS = ["highly_variable", "highly_variable_intersection"]
+
+
+def assert_boolean_flags(rna_out, var_name_filter="highly_variable", varm_name="hvg"):
+    """Assert the .var filter column and every flag column in .varm are a
+    plain boolean mask with no NA values."""
+    filter_column = rna_out.var[var_name_filter]
+    assert filter_column.dtype == bool, (
+        f".var['{var_name_filter}'] should be a plain bool column, got "
+        f"{filter_column.dtype}"
+    )
+    assert not filter_column.isna().any(), (
+        f".var['{var_name_filter}'] should not contain NA values"
+    )
+
+    for column in BOOLEAN_HVG_COLUMNS:
+        if column not in rna_out.varm[varm_name].columns:
+            continue
+        values = rna_out.varm[varm_name][column]
+        assert values.dtype == bool, (
+            f".varm['{varm_name}']['{column}'] should be a plain bool column, "
+            f"got {values.dtype}"
+        )
+        assert not values.isna().any(), (
+            f".varm['{varm_name}']['{column}'] should not contain NA values"
+        )
+
 
 @pytest.fixture
 def lognormed_input(random_h5mu_path):
@@ -92,6 +124,8 @@ def test_run(run_component, random_h5mu_path, lognormed_input):
         rna_out.var["highly_variable"]
     ), ".varm and .var should agree on which features are highly variable"
 
+    assert_boolean_flags(rna_out)
+
     # rapids-singlecell records the flavor in .uns (openpipeline#1141)
     assert rna_out.uns["hvg"]["flavor"] == "seurat", (
         "The flavor should be recorded in .uns['hvg']"
@@ -167,8 +201,13 @@ def test_flavor_cell_ranger(run_component, random_h5mu_path, lognormed_filtered_
         ]
     )
 
-    seurat_hvg = mu.read_h5mu(output_seurat).mod["rna"].var["highly_variable"]
-    cr_hvg = mu.read_h5mu(output_cr).mod["rna"].var["highly_variable"]
+    rna_seurat = mu.read_h5mu(output_seurat).mod["rna"]
+    rna_cr = mu.read_h5mu(output_cr).mod["rna"]
+    assert_boolean_flags(rna_seurat)
+    assert_boolean_flags(rna_cr)
+
+    seurat_hvg = rna_seurat.var["highly_variable"]
+    cr_hvg = rna_cr.var["highly_variable"]
 
     assert int(seurat_hvg.sum()) == 100
     assert int(cr_hvg.sum()) == 100
@@ -227,6 +266,7 @@ def test_flavor_seurat_v3(run_component, random_h5mu_path):
         "seurat_v3 variance metrics should be stored in the 'hvg' .varm slot"
     )
     assert int(rna_out.varm["hvg"]["highly_variable"].sum()) == 50
+    assert_boolean_flags(rna_out)
     assert rna_out.uns["hvg"]["flavor"] == "seurat_v3", (
         "The flavor should be recorded in .uns['hvg']"
     )
@@ -298,6 +338,9 @@ def test_var_name_filter_and_varm_name(
     assert rna_out.varm["hvg_metrics"]["highly_variable"].equals(
         rna_out.var["filter_with_hvg"].rename("highly_variable")
     )
+    assert_boolean_flags(
+        rna_out, var_name_filter="filter_with_hvg", varm_name="hvg_metrics"
+    )
 
 
 def test_obs_batch_key(run_component, random_h5mu_path, lognormed_input):
@@ -332,6 +375,9 @@ def test_obs_batch_key(run_component, random_h5mu_path, lognormed_input):
     hvg_metrics = rna_out.varm["hvg"]
     assert "highly_variable_nbatches" in hvg_metrics.columns
     assert "highly_variable_intersection" in hvg_metrics.columns
+    # The batched code path assigns part of its .var output by index alignment
+    # inside rapids-singlecell, which is where a gap would surface as NA
+    assert_boolean_flags(rna_out)
 
 
 def test_empty_input_layer_uses_x(run_component, random_h5mu_path, lognormed_input):

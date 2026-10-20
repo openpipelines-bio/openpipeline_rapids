@@ -62,6 +62,19 @@ if par["var_input"]:
             f"of genes to run the PCA on, but the column is not available "
             f"for modality {par['modality']}"
         )
+    # The column is used as a boolean mask further down. NA has no defensible
+    # reading here: pd.NA raises "boolean value of NA is ambiguous" on the
+    # cast below, and a NaN silently casts to True, quietly pulling genes
+    # into the PCA that the producing component could not score.
+    n_missing = int(dat.var[par["var_input"]].isna().sum())
+    if n_missing:
+        raise ValueError(
+            f"The .var column {par['var_input']}, selected by '--var_input', "
+            f"contains {n_missing} NA value(s) for modality {par['modality']}. "
+            f"It is ambiguous whether or not to include these genes in the "
+            f"PCA. Map the NA values to True or False before running this "
+            f"component."
+        )
     mask_var = par["var_input"]
 
 # Fail fast if an output slot already exists and overwrite is not allowed.

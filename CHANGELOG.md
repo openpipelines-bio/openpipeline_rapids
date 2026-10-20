@@ -15,6 +15,12 @@
   * `preprocessing/bbknn` connectivities now match the upstream bbknn package.
   * `squidpy/spatial_autocorr` normalizes Geary's C p-values like squidpy 1.8.2.
 
+## BUG FIXES
+
+* `preprocessing/pca`: a `--var_input` column containing NA values is now rejected with a clear
+  error. Previously `pd.NA` crashed the boolean cast and `NaN` was silently read as `True`,
+  pulling those genes into the PCA (PR #xxx).
+
 # openpipeline_rapids v0.1.3
 
 ## BUG FIXES
