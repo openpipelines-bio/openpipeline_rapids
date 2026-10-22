@@ -16,17 +16,22 @@ meta = {
 
 input = f"{meta['resources_dir']}/pbmc_1k_protein_v3/pbmc_1k_protein_v3_filtered_feature_bc_matrix.h5mu"
 
-# Columns whose only valid values are True and False. The input carries plenty
-# of genes hvg cannot score (roughly half of the PBMC features have zero counts
-# and therefore zero variance); those must come back as False rather than NA,
-# because downstream components read these columns as boolean masks and NA has
-# no defensible reading there (openpipeline_rapids#102).
-BOOLEAN_HVG_COLUMNS = ["highly_variable", "highly_variable_intersection"]
 
-
-def assert_boolean_flags(rna_out, var_name_filter="highly_variable", varm_name="hvg"):
-    """Assert the .var filter column and every flag column in .varm are a
-    plain boolean mask with no NA values."""
+# The flag columns checked here have only two valid values, True and False.
+# The input carries plenty of genes hvg cannot score (roughly half of the PBMC
+# features have zero counts and therefore zero variance); those must come back
+# as False rather than NA, because downstream components read these columns as
+# boolean masks and NA has no defensible reading there (openpipeline_rapids#102).
+def assert_boolean_flags(
+    rna_out,
+    var_name_filter="highly_variable",
+    varm_name="hvg",
+    varm_name_filter=("highly_variable", "highly_variable_intersection"),
+):
+    """Assert the .var filter column and the varm_name_filter columns in .varm
+    are a plain boolean mask with no NA values. Columns in varm_name_filter
+    that are absent from .varm are skipped, since highly_variable_intersection
+    is only written with --obs_batch_key."""
     filter_column = rna_out.var[var_name_filter]
     assert filter_column.dtype == bool, (
         f".var['{var_name_filter}'] should be a plain bool column, got "
@@ -36,7 +41,7 @@ def assert_boolean_flags(rna_out, var_name_filter="highly_variable", varm_name="
         f".var['{var_name_filter}'] should not contain NA values"
     )
 
-    for column in BOOLEAN_HVG_COLUMNS:
+    for column in varm_name_filter:
         if column not in rna_out.varm[varm_name].columns:
             continue
         values = rna_out.varm[varm_name][column]
