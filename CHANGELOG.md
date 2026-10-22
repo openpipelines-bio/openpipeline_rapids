@@ -16,8 +16,7 @@
   * `squidpy/spatial_autocorr` normalizes Geary's C p-values like squidpy 1.8.2.
 
 * `preprocessing/highly_variable_genes`: missing values in the boolean `highly_variable` and
-  `highly_variable_intersection` columns are filled with `False`, like the CPU component
-  (PR #105).
+  `highly_variable_intersection` columns are filled with `False` (PR #105).
 
 ## BUG FIXES
 
