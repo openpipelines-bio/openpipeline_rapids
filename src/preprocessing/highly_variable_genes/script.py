@@ -92,12 +92,11 @@ with on_gpu(dat, logger, layer=par["input_layer"]):
 
 # Downstream components use the boolean flags as masks, so a gene without a
 # value is not highly variable, as in the CPU component
-# (highly_variable_features_scanpy). Going through the nullable "boolean"
-# dtype keeps the column a plain bool; a plain fillna on an object column
-# relies on a pandas downcast that is deprecated.
+# (highly_variable_features_scanpy). A column with missing values is object
+# dtype; infer_objects turns it back into a plain bool once it is filled.
 for column in ["highly_variable", "highly_variable_intersection"]:
     if column in dat.var.columns:
-        dat.var[column] = dat.var[column].astype("boolean").fillna(False).astype(bool)
+        dat.var[column] = dat.var[column].fillna(False).infer_objects()
 
 # rapids-singlecell writes a fixed set of columns to .var. Rename/move them so
 # the output matches the configured --var_name_filter and --varm_name layout.
