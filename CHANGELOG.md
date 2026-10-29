@@ -2,6 +2,9 @@
 
 ## MINOR CHANGES
 
+* Bumped RAPIDS (`cudf-cu13`, `cuml-cu13`, `cugraph-cu13`, `cuvs-cu13`) from 26.04 to 26.10, which
+  moves the images to pandas 3 (PR #107).
+
 * Bumped `rapids-singlecell-cu13` from 0.15.0 to 0.18.1 (PR #103). Upstream changes that are
   visible in component output:
   * `preprocessing/filter_cells` and `preprocessing/filter_genes` only annotate the count column
