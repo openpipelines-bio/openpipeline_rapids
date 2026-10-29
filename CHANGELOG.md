@@ -1,14 +1,9 @@
 # openpipeline_rapids vx.x.x
 
-## BREAKING CHANGES
+## MINOR CHANGES
 
 * Bumped RAPIDS (`cudf-cu13`, `cuml-cu13`, `cugraph-cu13`, `cuvs-cu13`) from 26.04 to 26.10, which
-  requires pandas 3 (PR #106). Under pandas 3, text in `.obs` and `.var` (including the index) is
-  written in anndata's nullable string format. Tools that read these files and write them again
-  need anndata 0.13 on pandas 3, or anndata 0.11 or later with
-  `anndata.settings.allow_write_nullable_strings` enabled.
-
-## MINOR CHANGES
+  moves the images to pandas 3 (PR #107).
 
 * Bumped `rapids-singlecell-cu13` from 0.15.0 to 0.18.1 (PR #103). Upstream changes that are
   visible in component output:
