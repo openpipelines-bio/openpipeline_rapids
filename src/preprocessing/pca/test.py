@@ -4,6 +4,7 @@ import re
 import pytest
 import mudata as mu
 import numpy as np
+import pandas as pd
 import scipy.sparse as sp
 import scanpy as sc
 from openpipeline_testutils.asserters import assert_annotation_objects_equal
@@ -202,6 +203,38 @@ def test_var_input_missing_column_raises(run_component, random_h5mu_path):
     assert re.search(
         r"Requested to use \.var column does_not_exist as a selection of "
         r"genes to run the PCA on, but the column is not available",
+        err.value.stdout.decode("utf-8"),
+    )
+
+
+def test_var_input_with_na_raises(run_component, random_h5mu_path, clean_input):
+    """A mask column holding NA must be rejected with an actionable message
+    rather than crashing on the boolean cast or silently reading NA as True."""
+    mu_orig = mu.read_h5mu(clean_input)
+    rna = mu_orig.mod["rna"]
+    mask = pd.array([True] * rna.n_vars, dtype="boolean")
+    mask[: rna.n_vars // 10] = pd.NA
+    rna.var["filter_with_hvg"] = mask
+    input_with_na = random_h5mu_path()
+    mu_orig.write(input_with_na)
+
+    output = random_h5mu_path()
+    with pytest.raises(subprocess.CalledProcessError) as err:
+        run_component(
+            [
+                "--input",
+                str(input_with_na),
+                "--output",
+                output,
+                "--num_components",
+                "26",
+                "--var_input",
+                "filter_with_hvg",
+            ]
+        )
+    assert re.search(
+        r"The \.var column filter_with_hvg, selected by '--var_input', "
+        r"contains \d+ NA value\(s\)",
         err.value.stdout.decode("utf-8"),
     )
 
