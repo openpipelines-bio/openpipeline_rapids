@@ -3481,7 +3481,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/pca",
     "viash_version" : "0.9.7",
-    "git_commit" : "033e08c5cca6e0861c7e55c300069b8a58e27507",
+    "git_commit" : "a681dfd8907f98d41e9d8d37cfac88e28684f87e",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3637,8 +3637,21 @@ if par["var_input"]:
     if par["var_input"] not in dat.var.columns:
         raise ValueError(
             f"Requested to use .var column {par['var_input']} as a selection "
-            f"of genes to run the PCA on, but the column is not available "
+            "of genes to run the PCA on, but the column is not available "
             f"for modality {par['modality']}"
+        )
+    # The column is used as a boolean mask further down. NA has no defensible
+    # reading here: pd.NA raises "boolean value of NA is ambiguous" on the
+    # cast below, and a NaN silently casts to True, quietly pulling genes
+    # into the PCA that the producing component could not score.
+    missing = dat.var[par["var_input"]].isna()
+    if missing.any():
+        raise ValueError(
+            f"The .var column {par['var_input']}, selected by '--var_input', "
+            f"contains {missing.sum()} NA value(s) for modality {par['modality']}. "
+            "It is ambiguous whether or not to include these genes in the "
+            "PCA. Map the NA values to True or False before running this "
+            "component."
         )
     mask_var = par["var_input"]
 
@@ -3674,7 +3687,7 @@ if zero_genes:
         preview += ", ..."
     raise ValueError(
         f"{len(zero_genes)} gene(s) selected for PCA have zero total expression "
-        f"across all cells, which rapids-singlecell PCA cannot handle: "
+        "across all cells, which rapids-singlecell PCA cannot handle: "
         f"{preview}. Filter these genes out first (e.g. with \\`filter_genes\\`)."
     )
 

@@ -3368,7 +3368,7 @@ meta = [
     "engine" : "native",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/_private/nextflow/wrappers/preprocessing/normalize_total",
     "viash_version" : "0.9.7",
-    "git_commit" : "033e08c5cca6e0861c7e55c300069b8a58e27507",
+    "git_commit" : "a681dfd8907f98d41e9d8d37cfac88e28684f87e",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

@@ -3571,7 +3571,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/highly_variable_genes",
     "viash_version" : "0.9.7",
-    "git_commit" : "033e08c5cca6e0861c7e55c300069b8a58e27507",
+    "git_commit" : "a681dfd8907f98d41e9d8d37cfac88e28684f87e",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3757,6 +3757,14 @@ if par["obs_batch_key"] is not None:
 with on_gpu(dat, logger, layer=par["input_layer"]):
     logger.info("Computing highly variable genes.")
     rsc.pp.highly_variable_genes(dat, **hvg_kwargs)
+
+# Downstream components use the boolean flags as masks, so a gene without a
+# value is not highly variable, as in the CPU component
+# (highly_variable_features_scanpy). A column with missing values is object
+# dtype; infer_objects turns it back into a plain bool once it is filled.
+for column in ["highly_variable", "highly_variable_intersection"]:
+    if column in dat.var.columns:
+        dat.var[column] = dat.var[column].fillna(False).infer_objects()
 
 # rapids-singlecell writes a fixed set of columns to .var. Rename/move them so
 # the output matches the configured --var_name_filter and --varm_name layout.

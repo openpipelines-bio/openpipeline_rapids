@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing regress_out"
-LABEL org.opencontainers.image.created="2026-11-13T13:58:17Z"
+LABEL org.opencontainers.image.created="2026-11-13T15:49:14Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="033e08c5cca6e0861c7e55c300069b8a58e27507"
+LABEL org.opencontainers.image.revision="a681dfd8907f98d41e9d8d37cfac88e28684f87e"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER

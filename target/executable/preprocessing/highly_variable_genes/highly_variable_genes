@@ -473,9 +473,9 @@ RUN pip install --upgrade pip && \
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing highly_variable_genes"
-LABEL org.opencontainers.image.created="2026-11-13T13:58:17Z"
+LABEL org.opencontainers.image.created="2026-11-13T15:49:14Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="033e08c5cca6e0861c7e55c300069b8a58e27507"
+LABEL org.opencontainers.image.revision="a681dfd8907f98d41e9d8d37cfac88e28684f87e"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
@@ -1665,6 +1665,14 @@ if par["obs_batch_key"] is not None:
 with on_gpu(dat, logger, layer=par["input_layer"]):
     logger.info("Computing highly variable genes.")
     rsc.pp.highly_variable_genes(dat, **hvg_kwargs)
+
+# Downstream components use the boolean flags as masks, so a gene without a
+# value is not highly variable, as in the CPU component
+# (highly_variable_features_scanpy). A column with missing values is object
+# dtype; infer_objects turns it back into a plain bool once it is filled.
+for column in ["highly_variable", "highly_variable_intersection"]:
+    if column in dat.var.columns:
+        dat.var[column] = dat.var[column].fillna(False).infer_objects()
 
 # rapids-singlecell writes a fixed set of columns to .var. Rename/move them so
 # the output matches the configured --var_name_filter and --varm_name layout.
