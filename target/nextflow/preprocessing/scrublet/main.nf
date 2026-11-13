@@ -3440,7 +3440,7 @@ meta = [
         {
           "type" : "docker",
           "run" : [
-            "pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com \\\\\n  \\"rapids-singlecell-cu13==0.18.1\\" \\\\\n  \\"cudf-cu13==26.04.*\\" \\\\\n  \\"cuml-cu13==26.04.*\\" \\\\\n  \\"cugraph-cu13==26.04.*\\" \\\\\n  \\"cuvs-cu13==26.04.*\\""
+            "pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com \\\\\n  \\"rapids-singlecell-cu13==0.18.1\\" \\\\\n  \\"cudf-cu13==26.10.*\\" \\\\\n  \\"cuml-cu13==26.10.*\\" \\\\\n  \\"cugraph-cu13==26.10.*\\" \\\\\n  \\"cuvs-cu13==26.10.*\\""
           ]
         },
         {
@@ -3480,7 +3480,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/preprocessing/scrublet",
     "viash_version" : "0.9.7",
-    "git_commit" : "afcbc8a1111770d4db4250c30331ace40bc2a21e",
+    "git_commit" : "033e08c5cca6e0861c7e55c300069b8a58e27507",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

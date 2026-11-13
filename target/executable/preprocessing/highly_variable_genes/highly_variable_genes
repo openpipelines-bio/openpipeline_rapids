@@ -464,18 +464,18 @@ https://github.com/openpipelines-bio/openpipeline_rapids
 EOF
 RUN pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com \
   "rapids-singlecell-cu13==0.18.1" \
-  "cudf-cu13==26.04.*" \
-  "cuml-cu13==26.04.*" \
-  "cugraph-cu13==26.04.*" \
-  "cuvs-cu13==26.04.*"
+  "cudf-cu13==26.10.*" \
+  "cuml-cu13==26.10.*" \
+  "cugraph-cu13==26.10.*" \
+  "cuvs-cu13==26.10.*"
 RUN pip install --upgrade pip && \
   pip install --upgrade --no-cache-dir "mudata~=0.3.2"
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing highly_variable_genes"
-LABEL org.opencontainers.image.created="2026-10-19T08:42:23Z"
+LABEL org.opencontainers.image.created="2026-11-13T13:58:17Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="afcbc8a1111770d4db4250c30331ace40bc2a21e"
+LABEL org.opencontainers.image.revision="033e08c5cca6e0861c7e55c300069b8a58e27507"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
