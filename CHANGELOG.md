@@ -1,9 +1,20 @@
 # openpipeline_rapids vx.x.x
 
-## MINOR CHANGES
+## BREAKING CHANGES
+
+* Removed the CPU/GPU wrappers (`wrappers/*`) and the workflows `workflows/rna/log_normalize` and
+  `workflows/multiomics/neighbors_leiden_umap`. This package no longer depends on other
+  OpenPipelines packages and now only contains GPU components. The CPU/GPU switch (`--device_type`)
+  moves to openpipeline (openpipelines-bio/openpipeline#1225), and the `squidpy/spatial_autocorr`
+  wrapper moves to openpipeline_spatial (openpipelines-bio/openpipeline_spatial#108) (PR #110).
 
 * Bumped RAPIDS (`cudf-cu13`, `cuml-cu13`, `cugraph-cu13`, `cuvs-cu13`) from 26.04 to 26.10, which
-  moves the images to pandas 3 (PR #107).
+  moves the images to pandas 3 and anndata 0.13 (PR #107). String indexes and columns are now
+  written as `nullable-string-array`. Components on pandas 2 / anndata 0.12, such as openpipeline
+  up to and including v4.2.0, can read these files but fail to write them back. Combine these
+  components only with openpipeline releases that are on pandas 3.
+
+## MINOR CHANGES
 
 * Bumped `rapids-singlecell-cu13` from 0.15.0 to 0.18.1 (PR #103). Upstream changes that are
   visible in component output:
