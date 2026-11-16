@@ -3274,20 +3274,6 @@ meta = [
     "image" : "public",
     "target" : "public"
   },
-  "repositories" : [
-    {
-      "type" : "vsh",
-      "name" : "openpipeline",
-      "repo" : "openpipeline",
-      "tag" : "v4.1.0"
-    },
-    {
-      "type" : "vsh",
-      "name" : "openpipeline_spatial",
-      "repo" : "openpipeline_spatial",
-      "tag" : "v0.5.0"
-    }
-  ],
   "license" : "MIT",
   "links" : {
     "repository" : "https://github.com/openpipelines-bio/openpipeline_rapids",
@@ -3455,7 +3441,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/tools/leiden",
     "viash_version" : "0.9.7",
-    "git_commit" : "a681dfd8907f98d41e9d8d37cfac88e28684f87e",
+    "git_commit" : "275a8b1c0b6a2fd9c9f0c7c700586f5a257d793d",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {
@@ -3478,20 +3464,6 @@ meta = [
         }
       ]
     },
-    "repositories" : [
-      {
-        "type" : "vsh",
-        "name" : "openpipeline",
-        "repo" : "openpipeline",
-        "tag" : "v4.1.0"
-      },
-      {
-        "type" : "vsh",
-        "name" : "openpipeline_spatial",
-        "repo" : "openpipeline_spatial",
-        "tag" : "v0.5.0"
-      }
-    ],
     "viash_version" : "0.9.7",
     "source" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/src",
     "target" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target",
