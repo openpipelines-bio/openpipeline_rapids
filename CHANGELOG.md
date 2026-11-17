@@ -14,6 +14,10 @@
   up to and including v4.2.0, can read these files but fail to write them back. Combine these
   components only with openpipeline releases that are on pandas 3.
 
+* Bumped `mudata` from 0.3.2 to 0.4.1. Modality `.obs`/`.var` columns are no longer synced to the
+  global `.obs`/`.var`. The components only update the modality they process. This also resolves
+  the build-time `scverse-misc` version conflict with rapids-singlecell (PR #111).
+
 ## MINOR CHANGES
 
 * Bumped `rapids-singlecell-cu13` from 0.15.0 to 0.18.1 (PR #103). Upstream changes that are

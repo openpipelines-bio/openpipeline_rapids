@@ -3408,7 +3408,7 @@ meta = [
           "type" : "python",
           "user" : false,
           "packages" : [
-            "mudata~=0.3.2"
+            "mudata~=0.4.1"
           ],
           "upgrade" : true
         }
@@ -3441,7 +3441,7 @@ meta = [
     "engine" : "docker",
     "output" : "/home/runner/work/openpipeline_rapids/openpipeline_rapids/target/nextflow/tools/leiden",
     "viash_version" : "0.9.7",
-    "git_commit" : "275a8b1c0b6a2fd9c9f0c7c700586f5a257d793d",
+    "git_commit" : "063d8ce1f3d170d31aa6d2759afe386981101fbe",
     "git_remote" : "https://github.com/openpipelines-bio/openpipeline_rapids"
   },
   "package_config" : {

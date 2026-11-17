@@ -469,13 +469,13 @@ RUN pip install --no-cache-dir --extra-index-url=https://pypi.nvidia.com \
   "cugraph-cu13==26.10.*" \
   "cuvs-cu13==26.10.*"
 RUN pip install --upgrade pip && \
-  pip install --upgrade --no-cache-dir "mudata~=0.3.2"
+  pip install --upgrade --no-cache-dir "mudata~=0.4.1"
 
 LABEL org.opencontainers.image.authors="Jakub Majercik"
 LABEL org.opencontainers.image.description="Companion container for running component preprocessing calculate_qc_metrics"
-LABEL org.opencontainers.image.created="2026-11-16T16:50:51Z"
+LABEL org.opencontainers.image.created="2026-11-17T15:04:51Z"
 LABEL org.opencontainers.image.source="https://github.com/openpipelines-bio/openpipeline_rapids"
-LABEL org.opencontainers.image.revision="275a8b1c0b6a2fd9c9f0c7c700586f5a257d793d"
+LABEL org.opencontainers.image.revision="063d8ce1f3d170d31aa6d2759afe386981101fbe"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
