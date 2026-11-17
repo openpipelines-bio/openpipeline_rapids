@@ -16,6 +16,9 @@
 
 ## MINOR CHANGES
 
+* Bumped `mudata` from 0.3.2 to 0.4.1, matching openpipeline. This also resolves the build-time
+  `scverse-misc` version conflict with rapids-singlecell (PR #111).
+
 * Bumped `rapids-singlecell-cu13` from 0.15.0 to 0.18.1 (PR #103). Upstream changes that are
   visible in component output:
   * `preprocessing/filter_cells` and `preprocessing/filter_genes` only annotate the count column
