@@ -16,8 +16,9 @@
 
 ## MINOR CHANGES
 
-* Bumped `mudata` from 0.3.2 to 0.4.1, matching openpipeline. This also resolves the build-time
-  `scverse-misc` version conflict with rapids-singlecell (PR #111).
+* Bumped `mudata` from 0.3.2 to 0.4.1. This also resolves the build-time `scverse-misc` version
+  conflict with rapids-singlecell. Component output is unchanged: the components only read and
+  write their own modality and never touch the global `.obs`/`.var` (PR #111).
 
 * Bumped `rapids-singlecell-cu13` from 0.15.0 to 0.18.1 (PR #103). Upstream changes that are
   visible in component output:

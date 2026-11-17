@@ -145,8 +145,6 @@ def test_run(run_component, random_h5mu_path, lognormed_input):
     rna_out.var = rna_out.var.drop(columns=["highly_variable"])
     del rna_out.varm["hvg"]
     del rna_out.uns["hvg"]
-    if "rna:highly_variable" in mu_output.var.columns:
-        mu_output.var = mu_output.var.drop(columns=["rna:highly_variable"])
     assert_annotation_objects_equal(mu_input, mu_output)
 
 
