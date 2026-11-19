@@ -5,7 +5,7 @@ target: target
 name: openpipeline_rapids
 organization: openpipelines-bio
 summary: |
-  Best-practice workflows for single-cell multi-omics analyses using rapids-singlecell.
+  GPU-accelerated single-cell components using rapids-singlecell.
 description: |
   OpenPipelines are extensible single cell analysis pipelines for reproducible and large-scale single cell processing using [Viash](https://viash.io) and [Nextflow](https://www.nextflow.io/).
 
