@@ -6,6 +6,7 @@ target: target
 # Note: this causes the docker images to be renamed
 name: openpipeline_rapids
 organization: openpipelines-bio
+version: v0.2.0
 summary: |
   GPU-accelerated single-cell components using rapids-singlecell.
   
