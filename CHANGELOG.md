@@ -1,4 +1,4 @@
-# openpipeline_rapids vx.x.x
+# openpipeline_rapids v0.2.0
 
 ## BREAKING CHANGES
 
