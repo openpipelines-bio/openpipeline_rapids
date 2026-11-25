@@ -129,7 +129,13 @@ def _collect_transfer_targets(adata, transfer_adata, kwargs, slot_keys):
     if transfer_adata:
         if kwargs.get("convert_all"):
             targets.append(("X", None, adata.X))
-            targets.extend(("layers", key, adata.layers[key]) for key in adata.layers)
+            # anndata >= 0.13 also lists .X under the None key of .layers; it is
+            # already recorded above.
+            targets.extend(
+                ("layers", key, adata.layers[key])
+                for key in adata.layers
+                if key is not None
+            )
         elif kwargs.get("layer"):
             layer = kwargs["layer"]
             targets.append(("layers", layer, adata.layers[layer]))
