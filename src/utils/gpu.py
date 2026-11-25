@@ -7,14 +7,14 @@ import rmm
 from rmm.allocators.cupy import rmm_cupy_allocator
 
 # Substrings (lowercase) that identify out-of-memory errors raised by the CUDA
-# libraries rapids-singlecell builds on: cuML/cuGraph/cuVS raise RuntimeErrors
-# wrapping ``std::bad_alloc: out_of_memory``, cupy raises
+# libraries rapids-singlecell builds on: RMM and cuML/cuGraph/cuVS raise
+# ``std::bad_alloc: out_of_memory: CUDA error ...``, cupy raises
 # ``cudaErrorMemoryAllocation: out of memory`` and cuSPARSE/cuBLAS report
-# ``*_STATUS_ALLOC_FAILED``.
+# ``*_STATUS_ALLOC_FAILED``. A bare ``bad_alloc`` is not on the list: host-side
+# C++ allocation failures report it too.
 _GPU_OOM_MARKERS = (
     "out of memory",
     "out_of_memory",
-    "bad_alloc",
     "alloc_failed",
     "memoryallocation",
 )
@@ -70,10 +70,10 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
     Integer matrices among the transferred ``.X``/``.layers`` are cast to
     float32 first, since cupy sparse cannot represent integer dtypes.
 
-    If the transfer or the block raises, the CPU matrices that were moved are
-    put back before the exception propagates, so ``adata`` is left in its
-    pre-transfer state and holds no GPU memory. This lets
-    ``run_with_managed_memory_fallback`` rerun the block from clean input.
+    If the transfer to the GPU, the block or the transfer back raises, the CPU
+    matrices that were moved are put back before the exception propagates, so
+    ``adata`` is left in its pre-transfer state and holds no GPU memory. This
+    lets ``run_with_managed_memory_fallback`` rerun the block from clean input.
     """
     # Components treat an empty --layer as "use .X", and pass it through
     # explicitly rather than omitting the argument. An empty string is not a
@@ -107,15 +107,15 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
         move_slots(rsc.get.X_to_GPU)
 
         yield adata
+
+        if logger is not None:
+            logger.info("Transferring %s back to CPU.", description)
+        if transfer_adata:
+            rsc.get.anndata_to_CPU(adata)
+        move_slots(rsc.get.X_to_CPU)
     except BaseException:
         _restore_transfer_targets(adata, cpu_originals)
         raise
-
-    if logger is not None:
-        logger.info("Transferring %s back to CPU.", description)
-    if transfer_adata:
-        rsc.get.anndata_to_CPU(adata)
-    move_slots(rsc.get.X_to_CPU)
 
 
 def _collect_transfer_targets(adata, transfer_adata, kwargs, slot_keys):
@@ -153,11 +153,12 @@ def _restore_transfer_targets(adata, targets):
 def _is_gpu_out_of_memory(exc):
     """Whether ``exc`` signals that the GPU ran out of memory.
 
-    ``cupy.cuda.memory.OutOfMemoryError`` and RMM allocation failures are
-    ``MemoryError`` subclasses; the CUDA libraries report OOM through other
-    exception types, recognized by their message.
+    cupy raises ``OutOfMemoryError``; RMM and the CUDA libraries raise
+    ``MemoryError`` or ``RuntimeError`` with a CUDA allocation message. A
+    ``MemoryError`` without such a message, such as numpy's "Unable to
+    allocate ...", is a host allocation failure that managed memory cannot fix.
     """
-    if isinstance(exc, MemoryError):
+    if isinstance(exc, cp.cuda.memory.OutOfMemoryError):
         return True
     message = str(exc).lower()
     return any(marker in message for marker in _GPU_OOM_MARKERS)

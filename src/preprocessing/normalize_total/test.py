@@ -241,6 +241,16 @@ def test_on_gpu_restores_cpu_matrices_on_error():
         assert (matrix != original_x).nnz == 0, f"{name} should be unchanged"
 
 
+def test_host_memory_error_is_not_gpu_out_of_memory():
+    """A host allocation failure must not trigger the managed-memory retry."""
+    sys.path.append(meta["resources_dir"])
+    from gpu import _is_gpu_out_of_memory
+
+    with pytest.raises(MemoryError) as excinfo:
+        np.empty(2**60, dtype=np.uint8)
+    assert not _is_gpu_out_of_memory(excinfo.value)
+
+
 def test_managed_memory_fallback(caplog):
     """A step that needs more memory than the GPU has free runs out of memory,
     and succeeds when it is retried with RMM managed memory."""
