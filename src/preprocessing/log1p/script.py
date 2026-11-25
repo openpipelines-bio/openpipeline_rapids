@@ -18,7 +18,7 @@ meta = {"name": "log1p"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -71,14 +71,20 @@ if par["input_obsm"] and not par["output_obsm"]:
 gpu_kwargs = (
     {"slots": {"obsm": target_obsm}} if target_obsm else {"layer": target_layer}
 )
-with on_gpu(dat, logger, **gpu_kwargs):
-    logger.info("Performing log1p transformation.")
-    rsc.pp.log1p(
-        dat,
-        base=par["base"],
-        layer=target_layer if not target_obsm else None,
-        obsm=target_obsm,
-    )
+
+
+def log_transform():
+    with on_gpu(dat, logger, **gpu_kwargs):
+        logger.info("Performing log1p transformation.")
+        rsc.pp.log1p(
+            dat,
+            base=par["base"],
+            layer=target_layer if not target_obsm else None,
+            obsm=target_obsm,
+        )
+
+
+run_with_managed_memory_fallback(log_transform, logger)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

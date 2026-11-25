@@ -26,6 +26,7 @@ meta = {"name": "bbknn"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
+from gpu import run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -59,18 +60,23 @@ if not par["overwrite"]:
 # embedding directly from .obsm[use_rep]. No anndata_to_GPU pre-stage is
 # required - the function transfers the obsm representation to GPU internally.
 
-logger.info("Computing a batch-balanced neighborhood graph.")
-rsc.pp.bbknn(
-    dat,
-    neighbors_within_batch=par["neighbors_within_batch"],
-    n_pcs=par["n_pcs"],
-    batch_key=par["batch_key"],
-    use_rep=par["obsm_input"],
-    random_state=par["random_state"],
-    algorithm=par["algorithm"],
-    metric=par["metric"],
-    trim=par["trim"],
-)
+
+def compute_bbknn():
+    logger.info("Computing a batch-balanced neighborhood graph.")
+    rsc.pp.bbknn(
+        dat,
+        neighbors_within_batch=par["neighbors_within_batch"],
+        n_pcs=par["n_pcs"],
+        batch_key=par["batch_key"],
+        use_rep=par["obsm_input"],
+        random_state=par["random_state"],
+        algorithm=par["algorithm"],
+        metric=par["metric"],
+        trim=par["trim"],
+    )
+
+
+run_with_managed_memory_fallback(compute_bbknn, logger)
 
 # rsc.pp.bbknn writes to the default slots (.uns["neighbors"],
 # .obsp["distances"], .obsp["connectivities"]). Move them to the requested

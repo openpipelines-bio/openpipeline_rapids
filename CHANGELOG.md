@@ -1,3 +1,11 @@
+# openpipeline_rapids vx.x.x
+
+## NEW FEATURES
+
+* All components retry once with RMM managed memory when the GPU runs out of memory, so inputs
+  that do not fit in VRAM can still be processed by spilling to host RAM, at the cost of speed.
+  The retry is logged as a warning (#108).
+
 # openpipeline_rapids v0.2.0
 
 ## BREAKING CHANGES

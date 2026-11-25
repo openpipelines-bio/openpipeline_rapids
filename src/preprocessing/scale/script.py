@@ -18,7 +18,7 @@ meta = {"name": "scale"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -41,14 +41,19 @@ if par["output_layer"]:
 
 target_layer = par["output_layer"] or par["input_layer"]
 
-with on_gpu(dat, logger, layer=target_layer):
-    logger.info("Scaling data.")
-    rsc.pp.scale(
-        dat,
-        layer=target_layer,
-        zero_center=par["zero_center"],
-        max_value=par["max_value"],
-    )
+
+def scale_data():
+    with on_gpu(dat, logger, layer=target_layer):
+        logger.info("Scaling data.")
+        rsc.pp.scale(
+            dat,
+            layer=target_layer,
+            zero_center=par["zero_center"],
+            max_value=par["max_value"],
+        )
+
+
+run_with_managed_memory_fallback(scale_data, logger)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

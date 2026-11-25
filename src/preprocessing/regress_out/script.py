@@ -18,7 +18,7 @@ meta = {"name": "regress_out"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -45,14 +45,19 @@ if par["output_layer"]:
 
 target_layer = par["output_layer"] or par["input_layer"]
 
-with on_gpu(dat, logger, layer=target_layer):
-    logger.info("Regressing out covariates.")
-    rsc.pp.regress_out(
-        dat,
-        keys=par["obs_keys"],
-        layer=target_layer,
-        batchsize=par["batchsize"],
-    )
+
+def regress_out():
+    with on_gpu(dat, logger, layer=target_layer):
+        logger.info("Regressing out covariates.")
+        rsc.pp.regress_out(
+            dat,
+            keys=par["obs_keys"],
+            layer=target_layer,
+            batchsize=par["batchsize"],
+        )
+
+
+run_with_managed_memory_fallback(regress_out, logger)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

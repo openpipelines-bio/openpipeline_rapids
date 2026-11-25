@@ -19,7 +19,7 @@ meta = {"name": "calculate_qc_metrics"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -47,16 +47,21 @@ if qc_vars is not None:
             f"qc_vars {missing} not found in .var of modality '{par['modality']}'."
         )
 
-with on_gpu(dat, logger, layer=par["layer"]):
-    logger.info("Calculating QC metrics.")
-    rsc.pp.calculate_qc_metrics(
-        dat,
-        expr_type=par["expr_type"],
-        var_type=par["var_type"],
-        qc_vars=qc_vars,
-        log1p=par["log1p"],
-        layer=par["layer"],
-    )
+
+def calculate_qc_metrics():
+    with on_gpu(dat, logger, layer=par["layer"]):
+        logger.info("Calculating QC metrics.")
+        rsc.pp.calculate_qc_metrics(
+            dat,
+            expr_type=par["expr_type"],
+            var_type=par["var_type"],
+            qc_vars=qc_vars,
+            log1p=par["log1p"],
+            layer=par["layer"],
+        )
+
+
+run_with_managed_memory_fallback(calculate_qc_metrics, logger)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

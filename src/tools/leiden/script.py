@@ -22,6 +22,7 @@ meta = {"name": "leiden"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
+from gpu import run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -39,11 +40,8 @@ if par["obsp_connectivities"] not in dat.obsp.keys():
 # to .uns. It does not transform a matrix, so the GPU transfer for X/layer is
 # not needed; cuGraph builds its own graph from the adjacency matrix.
 
-# Run Leiden once per resolution and collect the labels into a DataFrame so
-# that the output matches the openpipeline CPU leiden component interface
-# (.obsm[obsm_name] with one column per resolution).
-results = {}
-for resolution in par["resolution"]:
+
+def cluster(resolution):
     logger.info("Running Leiden clustering at resolution %s.", resolution)
     rsc.tl.leiden(
         dat,
@@ -55,6 +53,14 @@ for resolution in par["resolution"]:
         obsp=par["obsp_connectivities"],
         key_added=par["obsm_name"],
     )
+
+
+# Run Leiden once per resolution and collect the labels into a DataFrame so
+# that the output matches the openpipeline CPU leiden component interface
+# (.obsm[obsm_name] with one column per resolution).
+results = {}
+for resolution in par["resolution"]:
+    run_with_managed_memory_fallback(lambda: cluster(resolution), logger)
     results[str(resolution)] = dat.obs[par["obsm_name"]].copy()
     # Drop the per-resolution scratch column so it doesn't leak into output.obs
     del dat.obs[par["obsm_name"]]

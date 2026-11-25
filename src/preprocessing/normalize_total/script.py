@@ -16,7 +16,7 @@ meta = {"name": "normalize_total"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -37,15 +37,20 @@ if par["output_layer"]:
 
 target_layer = par["output_layer"] or par["input_layer"]
 
-with on_gpu(dat, logger, layer=target_layer):
-    logger.info("Performing total normalization.")
-    rsc.pp.normalize_total(
-        dat,
-        layer=target_layer,
-        target_sum=par["target_sum"],
-        exclude_highly_expressed=par["exclude_highly_expressed"],
-        max_fraction=par["max_fraction"],
-    )
+
+def normalize():
+    with on_gpu(dat, logger, layer=target_layer):
+        logger.info("Performing total normalization.")
+        rsc.pp.normalize_total(
+            dat,
+            layer=target_layer,
+            target_sum=par["target_sum"],
+            exclude_highly_expressed=par["exclude_highly_expressed"],
+            max_fraction=par["max_fraction"],
+        )
+
+
+run_with_managed_memory_fallback(normalize, logger)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger
