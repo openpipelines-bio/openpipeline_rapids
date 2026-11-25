@@ -74,6 +74,8 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
     matrices that were moved are put back before the exception propagates, so
     ``adata`` is left in its pre-transfer state and holds no GPU memory. This
     lets ``run_with_managed_memory_fallback`` rerun the block from clean input.
+    Once managed memory is enabled no retry can follow, so the CPU matrices are
+    not kept and are released as soon as they are on the GPU.
     """
     # Components treat an empty --layer as "use .X", and pass it through
     # explicitly rather than omitting the argument. An empty string is not a
@@ -99,7 +101,15 @@ def on_gpu(adata, logger=None, *, slots=None, **kwargs):
         logger.info("Transferring %s to GPU.", description)
     if transfer_adata:
         _cast_transfer_targets(adata, kwargs)
-    cpu_originals = _collect_transfer_targets(adata, transfer_adata, kwargs, slot_keys)
+    # The CPU matrices are only needed to restore the input for a managed-memory
+    # retry. Under managed memory they would compete for host RAM with the data
+    # paged out of VRAM.
+    if _managed_memory_enabled:
+        cpu_originals = []
+    else:
+        cpu_originals = _collect_transfer_targets(
+            adata, transfer_adata, kwargs, slot_keys
+        )
 
     try:
         if transfer_adata:

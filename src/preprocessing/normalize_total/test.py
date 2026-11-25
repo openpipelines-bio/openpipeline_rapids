@@ -282,5 +282,29 @@ def test_managed_memory_fallback(caplog):
     assert "Retrying with RMM managed memory" in caplog.text
 
 
+def test_on_gpu_releases_cpu_matrices_under_managed_memory():
+    """Once managed memory is enabled, on_gpu keeps no CPU copy of the input, so
+    host RAM is left for the data managed memory pages out of VRAM.
+
+    Enables managed memory for the rest of the test process, so it runs last.
+    """
+    sys.path.append(meta["resources_dir"])
+    import gc
+    import weakref
+    import gpu
+
+    rna = mu.read_h5mu(input).mod["rna"]
+    rna.X = rna.X.astype(np.float32)
+    cpu_x = weakref.ref(rna.X)
+
+    if not gpu._managed_memory_enabled:
+        gpu._enable_managed_memory()
+    with gpu.on_gpu(rna):
+        gc.collect()
+        assert cpu_x() is None, "The CPU copy of X should have been released"
+
+    assert scipy.sparse.issparse(rna.X), "X should be back on the CPU"
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
