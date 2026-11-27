@@ -16,6 +16,7 @@ par = {
     "threshold": None,
     "random_state": 0,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "scrublet"}
 ## VIASH END
@@ -23,7 +24,7 @@ meta = {"name": "scrublet"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -46,19 +47,26 @@ if par["layer"]:
     original_x = dat.X
     dat.X = dat.layers[par["layer"]]
 
-with on_gpu(dat, logger):
-    logger.info("Predicting doublets with Scrublet.")
-    rsc.pp.scrublet(
-        dat,
-        batch_key=par["batch_key"],
-        sim_doublet_ratio=par["sim_doublet_ratio"],
-        expected_doublet_rate=par["expected_doublet_rate"],
-        stdev_doublet_rate=par["stdev_doublet_rate"],
-        n_prin_comps=par["n_prin_comps"],
-        n_neighbors=par["n_neighbors"],
-        threshold=par["threshold"],
-        random_state=par["random_state"],
-    )
+
+def predict_doublets():
+    with on_gpu(dat, logger):
+        logger.info("Predicting doublets with Scrublet.")
+        rsc.pp.scrublet(
+            dat,
+            batch_key=par["batch_key"],
+            sim_doublet_ratio=par["sim_doublet_ratio"],
+            expected_doublet_rate=par["expected_doublet_rate"],
+            stdev_doublet_rate=par["stdev_doublet_rate"],
+            n_prin_comps=par["n_prin_comps"],
+            n_neighbors=par["n_neighbors"],
+            threshold=par["threshold"],
+            random_state=par["random_state"],
+        )
+
+
+run_with_managed_memory_fallback(
+    predict_doublets, logger, managed_memory=par["managed_memory"]
+)
 
 if par["layer"]:
     dat.X = original_x

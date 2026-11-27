@@ -77,6 +77,8 @@ argument_groups:
         description: |
           Base of the logarithm. If unset, the natural logarithm is used.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

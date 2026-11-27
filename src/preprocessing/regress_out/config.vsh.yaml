@@ -66,6 +66,8 @@ argument_groups:
         description: |
           Number of genes per batch. If None, all genes are processed at once.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

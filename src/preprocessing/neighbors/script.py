@@ -17,6 +17,7 @@ par = {
     "method": "umap",
     "random_state": 0,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "neighbors"}
 ## VIASH END
@@ -24,6 +25,7 @@ meta = {"name": "neighbors"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
+from gpu import run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -40,16 +42,23 @@ if par["obsm_input"] not in dat.obsm.keys():
 # the embedding directly from .obsm[use_rep]. No anndata_to_GPU pre-stage is
 # required - the function transfers the obsm representation to GPU internally.
 
-logger.info("Computing a neighborhood graph.")
-rsc.pp.neighbors(
-    dat,
-    n_neighbors=par["num_neighbors"],
-    n_pcs=par["n_pcs"],
-    use_rep=par["obsm_input"],
-    random_state=par["random_state"],
-    algorithm=par["algorithm"],
-    metric=par["metric"],
-    method=par["method"],
+
+def compute_neighbors():
+    logger.info("Computing a neighborhood graph.")
+    rsc.pp.neighbors(
+        dat,
+        n_neighbors=par["num_neighbors"],
+        n_pcs=par["n_pcs"],
+        use_rep=par["obsm_input"],
+        random_state=par["random_state"],
+        algorithm=par["algorithm"],
+        metric=par["metric"],
+        method=par["method"],
+    )
+
+
+run_with_managed_memory_fallback(
+    compute_neighbors, logger, managed_memory=par["managed_memory"]
 )
 
 # rsc.pp.neighbors writes to the default slots (.uns["neighbors"],

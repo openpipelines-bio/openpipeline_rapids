@@ -112,6 +112,8 @@ argument_groups:
         description: Seed used by the random number generator.
         default: 0
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

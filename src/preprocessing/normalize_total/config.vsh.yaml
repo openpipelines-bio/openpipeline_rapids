@@ -83,6 +83,8 @@ argument_groups:
           expressed that have more counts than max_fraction of the original
           total counts in at least one cell.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

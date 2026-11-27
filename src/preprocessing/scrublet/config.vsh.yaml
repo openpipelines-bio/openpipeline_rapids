@@ -116,6 +116,8 @@ argument_groups:
         description: |
           Initial state for doublet simulation and nearest neighbors.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

@@ -16,6 +16,7 @@ par = {
     "random_state": 0,
     "overwrite": False,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "harmony_integrate"}
 ## VIASH END
@@ -23,6 +24,7 @@ meta = {"name": "harmony_integrate"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
+from gpu import run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -58,17 +60,24 @@ theta = par["theta"]
 if theta is not None and len(theta) == 1:
     theta = theta[0]
 
-logger.info("Integrating with Harmony.")
-rsc.pp.harmony_integrate(
-    dat,
-    key=par["obs_covariates"],
-    basis=par["obsm_input"],
-    adjusted_basis=par["obsm_output"],
-    theta=theta,
-    flavor=par["flavor"],
-    n_clusters=par["n_clusters"],
-    max_iter_harmony=par["max_iter_harmony"],
-    random_state=par["random_state"],
+
+def integrate():
+    logger.info("Integrating with Harmony.")
+    rsc.pp.harmony_integrate(
+        dat,
+        key=par["obs_covariates"],
+        basis=par["obsm_input"],
+        adjusted_basis=par["obsm_output"],
+        theta=theta,
+        flavor=par["flavor"],
+        n_clusters=par["n_clusters"],
+        max_iter_harmony=par["max_iter_harmony"],
+        random_state=par["random_state"],
+    )
+
+
+run_with_managed_memory_fallback(
+    integrate, logger, managed_memory=par["managed_memory"]
 )
 
 write_modality(

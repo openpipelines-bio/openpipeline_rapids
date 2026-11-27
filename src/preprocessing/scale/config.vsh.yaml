@@ -67,6 +67,8 @@ argument_groups:
           Clip (truncate) values to this maximum after scaling. By default,
           values are not clipped.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

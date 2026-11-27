@@ -16,6 +16,7 @@ par = {
     "corr_method": "fdr_bh",
     "use_sparse": True,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "spatial_autocorr"}
 ## VIASH END
@@ -23,6 +24,7 @@ meta = {"name": "spatial_autocorr"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
+from gpu import run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -48,18 +50,25 @@ if genes is not None and len(genes) == 0:
 # An empty --corr_method disables multiple-testing correction.
 corr_method = par["corr_method"] or None
 
-logger.info("Computing spatial autocorrelation (%s).", par["mode"])
-rsc.gr.spatial_autocorr(
-    dat,
-    connectivity_key=par["obsp_connectivities"],
-    genes=genes,
-    mode=par["mode"],
-    transformation=par["transformation"],
-    n_perms=par["n_perms"],
-    two_tailed=par["two_tailed"],
-    corr_method=corr_method,
-    layer=par["layer"],
-    use_sparse=par["use_sparse"],
+
+def compute_autocorr():
+    logger.info("Computing spatial autocorrelation (%s).", par["mode"])
+    rsc.gr.spatial_autocorr(
+        dat,
+        connectivity_key=par["obsp_connectivities"],
+        genes=genes,
+        mode=par["mode"],
+        transformation=par["transformation"],
+        n_perms=par["n_perms"],
+        two_tailed=par["two_tailed"],
+        corr_method=corr_method,
+        layer=par["layer"],
+        use_sparse=par["use_sparse"],
+    )
+
+
+run_with_managed_memory_fallback(
+    compute_autocorr, logger, managed_memory=par["managed_memory"]
 )
 
 result_key = "moranI" if par["mode"] == "moran" else "gearyC"

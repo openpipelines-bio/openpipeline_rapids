@@ -12,6 +12,7 @@ par = {
     "max_counts": None,
     "max_genes": None,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "filter_cells"}
 ## VIASH END
@@ -19,7 +20,7 @@ meta = {"name": "filter_cells"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -58,15 +59,23 @@ if par["layer"]:
 # convert_all casts every matrix (including the swapped-in layer) to a
 # GPU-compatible float dtype; without --layer only .X needs moving.
 gpu_kwargs = {"convert_all": True} if par["layer"] else {}
-with on_gpu(dat, logger, **gpu_kwargs):
-    logger.info("Filtering cells.")
-    rsc.pp.filter_cells(
-        dat,
-        min_counts=par["min_counts"],
-        min_genes=par["min_genes"],
-        max_counts=par["max_counts"],
-        max_genes=par["max_genes"],
-    )
+
+
+def filter_cells():
+    with on_gpu(dat, logger, **gpu_kwargs):
+        logger.info("Filtering cells.")
+        rsc.pp.filter_cells(
+            dat,
+            min_counts=par["min_counts"],
+            min_genes=par["min_genes"],
+            max_counts=par["max_counts"],
+            max_genes=par["max_genes"],
+        )
+
+
+run_with_managed_memory_fallback(
+    filter_cells, logger, managed_memory=par["managed_memory"]
+)
 
 if par["layer"]:
     dat.X, dat.layers[par["layer"]] = dat.layers[par["layer"]], dat.X

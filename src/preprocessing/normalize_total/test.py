@@ -1,7 +1,10 @@
+import logging
+import subprocess
 import sys
 import pytest
 import mudata as mu
 import numpy as np
+import scipy.sparse
 from openpipeline_testutils.asserters import assert_annotation_objects_equal
 
 ## VIASH START
@@ -216,6 +219,120 @@ def test_empty_input_layer_uses_x(run_component, random_h5mu_path):
     rna_out = mu.read_h5mu(output).mod["rna"]
     assert rna_in.shape == rna_out.shape
     assert np.mean(rna_in.X) != np.mean(rna_out.X), "Expression should have changed"
+
+
+def test_managed_memory_flag(random_h5mu_path):
+    """--managed_memory enables managed memory before the GPU step, without
+    waiting for the GPU to run out of memory, and gives the same result."""
+    output = random_h5mu_path()
+    result = subprocess.run(
+        [
+            meta["executable"],
+            "--input",
+            input,
+            "--output",
+            output,
+            "--target_sum",
+            "10000",
+            "--managed_memory",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    logs = result.stdout.decode("utf-8")
+
+    assert "Using RMM managed memory, as requested" in logs
+    assert "GPU ran out of memory" not in logs
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    assert np.all(np.abs(rna_out.X.sum(axis=1) - 10000) < 1), (
+        "Rows should sum to target_sum"
+    )
+
+
+def test_on_gpu_restores_cpu_matrices_on_error():
+    """When the GPU block fails, on_gpu puts the untouched CPU matrices back so
+    that a retry starts from the original input."""
+    sys.path.append(meta["resources_dir"])
+    import rapids_singlecell as rsc
+    from gpu import on_gpu
+
+    rna = mu.read_h5mu(input).mod["rna"]
+    rna.layers["counts"] = rna.X.copy()
+    original_x = rna.X.copy()
+
+    with pytest.raises(RuntimeError, match="Step failed on the GPU"):
+        with on_gpu(rna, convert_all=True):
+            rsc.pp.normalize_total(rna, target_sum=10000)
+            raise RuntimeError("Step failed on the GPU")
+
+    for name, matrix in [("X", rna.X), ("counts", rna.layers["counts"])]:
+        assert scipy.sparse.issparse(matrix), f"{name} should be back on the CPU"
+        assert (matrix != original_x).nnz == 0, f"{name} should be unchanged"
+
+
+def test_host_memory_error_is_not_gpu_out_of_memory():
+    """A host allocation failure must not trigger the managed-memory retry."""
+    sys.path.append(meta["resources_dir"])
+    from gpu import _is_gpu_out_of_memory
+
+    with pytest.raises(MemoryError) as excinfo:
+        np.empty(2**60, dtype=np.uint8)
+    assert not _is_gpu_out_of_memory(excinfo.value)
+
+
+def test_managed_memory_fallback(caplog):
+    """A step that needs more memory than the GPU has free runs out of memory,
+    and succeeds when it is retried with RMM managed memory."""
+    sys.path.append(meta["resources_dir"])
+    import cupy as cp
+    import rmm
+    from gpu import run_with_managed_memory_fallback
+
+    free_bytes, _ = cp.cuda.runtime.memGetInfo()
+    oversized_bytes = int(free_bytes * 1.5)
+    memory_resources = []
+
+    def allocate_more_than_free_vram():
+        memory_resources.append(rmm.mr.get_current_device_resource())
+        # cp.empty does not touch the pages, so the oversubscribed managed
+        # allocation does not need host RAM to back it.
+        return cp.empty(oversized_bytes, dtype=cp.uint8).nbytes
+
+    logger = logging.getLogger("test_managed_memory_fallback")
+    with caplog.at_level(logging.WARNING):
+        allocated = run_with_managed_memory_fallback(
+            allocate_more_than_free_vram, logger
+        )
+
+    assert allocated == oversized_bytes
+    assert len(memory_resources) == 2, "The step should run twice"
+    assert not isinstance(memory_resources[0], rmm.mr.ManagedMemoryResource)
+    assert isinstance(memory_resources[1], rmm.mr.ManagedMemoryResource)
+    assert "Retrying with RMM managed memory" in caplog.text
+
+
+def test_on_gpu_releases_cpu_matrices_under_managed_memory():
+    """Once managed memory is enabled, on_gpu keeps no CPU copy of the input, so
+    host RAM is left for the data managed memory pages out of VRAM.
+
+    Enables managed memory for the rest of the test process, so it runs last.
+    """
+    sys.path.append(meta["resources_dir"])
+    import gc
+    import weakref
+    import gpu
+
+    rna = mu.read_h5mu(input).mod["rna"]
+    rna.X = rna.X.astype(np.float32)
+    cpu_x = weakref.ref(rna.X)
+
+    if not gpu._managed_memory_enabled:
+        gpu._enable_managed_memory()
+    with gpu.on_gpu(rna):
+        gc.collect()
+        assert cpu_x() is None, "The CPU copy of X should have been released"
+
+    assert scipy.sparse.issparse(rna.X), "X should be back on the CPU"
 
 
 if __name__ == "__main__":

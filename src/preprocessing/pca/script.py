@@ -17,6 +17,7 @@ par = {
     "varm_output": "pca_loadings",
     "uns_output": "pca_variance",
     "overwrite": False,
+    "managed_memory": False,
 }
 meta = {"name": "pca"}
 ## VIASH END
@@ -24,7 +25,7 @@ meta = {"name": "pca"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -113,17 +114,24 @@ if zero_genes:
         f"{preview}. Filter these genes out first (e.g. with `filter_genes`)."
     )
 
-with on_gpu(dat, logger, layer=par["layer"]):
-    logger.info("Computing PCA.")
-    rsc.pp.pca(
-        dat,
-        n_comps=par["num_components"],
-        layer=par["layer"],
-        mask_var=mask_var,
-        chunked=par["chunked"],
-        chunk_size=par["chunk_size"],
-        random_state=par["random_state"],
-    )
+
+def compute_pca():
+    with on_gpu(dat, logger, layer=par["layer"]):
+        logger.info("Computing PCA.")
+        rsc.pp.pca(
+            dat,
+            n_comps=par["num_components"],
+            layer=par["layer"],
+            mask_var=mask_var,
+            chunked=par["chunked"],
+            chunk_size=par["chunk_size"],
+            random_state=par["random_state"],
+        )
+
+
+run_with_managed_memory_fallback(
+    compute_pca, logger, managed_memory=par["managed_memory"]
+)
 
 # rapids-singlecell stores results under fixed keys ("X_pca", "PCs", "pca").
 # We rename them rather than using the `key_added` argument because that sets

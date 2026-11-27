@@ -23,6 +23,7 @@ par = {
     "n_samples": 10000,
     "obs_batch_key": None,
     "check_values": True,
+    "managed_memory": False,
 }
 meta = {"name": "highly_variable_genes"}
 ## VIASH END
@@ -30,7 +31,7 @@ meta = {"name": "highly_variable_genes"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
-from gpu import on_gpu
+from gpu import on_gpu, run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -86,9 +87,16 @@ if par["clip"] is not None:
 if par["obs_batch_key"] is not None:
     hvg_kwargs["batch_key"] = par["obs_batch_key"]
 
-with on_gpu(dat, logger, layer=par["input_layer"]):
-    logger.info("Computing highly variable genes.")
-    rsc.pp.highly_variable_genes(dat, **hvg_kwargs)
+
+def find_highly_variable_genes():
+    with on_gpu(dat, logger, layer=par["input_layer"]):
+        logger.info("Computing highly variable genes.")
+        rsc.pp.highly_variable_genes(dat, **hvg_kwargs)
+
+
+run_with_managed_memory_fallback(
+    find_highly_variable_genes, logger, managed_memory=par["managed_memory"]
+)
 
 # Downstream components use the boolean flags as masks, so a gene without a
 # value is not highly variable, as in the CPU component

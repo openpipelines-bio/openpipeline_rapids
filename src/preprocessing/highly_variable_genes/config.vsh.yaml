@@ -192,6 +192,8 @@ argument_groups:
           emitted otherwise. Only used if flavor is 'seurat_v3',
           'seurat_v3_paper', 'pearson_residuals' or 'poisson_gene_selection'.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

@@ -16,6 +16,7 @@ par = {
     "method": "barnes_hut",
     "overwrite": False,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "tsne"}
 ## VIASH END
@@ -23,6 +24,7 @@ meta = {"name": "tsne"}
 sys.path.append(meta["resources_dir"])
 from setup_logger import setup_logger
 from anndata_io import read_modality, write_modality
+from gpu import run_with_managed_memory_fallback
 
 logger = setup_logger()
 
@@ -41,17 +43,24 @@ if par["obsm_output"] in dat.obsm and not par["overwrite"]:
         f"{par['modality']}, but field already exists."
     )
 
-logger.info("Computing t-SNE for modality '%s'.", par["modality"])
-rsc.tl.tsne(
-    dat,
-    n_pcs=par["n_pcs"],
-    use_rep=par["obsm_input"],
-    perplexity=par["perplexity"],
-    early_exaggeration=par["early_exaggeration"],
-    learning_rate=par["learning_rate"],
-    method=par["method"],
-    metric=par["metric"],
-    key_added=par["obsm_output"],
+
+def compute_tsne():
+    logger.info("Computing t-SNE for modality '%s'.", par["modality"])
+    rsc.tl.tsne(
+        dat,
+        n_pcs=par["n_pcs"],
+        use_rep=par["obsm_input"],
+        perplexity=par["perplexity"],
+        early_exaggeration=par["early_exaggeration"],
+        learning_rate=par["learning_rate"],
+        method=par["method"],
+        metric=par["metric"],
+        key_added=par["obsm_output"],
+    )
+
+
+run_with_managed_memory_fallback(
+    compute_tsne, logger, managed_memory=par["managed_memory"]
 )
 
 write_modality(
