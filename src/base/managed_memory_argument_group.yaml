@@ -4,7 +4,8 @@ arguments:
   - name: "--managed_memory"
     type: boolean_true
     description: |
-      Allocate GPU memory with RMM managed memory from the start. Managed
-      memory lets data that does not fit in VRAM spill to host RAM, at the cost
-      of speed. By default, the component runs with regular GPU memory and only
-      switches to managed memory, retrying once, if the GPU runs out of memory.
+      Allocate GPU memory with RMM managed memory from the start.
+      Managed memory lets data that does not fit in VRAM spill to host
+      RAM, at the cost of speed. By default, the component runs with
+      regular GPU memory and only switches to managed memory, retrying
+      once, if the GPU runs out of memory.
