@@ -75,6 +75,8 @@ argument_groups:
         default: true
         description: Also compute log1p-transformed quality control metrics.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

@@ -9,6 +9,7 @@ par = {
     "modality": "rna",
     "exclude_highly_expressed": False,
     "max_fraction": 0.05,
+    "managed_memory": False,
 }
 meta = {"name": "normalize_total"}
 ## VIASH END
@@ -50,7 +51,9 @@ def normalize():
         )
 
 
-run_with_managed_memory_fallback(normalize, logger)
+run_with_managed_memory_fallback(
+    normalize, logger, managed_memory=par["managed_memory"]
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

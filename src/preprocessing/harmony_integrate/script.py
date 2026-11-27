@@ -16,6 +16,7 @@ par = {
     "random_state": 0,
     "overwrite": False,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "harmony_integrate"}
 ## VIASH END
@@ -75,7 +76,9 @@ def integrate():
     )
 
 
-run_with_managed_memory_fallback(integrate, logger)
+run_with_managed_memory_fallback(
+    integrate, logger, managed_memory=par["managed_memory"]
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

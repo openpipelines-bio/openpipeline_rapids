@@ -80,6 +80,8 @@ argument_groups:
           Maximum number of cells expressing a gene allowed for it to pass
           filtering.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

@@ -111,6 +111,8 @@ argument_groups:
         min: 0
         description: A random seed.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

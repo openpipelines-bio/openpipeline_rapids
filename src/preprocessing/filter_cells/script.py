@@ -12,6 +12,7 @@ par = {
     "max_counts": None,
     "max_genes": None,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "filter_cells"}
 ## VIASH END
@@ -72,7 +73,9 @@ def filter_cells():
         )
 
 
-run_with_managed_memory_fallback(filter_cells, logger)
+run_with_managed_memory_fallback(
+    filter_cells, logger, managed_memory=par["managed_memory"]
+)
 
 if par["layer"]:
     dat.X, dat.layers[par["layer"]] = dat.layers[par["layer"]], dat.X

@@ -17,6 +17,7 @@ par = {
     "method": "umap",
     "random_state": 0,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "neighbors"}
 ## VIASH END
@@ -56,7 +57,9 @@ def compute_neighbors():
     )
 
 
-run_with_managed_memory_fallback(compute_neighbors, logger)
+run_with_managed_memory_fallback(
+    compute_neighbors, logger, managed_memory=par["managed_memory"]
+)
 
 # rsc.pp.neighbors writes to the default slots (.uns["neighbors"],
 # .obsp["distances"], .obsp["connectivities"]). Move them to the requested

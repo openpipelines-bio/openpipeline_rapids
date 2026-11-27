@@ -23,6 +23,7 @@ par = {
     "n_samples": 10000,
     "obs_batch_key": None,
     "check_values": True,
+    "managed_memory": False,
 }
 meta = {"name": "highly_variable_genes"}
 ## VIASH END
@@ -93,7 +94,9 @@ def find_highly_variable_genes():
         rsc.pp.highly_variable_genes(dat, **hvg_kwargs)
 
 
-run_with_managed_memory_fallback(find_highly_variable_genes, logger)
+run_with_managed_memory_fallback(
+    find_highly_variable_genes, logger, managed_memory=par["managed_memory"]
+)
 
 # Downstream components use the boolean flags as masks, so a gene without a
 # value is not highly variable, as in the CPU component

@@ -15,6 +15,7 @@ par = {
     "random_state": 0,
     "use_weights": True,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "leiden"}
 ## VIASH END
@@ -60,7 +61,9 @@ def cluster(resolution):
 # (.obsm[obsm_name] with one column per resolution).
 results = {}
 for resolution in par["resolution"]:
-    run_with_managed_memory_fallback(lambda: cluster(resolution), logger)
+    run_with_managed_memory_fallback(
+        lambda: cluster(resolution), logger, managed_memory=par["managed_memory"]
+    )
     results[str(resolution)] = dat.obs[par["obsm_name"]].copy()
     # Drop the per-resolution scratch column so it doesn't leak into output.obs
     del dat.obs[par["obsm_name"]]

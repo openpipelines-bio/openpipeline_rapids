@@ -17,6 +17,7 @@ par = {
     "varm_output": "pca_loadings",
     "uns_output": "pca_variance",
     "overwrite": False,
+    "managed_memory": False,
 }
 meta = {"name": "pca"}
 ## VIASH END
@@ -128,7 +129,9 @@ def compute_pca():
         )
 
 
-run_with_managed_memory_fallback(compute_pca, logger)
+run_with_managed_memory_fallback(
+    compute_pca, logger, managed_memory=par["managed_memory"]
+)
 
 # rapids-singlecell stores results under fixed keys ("X_pca", "PCs", "pca").
 # We rename them rather than using the `key_added` argument because that sets

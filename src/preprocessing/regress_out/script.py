@@ -11,6 +11,7 @@ par = {
     "obs_keys": ["total_counts"],
     "batchsize": None,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "regress_out"}
 ## VIASH END
@@ -57,7 +58,9 @@ def regress_out():
         )
 
 
-run_with_managed_memory_fallback(regress_out, logger)
+run_with_managed_memory_fallback(
+    regress_out, logger, managed_memory=par["managed_memory"]
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

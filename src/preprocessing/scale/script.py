@@ -11,6 +11,7 @@ par = {
     "zero_center": True,
     "max_value": None,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "scale"}
 ## VIASH END
@@ -53,7 +54,9 @@ def scale_data():
         )
 
 
-run_with_managed_memory_fallback(scale_data, logger)
+run_with_managed_memory_fallback(
+    scale_data, logger, managed_memory=par["managed_memory"]
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

@@ -16,6 +16,7 @@ par = {
     "corr_method": "fdr_bh",
     "use_sparse": True,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "spatial_autocorr"}
 ## VIASH END
@@ -66,7 +67,9 @@ def compute_autocorr():
     )
 
 
-run_with_managed_memory_fallback(compute_autocorr, logger)
+run_with_managed_memory_fallback(
+    compute_autocorr, logger, managed_memory=par["managed_memory"]
+)
 
 result_key = "moranI" if par["mode"] == "moran" else "gearyC"
 if result_key in dat.uns:

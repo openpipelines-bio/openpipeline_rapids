@@ -16,6 +16,7 @@ par = {
     "negative_sample_rate": 5,
     "init_pos": "spectral",
     "random_state": 0,
+    "managed_memory": False,
 }
 meta = {"name": "umap"}
 ## VIASH END
@@ -54,7 +55,9 @@ def compute_umap():
     )
 
 
-run_with_managed_memory_fallback(compute_umap, logger)
+run_with_managed_memory_fallback(
+    compute_umap, logger, managed_memory=par["managed_memory"]
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

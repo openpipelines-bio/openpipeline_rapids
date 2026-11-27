@@ -16,6 +16,7 @@ par = {
     "threshold": None,
     "random_state": 0,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "scrublet"}
 ## VIASH END
@@ -63,7 +64,9 @@ def predict_doublets():
         )
 
 
-run_with_managed_memory_fallback(predict_doublets, logger)
+run_with_managed_memory_fallback(
+    predict_doublets, logger, managed_memory=par["managed_memory"]
+)
 
 if par["layer"]:
     dat.X = original_x

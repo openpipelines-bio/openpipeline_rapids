@@ -103,6 +103,8 @@ argument_groups:
         choices: ["barnes_hut", "fft"]
         default: "barnes_hut"
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

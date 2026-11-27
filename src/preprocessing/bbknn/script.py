@@ -19,6 +19,7 @@ par = {
     "random_state": 0,
     "overwrite": False,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "bbknn"}
 ## VIASH END
@@ -76,7 +77,9 @@ def compute_bbknn():
     )
 
 
-run_with_managed_memory_fallback(compute_bbknn, logger)
+run_with_managed_memory_fallback(
+    compute_bbknn, logger, managed_memory=par["managed_memory"]
+)
 
 # rsc.pp.bbknn writes to the default slots (.uns["neighbors"],
 # .obsp["distances"], .obsp["connectivities"]). Move them to the requested

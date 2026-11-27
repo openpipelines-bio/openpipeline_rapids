@@ -11,6 +11,7 @@ par = {
     "output_layer": None,
     "output_obsm": None,
     "base": None,
+    "managed_memory": False,
 }
 meta = {"name": "log1p"}
 ## VIASH END
@@ -84,7 +85,9 @@ def log_transform():
         )
 
 
-run_with_managed_memory_fallback(log_transform, logger)
+run_with_managed_memory_fallback(
+    log_transform, logger, managed_memory=par["managed_memory"]
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

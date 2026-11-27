@@ -12,6 +12,7 @@ par = {
     "var_type": "genes",
     "log1p": True,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "calculate_qc_metrics"}
 ## VIASH END
@@ -61,7 +62,9 @@ def calculate_qc_metrics():
         )
 
 
-run_with_managed_memory_fallback(calculate_qc_metrics, logger)
+run_with_managed_memory_fallback(
+    calculate_qc_metrics, logger, managed_memory=par["managed_memory"]
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

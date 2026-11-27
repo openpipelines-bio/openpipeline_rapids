@@ -96,6 +96,8 @@ argument_groups:
           If true, edge weights from the graph are used in the computation
           (placing more emphasis on stronger edges).
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

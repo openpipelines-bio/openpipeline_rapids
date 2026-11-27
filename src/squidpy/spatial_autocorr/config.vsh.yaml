@@ -112,6 +112,8 @@ argument_groups:
           If true, use a sparse representation of the expression matrix on
           the GPU.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

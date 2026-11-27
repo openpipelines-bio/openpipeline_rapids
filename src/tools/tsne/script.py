@@ -16,6 +16,7 @@ par = {
     "method": "barnes_hut",
     "overwrite": False,
     "output_compression": None,
+    "managed_memory": False,
 }
 meta = {"name": "tsne"}
 ## VIASH END
@@ -58,7 +59,9 @@ def compute_tsne():
     )
 
 
-run_with_managed_memory_fallback(compute_tsne, logger)
+run_with_managed_memory_fallback(
+    compute_tsne, logger, managed_memory=par["managed_memory"]
+)
 
 write_modality(
     dat, par["output"], par["input"], par["modality"], par["output_compression"], logger

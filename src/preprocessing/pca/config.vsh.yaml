@@ -106,6 +106,8 @@ argument_groups:
         default: false
         description: Allow overwriting .obsm, .varm and .uns slots.
 
+  - __merge__: /src/base/managed_memory_argument_group.yaml
+
 resources:
   - type: python_script
     path: script.py

@@ -199,7 +199,7 @@ def _enable_managed_memory():
     _managed_memory_enabled = True
 
 
-def run_with_managed_memory_fallback(step, logger):
+def run_with_managed_memory_fallback(step, logger, *, managed_memory=False):
     """Run ``step()``; if the GPU runs out of memory, retry once with managed memory.
 
     ``step`` must leave its input data unchanged when it fails, so that it can
@@ -208,9 +208,16 @@ def run_with_managed_memory_fallback(step, logger):
     rapids-singlecell function on CPU data get it from rapids-singlecell, which
     transfers copies to the GPU internally.
 
+    With ``managed_memory=True``, managed memory is enabled before the first
+    run, so the step never uses regular GPU memory and is not retried.
+
     Once managed memory is enabled it stays enabled for the rest of the
     process, and later out-of-memory errors propagate.
     """
+    if managed_memory and not _managed_memory_enabled:
+        logger.info("Using RMM managed memory, as requested with --managed_memory.")
+        _enable_managed_memory()
+
     try:
         return step()
     except Exception as exc:

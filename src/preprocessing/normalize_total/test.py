@@ -1,4 +1,5 @@
 import logging
+import subprocess
 import sys
 import pytest
 import mudata as mu
@@ -218,6 +219,34 @@ def test_empty_input_layer_uses_x(run_component, random_h5mu_path):
     rna_out = mu.read_h5mu(output).mod["rna"]
     assert rna_in.shape == rna_out.shape
     assert np.mean(rna_in.X) != np.mean(rna_out.X), "Expression should have changed"
+
+
+def test_managed_memory_flag(random_h5mu_path):
+    """--managed_memory enables managed memory before the GPU step, without
+    waiting for the GPU to run out of memory, and gives the same result."""
+    output = random_h5mu_path()
+    result = subprocess.run(
+        [
+            meta["executable"],
+            "--input",
+            input,
+            "--output",
+            output,
+            "--target_sum",
+            "10000",
+            "--managed_memory",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    logs = result.stdout.decode("utf-8")
+
+    assert "Using RMM managed memory, as requested" in logs
+    assert "GPU ran out of memory" not in logs
+    rna_out = mu.read_h5mu(output).mod["rna"]
+    assert np.all(np.abs(rna_out.X.sum(axis=1) - 10000) < 1), (
+        "Rows should sum to target_sum"
+    )
 
 
 def test_on_gpu_restores_cpu_matrices_on_error():
